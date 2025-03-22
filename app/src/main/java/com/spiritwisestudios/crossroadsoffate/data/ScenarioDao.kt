@@ -16,5 +16,5 @@ interface ScenarioDao {
     suspend fun getScenarioCount(): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertScenarios(scenarios: List<ScenarioEntity>)
+    suspend fun insertAll(scenarios: List<ScenarioEntity>)
 }

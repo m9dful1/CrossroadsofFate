@@ -8,9 +8,24 @@ import com.google.gson.reflect.TypeToken
 data class PlayerProgress(
     @PrimaryKey val playerId: String,
     @ColumnInfo(name = "currentScenarioId") val currentScenarioId: String,
-    @TypeConverters(InventoryConverters::class) // FIX: Ensure Room handles List<String>
-    @ColumnInfo(name = "playerInventory") val playerInventory: List<String>
+    @TypeConverters(InventoryConverters::class)
+    @ColumnInfo(name = "playerInventory") val playerInventory: List<String>,
+    @TypeConverters(QuestConverters::class)
+    @ColumnInfo(name = "activeQuests") val activeQuests: List<Quest> = emptyList(),
+    @TypeConverters(QuestConverters::class)
+    @ColumnInfo(name = "completedQuests") val completedQuests: List<Quest> = emptyList()
 )
+
+class QuestConverters {
+    @TypeConverter
+    fun fromQuests(quests: List<Quest>): String = Gson().toJson(quests)
+
+    @TypeConverter
+    fun toQuests(value: String): List<Quest> {
+        val type = object : TypeToken<List<Quest>>() {}.type
+        return Gson().fromJson(value, type)
+    }
+}
 
 class InventoryConverters {
     @TypeConverter

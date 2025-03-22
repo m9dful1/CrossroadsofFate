@@ -2,31 +2,130 @@
   "scenarios": [
     {
       "id": "scenario1",
-      "location": "Cozy Cottage",
-      "text": "You awaken in your modest bed as dawn breaks. The call of adventure stirs within you.",
-      "backgroundImage": "bedroom_bg",
+      "location": "Your Bedroom",
+      "text": "Morning light streams into your room. How will you begin your day?",
+      "backgroundImage": "bedroom_morning",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
-          "text": "Rise with duty",
+          "text": "Get up promptly and prepare methodically",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario2"
         },
         "topRight": {
-          "text": "Chase freedom",
+          "text": "Leap out with spontaneous joy",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario2"
+        },
+        "bottomLeft": {
+          "text": "Rise with a determined air to control your day",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario2"
+        },
+        "bottomRight": {
+          "text": "Linger in bed, defying the routine",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario3"
+        }
+      }
+    },
+    {
+      "id": "scenario2",
+      "location": "Dressing Room",
+      "text": "You freshen up and dress carefully, setting a tone for the day.",
+      "backgroundImage": "dressing_room",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Choose a neat outfit and tidy up",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario4"
+        },
+        "topRight": {
+          "text": "Mix up your style with vibrant colors",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario4"
         },
         "bottomLeft": {
-          "text": "Ponder ambition",
+          "text": "Command your reflection to look perfect",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario4"
         },
         "bottomRight": {
-          "text": "Succumb to temptation",
+          "text": "Throw on clothes haphazardly and risk disarray",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario4"
+        }
+      }
+    },
+    {
+      "id": "scenario3",
+      "location": "Your Bedroom",
+      "text": "You decide to stay in bed a little longer, delaying the start of your day.",
+      "backgroundImage": "bedroom_sleep",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Hurry now and apologize for the delay",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario4"
+        },
+        "topRight": {
+          "text": "Laugh off the lateness and embrace spontaneity",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario4"
+        },
+        "bottomLeft": {
+          "text": "Blame the early sun and grumble, then get moving",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario4"
+        },
+        "bottomRight": {
+          "text": "Refuse to conform and eventually rise reluctantly",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario4"
+        }
+      }
+    },
+    {
+      "id": "scenario4",
+      "location": "Home - Front Door",
+      "text": "You step out of your home. Your family's voices echo behind you as you leave.",
+      "backgroundImage": "front_door",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Wave goodbye warmly and step out with purpose",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario5"
+        },
+        "topRight": {
+          "text": "Stride out with open curiosity",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario5"
+        },
+        "bottomLeft": {
+          "text": "Assert your authority as you depart",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario5"
+        },
+        "bottomRight": {
+          "text": "Slap the door shut in rebellious defiance",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario5"
@@ -34,71 +133,168 @@
       }
     },
     {
-      "id": "scenario2",
-      "location": "Village Road",
-      "text": "Determined to serve, you step onto the village road. A local traveler in distress beckons for aid.",
-      "backgroundImage": "village_road_bg",
+      "id": "scenario5",
+      "location": "Town Entrance",
+      "text": "At the town gate, familiar faces and bustling energy greet you. The day is full of potential.",
+      "backgroundImage": "town_entrance",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
-          "text": "Aid the wounded traveler",
+          "text": "Greet everyone with polite warmth",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario6"
         },
         "topRight": {
-          "text": "Investigate the forest glen",
+          "text": "Step in with a friendly smile and open curiosity",
           "fallbackText": null,
-          "condition": {
-            "requiredItem": "LG_token",
-            "removeOnUse": false
-          },
-          "leadsTo": {
-            "ifConditionMet": "scenario7",
-            "ifConditionNotMet": "scenario10"
-          }
+          "condition": null,
+          "leadsTo": "scenario6"
         },
         "bottomLeft": {
-          "text": "Report a corrupt merchant",
+          "text": "Assert your presence with firm resolve",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario6"
+        },
+        "bottomRight": {
+          "text": "Slip in quietly, preferring the shadows",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario6"
+        }
+      }
+    },
+    {
+      "id": "scenario6",
+      "location": "Town Square",
+      "text": "The square teems with vendors, performers, and neighbors. Small interactions here can set your path.",
+      "backgroundImage": "town_square",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Offer help to an elderly neighbor",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario7"
+        },
+        "topRight": {
+          "text": "Join a spontaneous street performance",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario7"
+        },
+        "bottomLeft": {
+          "text": "Critique a vendor's disorganized stall",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario7"
+        },
+        "bottomRight": {
+          "text": "Amuse yourself by creating a small distraction",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario7"
+        }
+      }
+    },
+    {
+      "id": "scenario7",
+      "location": "Market",
+      "text": "At the market, you encounter a stall in disrepair. The merchant looks troubled.",
+      "backgroundImage": "market",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Help repair the stall and earn his trust",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario8"
+        },
+        "topRight": {
+          "text": "Offer spontaneous encouragement to lift his spirits",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario8"
+        },
+        "bottomLeft": {
+          "text": "Demand a small fee for your advice",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario8"
         },
         "bottomRight": {
-          "text": "Skip duty – head to the tavern",
+          "text": "Sneakily pickpocket near the stall for quick gain",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario8"
         }
+      },
+      "itemGiven": {
+        "topLeft": "holy_key",
+        "bottomRight": "infernal_mark"
       }
     },
     {
-      "id": "scenario3",
-      "location": "Winding Trail",
-      "text": "You stride down a meandering path, relishing the freedom and surprises the road promises.",
-      "backgroundImage": "winding_trail_bg",
+      "id": "scenario8",
+      "location": "Town Crossroads",
+      "text": "Leaving the market, you find yourself at a figurative crossroads. Your next choice will set your career path.",
+      "backgroundImage": "town_crossroads",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
-          "text": "Help a lost child",
+          "text": "Join the town guard to serve and protect",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario9"
+        },
+        "topRight": {
+          "text": "Embark as a wandering adventurer seeking freedom",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario10"
         },
-        "topRight": {
-          "text": "Follow the wild music",
+        "bottomLeft": {
+          "text": "Enter the world of trade as a shrewd merchant",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario11"
         },
-        "bottomLeft": {
-          "text": "Exploit a heated dispute",
+        "bottomRight": {
+          "text": "Delve into the shadows and embrace an outlaw’s life",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario12"
+        }
+      }
+    },
+    {
+      "id": "scenario9",
+      "location": "Guard Training Grounds",
+      "text": "You join the town guard. Through rigorous training and discipline, you learn the art of defense and justice.",
+      "backgroundImage": "guard_training",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Practice disciplined combat techniques",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario13"
+        },
+        "topRight": {
+          "text": "Improvise creative strategies during sparring",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario13"
+        },
+        "bottomLeft": {
+          "text": "Enforce strict rules among your peers",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario13"
         },
         "bottomRight": {
-          "text": "Loot an abandoned caravan",
+          "text": "Challenge the status quo with bold moves",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario13"
@@ -106,137 +302,263 @@
       }
     },
     {
-      "id": "scenario4",
-      "location": "Shady Alley",
-      "text": "Ambition calls as you leave your home. The shadows whisper promises of power and wealth.",
-      "backgroundImage": "alley_bg",
+      "id": "scenario10",
+      "location": "Wilderness Trail",
+      "text": "As a wandering adventurer, you set out into untamed lands in search of ancient lore and freedom.",
+      "backgroundImage": "wilderness_trail",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
-          "text": "Show unexpected kindness to a beggar",
+          "text": "Study nature and ancient symbols",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario14"
         },
         "topRight": {
-          "text": "Sneak into a merchant’s house",
+          "text": "Follow mysterious sounds with excitement",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario14"
+        },
+        "bottomLeft": {
+          "text": "Plan a cautious route through dangerous lands",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario14"
+        },
+        "bottomRight": {
+          "text": "Charge headlong into unknown perils",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario14"
+        }
+      }
+    },
+    {
+      "id": "scenario11",
+      "location": "Merchant's Quarters",
+      "text": "You start your journey as a merchant, learning the art of negotiation and trade.",
+      "backgroundImage": "merchant_quarters",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Set up a fair stall to build trust",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario15"
+        },
+        "topRight": {
+          "text": "Innovate with creative sales techniques",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario15"
         },
         "bottomLeft": {
-          "text": "Scheme to defraud a local noble",
+          "text": "Impose strict pricing to maximize profit",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario15"
+        },
+        "bottomRight": {
+          "text": "Underhandedly manipulate rivals for gain",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario15"
+        }
+      }
+    },
+    {
+      "id": "scenario12",
+      "location": "Shadowed Alley",
+      "text": "Embracing the outlaw’s life, you navigate the underbelly of town with cunning and audacity.",
+      "backgroundImage": "shadow_alley",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Help a fellow outlaw with a risky plan",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario16"
+        },
+        "topRight": {
+          "text": "Celebrate your newfound freedom with bold exploits",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario16"
+        },
+        "bottomLeft": {
+          "text": "Impose a strict code among your peers",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario16"
         },
         "bottomRight": {
-          "text": "Poison a rival’s drink",
+          "text": "Embrace chaos and incite fear for personal gain",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario17"
+          "leadsTo": "scenario16"
         }
       }
     },
     {
-      "id": "scenario5",
-      "location": "Gritty City Streets",
-      "text": "You plunge into the underbelly of the town, where dark pleasures and risky ventures await.",
-      "backgroundImage": "city_streets_bg",
+      "id": "scenario13",
+      "location": "Guard Patrol",
+      "text": "On patrol, you confront minor disturbances that test your commitment to justice.",
+      "backgroundImage": "guard_patrol",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
-          "text": "Spare a pleading beggar",
+          "text": "Intervene gently to help an innocent",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario18"
+          "leadsTo": "scenario29"
         },
         "topRight": {
-          "text": "Liberate a wrongfully imprisoned soul",
+          "text": "Use creative tactics to defuse the threat",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario19"
+          "leadsTo": "scenario29"
         },
         "bottomLeft": {
-          "text": "Rob a corrupt official",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario20"
-        },
-        "bottomRight": {
-          "text": "Smuggle forbidden goods",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario21"
-        }
-      }
-    },
-    {
-      "id": "scenario6",
-      "location": "Wilderness Path",
-      "text": "After aiding the traveler, you learn of a hidden shrine rumored to grant blessings. The traveler urges you to escort them there.",
-      "backgroundImage": "forest_path_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Escort them to the shrine",
-          "fallbackText": "The shrine remains guarded",
-          "condition": {
-            "requiredItem": "holy_key",
-            "removeOnUse": false
-          },
-          "leadsTo": {
-            "ifConditionMet": "heaven_entry",
-            "ifConditionNotMet": "scenario27"
-          }
-        },
-        "topRight": {
-          "text": "Gather medicinal herbs",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario24"
-        },
-        "bottomLeft": {
-          "text": "Demand a reward for your help",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario25"
-        },
-        "bottomRight": {
-          "text": "Abandon the traveler",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario26"
-        }
-      }
-    },
-    {
-      "id": "scenario7",
-      "location": "Ancient Grove",
-      "text": "In a grove where ancient trees murmur secrets, you sense hints of a sacred door and hidden relics.",
-      "backgroundImage": "ancient_grove_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Offer a prayer at the altar",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario27"
-        },
-        "topRight": {
-          "text": "Contemplate nature’s secrets",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Disturb a relic for gain",
+          "text": "Assert strict control to deter further trouble",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario29"
         },
         "bottomRight": {
-          "text": "Deface the altar in rebellion",
+          "text": "Challenge wrongdoers with bold resolve",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario29"
+        }
+      }
+    },
+    {
+      "id": "scenario14",
+      "location": "Ancient Ruins",
+      "text": "Deep in the forest, you discover ancient ruins full of secrets and forgotten lore.",
+      "backgroundImage": "ancient_ruins",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Examine the carvings with scholarly care",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario29"
+        },
+        "topRight": {
+          "text": "Follow mysterious echoes with excitement",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario29"
+        },
+        "bottomLeft": {
+          "text": "Plan a cautious investigation",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario29"
+        },
+        "bottomRight": {
+          "text": "Charge boldly into the unknown",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario29"
+        }
+      }
+    },
+    {
+      "id": "scenario15",
+      "location": "Trade Lane",
+      "text": "In the busy trade lane, you negotiate deals and build your reputation as a merchant.",
+      "backgroundImage": "trade_lane",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Build trust with fair practices",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario29"
+        },
+        "topRight": {
+          "text": "Celebrate a successful deal with generosity",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario29"
+        },
+        "bottomLeft": {
+          "text": "Enforce strict control to secure profit",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario29"
+        },
+        "bottomRight": {
+          "text": "Use cunning strategies to outwit competitors",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario29"
+        }
+      }
+    },
+    {
+      "id": "scenario16",
+      "location": "Underground Hideout",
+      "text": "Within the criminal underworld, your daring heist marks you as a rising figure in the shadows.",
+      "backgroundImage": "criminal_hideout",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Plan with a sense of order among your crew",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario29"
+        },
+        "topRight": {
+          "text": "Celebrate your bold success with reckless abandon",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario29"
+        },
+        "bottomLeft": {
+          "text": "Impose a strict code to govern the operation",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario29"
+        },
+        "bottomRight": {
+          "text": "Embrace chaos and incite further mischief",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario29"
+        }
+      }
+    },
+    {
+      "id": "scenario29",
+      "location": "Quiet Reflecting Area",
+      "text": "After a day of diverse experiences, you take a moment to reflect on your journey. Your choices are shaping your destiny.",
+      "backgroundImage": "reflecting_area",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Resolve to follow the path of honor",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario30"
+        },
+        "topRight": {
+          "text": "Embrace the free spirit of adventure",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario30"
+        },
+        "bottomLeft": {
+          "text": "Pursue ambition with calculated resolve",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario30"
+        },
+        "bottomRight": {
+          "text": "Succumb to darker impulses",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario30"
@@ -244,32 +566,32 @@
       }
     },
     {
-      "id": "scenario8",
-      "location": "Town Hall",
-      "text": "Inside the town hall, whispers of corruption mingle with public duty. You decide to act—but whose side are you really on?",
-      "backgroundImage": "town_hall_bg",
+      "id": "scenario30",
+      "location": "Mentor's Cottage",
+      "text": "A wise mentor challenges you to consider the weight of your choices. Your past actions hint at a future of greatness—or ruin.",
+      "backgroundImage": "mentor_cottage",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
-          "text": "Assist an honest clerk",
+          "text": "Dedicate yourself to service and order",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario31"
         },
         "topRight": {
-          "text": "Gather evidence discreetly",
+          "text": "Seek freedom through daring exploits",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario32"
         },
         "bottomLeft": {
-          "text": "Bribe officials for silence",
+          "text": "Pursue wealth and influence with calculated strategy",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario33"
         },
         "bottomRight": {
-          "text": "Blackmail the merchant openly",
+          "text": "Embrace the chaotic side of your nature",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario34"
@@ -277,32 +599,131 @@
       }
     },
     {
-      "id": "scenario9",
-      "location": "Rusty Tavern",
-      "text": "The tavern buzzes with idle chatter and mischief. Here, escape and indulgence are the order of the night.",
-      "backgroundImage": "tavern_bg",
+      "id": "scenario31",
+      "location": "Town Hall",
+      "text": "Following the mentor's advice, you assume a respected role in the community. Your leadership and integrity begin to shape a lasting legacy.",
+      "backgroundImage": "town_hall",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
-          "text": "Help an injured patron",
+          "text": "Implement reforms to uplift the town",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario35"
         },
         "topRight": {
-          "text": "Join a rousing song",
+          "text": "Inspire others with acts of genuine heroism",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario35"
+        },
+        "bottomLeft": {
+          "text": "Maintain order with strict measures",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario35"
+        },
+        "bottomRight": {
+          "text": "Foster community unity with innovative projects",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario35"
+        }
+      }
+    },
+    {
+      "id": "scenario32",
+      "location": "Wilderness Camp",
+      "text": "Embracing a free spirit, you forge ahead as a wandering adventurer. Perils and wonders alike test your resolve.",
+      "backgroundImage": "wilderness_camp",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Seek ancient knowledge from the wild",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario36"
+        },
+        "topRight": {
+          "text": "Forge alliances with fellow adventurers",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario36"
         },
         "bottomLeft": {
-          "text": "Cheat at the dice table",
+          "text": "Face dangerous foes head on",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario36"
+        },
+        "bottomRight": {
+          "text": "Follow your heart into the unknown",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario36"
+        }
+      }
+    },
+    {
+      "id": "scenario33",
+      "location": "Merchant Guild",
+      "text": "Your shrewd tactics have earned you a place among influential merchants. The art of trade and power now lies before you.",
+      "backgroundImage": "merchant_guild",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Establish fair trade deals to build trust",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario37"
+        },
+        "topRight": {
+          "text": "Innovate with creative solutions",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario37"
+        },
+        "bottomLeft": {
+          "text": "Enforce strict market controls",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario37"
         },
         "bottomRight": {
-          "text": "Start a brawl",
+          "text": "Manipulate rivals behind the scenes",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario37"
+        }
+      }
+    },
+    {
+      "id": "scenario34",
+      "location": "Criminal Underworld",
+      "text": "You have embraced the life of an outlaw. The underworld now acknowledges your audacity, and your reputation grows in the shadows.",
+      "backgroundImage": "criminal_underworld",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Plan crimes with disciplined precision",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario38"
+        },
+        "topRight": {
+          "text": "Celebrate reckless exploits for thrill",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario38"
+        },
+        "bottomLeft": {
+          "text": "Impose a strict code among your criminal allies",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario38"
+        },
+        "bottomRight": {
+          "text": "Incite further chaos to build your legend",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario38"
@@ -310,1865 +731,200 @@
       }
     },
     {
-      "id": "scenario10",
-      "location": "Outskirts",
-      "text": "A lost child approaches, trusting you to guide them. Compassion and responsibility war within you.",
-      "backgroundImage": "outskirts_bg",
+      "id": "scenario35",
+      "location": "Council Chamber",
+      "text": "Your leadership has earned you a respected place in the community. Now, your choices will shape your enduring legacy.",
+      "backgroundImage": "council_chamber",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
-          "text": "Guide the child home",
+          "text": "Implement reforms to uplift the town",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario39"
+          "leadsTo": "scenario40"
         },
         "topRight": {
-          "text": "Let the child explore a bit",
+          "text": "Inspire others with acts of genuine heroism",
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario40"
         },
         "bottomLeft": {
-          "text": "Charge a small fee for guidance",
+          "text": "Maintain order with strict measures",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario41"
+          "leadsTo": "scenario40"
         },
         "bottomRight": {
-          "text": "Abandon the child",
+          "text": "Foster community unity with innovative projects",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario42"
-        }
-      }
-    },
-    {
-      "id": "scenario11",
-      "location": "Forest Clearing",
-      "text": "Enchanted by wild music, you find a band of rebels playing under a moonlit sky.",
-      "backgroundImage": "forest_clearing_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Join their noble cause",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario43"
-        },
-        "topRight": {
-          "text": "Dance with abandon",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario44"
-        },
-        "bottomLeft": {
-          "text": "Exploit their secrets",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario45"
-        },
-        "bottomRight": {
-          "text": "Sabotage their efforts",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario46"
-        }
-      }
-    },
-    {
-      "id": "scenario12",
-      "location": "Market Square",
-      "text": "A brawl erupts in the crowded market. You see a chance to profit from the chaos.",
-      "backgroundImage": "market_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Mediate for fairness",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario47"
-        },
-        "topRight": {
-          "text": "Incite further chaos",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario48"
-        },
-        "bottomLeft": {
-          "text": "Manipulate rival leaders",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario49"
-        },
-        "bottomRight": {
-          "text": "Fuel the riot",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario50"
-        }
-      }
-    },
-    {
-      "id": "scenario13",
-      "location": "Abandoned Caravan",
-      "text": "You discover valuable loot in a deserted caravan. The thrill of risk courses through you.",
-      "backgroundImage": "caravan_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Return lost items",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario51"
-        },
-        "topRight": {
-          "text": "Celebrate your freedom",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario52"
-        },
-        "bottomLeft": {
-          "text": "Keep the loot",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario53"
-        },
-        "bottomRight": {
-          "text": "Burn the evidence",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario54"
-        }
-      }
-    },
-    {
-      "id": "scenario14",
-      "location": "Dark Alley",
-      "text": "A beggar’s plight touches you unexpectedly in the gloom. A secret tip hints at a mysterious key.",
-      "backgroundImage": "alley2_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Offer food and shelter",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario55"
-        },
-        "topRight": {
-          "text": "Share his secret",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario56"
-        },
-        "bottomLeft": {
-          "text": "Exploit his trust",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario57"
-        },
-        "bottomRight": {
-          "text": "Steal his coin",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario58"
-        }
-      }
-    },
-    {
-      "id": "scenario15",
-      "location": "Merchant's Estate",
-      "text": "Under cover of night, you slip into a grand estate. A valuable ledger catches your eye.",
-      "backgroundImage": "estate_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Leave a warning note",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario59"
-        },
-        "topRight": {
-          "text": "Liberate hidden wealth",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario60"
-        },
-        "bottomLeft": {
-          "text": "Steal the ledger",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario61"
-        },
-        "bottomRight": {
-          "text": "Set a cunning trap",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario62"
-        }
-      }
-    },
-    {
-      "id": "scenario16",
-      "location": "Noble's Manor",
-      "text": "Inside opulent halls, you begin scheming against a local noble. Every polite smile hides ambition.",
-      "backgroundImage": "manor_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Advise the noble to be cautious",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario63"
-        },
-        "topRight": {
-          "text": "Spread rumors of betrayal",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario64"
-        },
-        "bottomLeft": {
-          "text": "Forge false documents",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario65"
-        },
-        "bottomRight": {
-          "text": "Eliminate a servant",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario66"
-        }
-      }
-    },
-    {
-      "id": "scenario17",
-      "location": "Rival's Tavern",
-      "text": "Your poisoned drink sends your rival into a dire state. The fallout promises opportunity.",
-      "backgroundImage": "tavern2_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Attempt to heal him",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario67"
-        },
-        "topRight": {
-          "text": "Hide the evidence",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario68"
-        },
-        "bottomLeft": {
-          "text": "Extort a reward",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario69"
-        },
-        "bottomRight": {
-          "text": "Relish the chaos",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario70"
-        }
-      }
-    },
-    {
-      "id": "scenario18",
-      "location": "Gritty Alley",
-      "text": "A beggar’s plea touches you even in a harsh world. Compassion flickers in the darkness.",
-      "backgroundImage": "alley3_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Provide shelter and food",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario71"
-        },
-        "topRight": {
-          "text": "Invite him to join your journey",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario72"
-        },
-        "bottomLeft": {
-          "text": "Demand a fee",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario73"
-        },
-        "bottomRight": {
-          "text": "Mock his misfortune",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario74"
-        }
-      }
-    },
-    {
-      "id": "scenario19",
-      "location": "Jailbreak",
-      "text": "You break into a local jail and free a captive. The thrill of rebellion surges within you.",
-      "backgroundImage": "jail_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Escort the freed prisoner to safety",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario75"
-        },
-        "topRight": {
-          "text": "Celebrate the defiance",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario76"
-        },
-        "bottomLeft": {
-          "text": "Demand loyalty in return",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario77"
-        },
-        "bottomRight": {
-          "text": "Incite further chaos",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario78"
-        }
-      }
-    },
-    {
-      "id": "scenario20",
-      "location": "City Hall Confrontation",
-      "text": "Facing corruption head on, you seize ill-gotten funds from a crooked official.",
-      "backgroundImage": "cityhall_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Return funds to the people",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario79"
-        },
-        "topRight": {
-          "text": "Distribute money to the needy",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario80"
-        },
-        "bottomLeft": {
-          "text": "Keep the funds for yourself",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario81"
-        },
-        "bottomRight": {
-          "text": "Cover your tracks with further crime",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario82"
-        }
-      }
-    },
-    {
-      "id": "scenario21",
-      "location": "Dockside Shadows",
-      "text": "Under moonlit docks, you orchestrate the smuggling of contraband. Your choices may even lead you to darker realms.",
-      "backgroundImage": "dock_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Inform authorities anonymously",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario87"
-        },
-        "topRight": {
-          "text": "Aid rebel forces",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario88"
-        },
-        "bottomLeft": {
-          "text": "Sell to the highest bidder",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario89"
-        },
-        "bottomRight": {
-          "text": "Deliver goods to the devil's emissary",
-          "fallbackText": "The opportunity slips away",
-          "condition": {
-            "requiredItem": "infernal_mark",
-            "removeOnUse": false
-          },
-          "leadsTo": {
-            "ifConditionMet": "hell_entry",
-            "ifConditionNotMet": "scenario86"
-          }
-        }
-      }
-    },
-    {
-      "id": "heaven_entry",
-      "location": "Celestial Gate",
-      "text": "Before you stands a radiant door shimmering with divine light—a gateway for those whose deeds have been noble.",
-      "backgroundImage": "heaven_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Enter with a humble heart",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario23"
-        },
-        "topRight": {
-          "text": "Kneel in reverence",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario23"
-        },
-        "bottomLeft": {
-          "text": "Sing praises",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario23"
-        },
-        "bottomRight": {
-          "text": "Offer thanks",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario23"
-        }
-      }
-    },
-    {
-      "id": "scenario23",
-      "location": "Elysian Fields",
-      "text": "You step into a realm of everlasting peace and beauty—a reward for your noble deeds.",
-      "backgroundImage": "elysian_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Explore the divine gardens",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "topRight": {
-          "text": "Meet a wise sage",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Reflect on your journey",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomRight": {
-          "text": "Rest in the meadow",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        }
-      }
-    },
-    {
-      "id": "scenario24",
-      "location": "Healing Grove",
-      "text": "In a secluded grove, you find herbs and a calm spirit that soothes your wounds.",
-      "backgroundImage": "grove_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Collect herbs",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "topRight": {
-          "text": "Rest for a while",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Meditate on your journey",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomRight": {
-          "text": "Continue onward",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        }
-      }
-    },
-    {
-      "id": "scenario25",
-      "location": "Wilderness Betrayal",
-      "text": "Your greed taints the memory of the traveler, leaving a bitter taste of betrayal.",
-      "backgroundImage": "betrayal_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Regret and try to mend your ways",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "topRight": {
-          "text": "Deny your actions",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Embrace your greed",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario29"
-        },
-        "bottomRight": {
-          "text": "Venture forth alone",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario29"
-        }
-      }
-    },
-    {
-      "id": "scenario26",
-      "location": "Desolate Path",
-      "text": "Abandoning the traveler, you wander a lonely road with an unyielding heart.",
-      "backgroundImage": "desolate_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Turn back in remorse",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "topRight": {
-          "text": "Continue without regret",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario29"
-        },
-        "bottomLeft": {
-          "text": "Seek fortune elsewhere",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario29"
-        },
-        "bottomRight": {
-          "text": "Embrace solitude",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario29"
-        }
-      }
-    },
-    {
-      "id": "scenario27",
-      "location": "Mystic Grove",
-      "text": "The forest shrine glows with ethereal light—but a mystical barrier blocks the way.",
-      "backgroundImage": "shrine_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Use the holy_key to unlock the barrier",
-          "fallbackText": "The barrier won’t budge",
-          "condition": {
-            "requiredItem": "holy_key",
-            "removeOnUse": true
-          },
-          "leadsTo": {
-            "ifConditionMet": "heaven_entry",
-            "ifConditionNotMet": "scenario27_fallback"
-          }
-        },
-        "topRight": {
-          "text": "Wait and observe",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Force your way in",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario29"
-        },
-        "bottomRight": {
-          "text": "Deface the shrine",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario30"
-        }
-      }
-    },
-    {
-      "id": "scenario27_fallback",
-      "location": "Mystic Grove",
-      "text": "The barrier remains impenetrable without a sacred key. You must search for it.",
-      "backgroundImage": "shrine_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Search for the holy_key",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario27_key"
-        },
-        "topRight": {
-          "text": "Abandon the shrine",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Call for help",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomRight": {
-          "text": "Sit and wait",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        }
-      }
-    },
-    {
-      "id": "scenario27_key",
-      "location": "Forgotten Crypt",
-      "text": "In a dim crypt, you discover a shimmering holy_key hidden among ancient relics.",
-      "backgroundImage": "crypt_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Take the holy_key",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario27_return"
-        },
-        "topRight": {
-          "text": "Examine the relics",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Ignore the key",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomRight": {
-          "text": "Search deeper",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        }
-      }
-    },
-    {
-      "id": "scenario27_return",
-      "location": "Mystic Grove",
-      "text": "With the holy_key in hand, you return to the mystic shrine.",
-      "backgroundImage": "shrine_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Unlock the barrier",
-          "fallbackText": "It remains sealed",
-          "condition": {
-            "requiredItem": "holy_key",
-            "removeOnUse": true
-          },
-          "leadsTo": "heaven_entry"
-        },
-        "topRight": {
-          "text": "Contemplate its power",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Call out to the spirits",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomRight": {
-          "text": "Walk away",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        }
-      }
-    },
-    {
-      "id": "scenario28",
-      "location": "Crossroads",
-      "text": "At a quiet crossroads, you pause to consider your choices and the consequences of your journey.",
-      "backgroundImage": "crossroads_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Follow the path of honor",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario2"
-        },
-        "topRight": {
-          "text": "Embrace the wild unknown",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario3"
-        },
-        "bottomLeft": {
-          "text": "Pursue personal gain",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario4"
-        },
-        "bottomRight": {
-          "text": "Surrender to darker impulses",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario5"
-        }
-      }
-    },
-    {
-      "id": "scenario29",
-      "location": "Forked Path",
-      "text": "Your choice has led you down a winding road with uncertain outcomes.",
-      "backgroundImage": "forked_path_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Proceed with caution",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "topRight": {
-          "text": "Take a daring leap",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Reconsider your actions",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomRight": {
-          "text": "Embrace fate",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        }
-      }
-    },
-    {
-      "id": "scenario30",
-      "location": "Ruined Shrine",
-      "text": "The desecrated shrine stands as a testament to your chaotic defiance.",
-      "backgroundImage": "ruined_shrine_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Mend your ways",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "topRight": {
-          "text": "Celebrate the ruin",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario29"
-        },
-        "bottomLeft": {
-          "text": "Search for lost relics",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomRight": {
-          "text": "Leave the past behind",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario29"
-        }
-      }
-    },
-    {
-      "id": "scenario31",
-      "location": "Clerk's Office",
-      "text": "By helping a dedicated clerk, you earn trust—and a clue to a deeper corruption.",
-      "backgroundImage": "clerk_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Investigate further",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        },
-        "topRight": {
-          "text": "Report to higher authorities",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        },
-        "bottomLeft": {
-          "text": "Keep the information",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        },
-        "bottomRight": {
-          "text": "Share it with a friend",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        }
-      }
-    },
-    {
-      "id": "scenario32",
-      "location": "Secret Archive",
-      "text": "In a hidden archive, you piece together documents that hint at a vast conspiracy.",
-      "backgroundImage": "archive_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Analyze the documents",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        },
-        "topRight": {
-          "text": "Copy the files",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        },
-        "bottomLeft": {
-          "text": "Hide the files",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        },
-        "bottomRight": {
-          "text": "Destroy the evidence",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        }
-      }
-    },
-    {
-      "id": "scenario33",
-      "location": "Bribery Den",
-      "text": "A shadowy deal unfolds as you bribe officials to keep secrets buried.",
-      "backgroundImage": "bribery_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Insist on fairness",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        },
-        "topRight": {
-          "text": "Embrace corruption",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        },
-        "bottomLeft": {
-          "text": "Demand extra favors",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        },
-        "bottomRight": {
-          "text": "Walk away",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        }
-      }
-    },
-    {
-      "id": "scenario34",
-      "location": "Blackmailer's Nook",
-      "text": "Your open blackmail sends shockwaves through a merchant’s circle.",
-      "backgroundImage": "blackmail_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Confess your misdeeds",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        },
-        "topRight": {
-          "text": "Double down on threats",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        },
-        "bottomLeft": {
-          "text": "Seek a better target",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        },
-        "bottomRight": {
-          "text": "Disappear into the night",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario8"
-        }
-      }
-    },
-    {
-      "id": "scenario35",
-      "location": "Tavern Backroom",
-      "text": "You tend to an injured patron in the backroom, earning quiet gratitude.",
-      "backgroundImage": "backroom_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Offer further help",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario9"
-        },
-        "topRight": {
-          "text": "Accept a small reward",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario9"
-        },
-        "bottomLeft": {
-          "text": "Investigate the injury",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario9"
-        },
-        "bottomRight": {
-          "text": "Quietly exit",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario40"
         }
       }
     },
     {
       "id": "scenario36",
-      "location": "Tavern Stage",
-      "text": "Your rousing song lifts spirits, even as the night grows unpredictable.",
-      "backgroundImage": "stage_bg",
+      "location": "Wilderness Archive",
+      "text": "Deep in the forest, ancient lore reveals secrets of the land. Your discoveries fuel your adventurous spirit.",
+      "backgroundImage": "wilderness_archive",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
-          "text": "Sing another verse",
+          "text": "Study the ancient texts with care",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario40"
         },
         "topRight": {
-          "text": "Raise a toast",
+          "text": "Share your newfound knowledge with allies",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario40"
         },
         "bottomLeft": {
-          "text": "Call for a dance",
+          "text": "Prepare for the dangers ahead",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario40"
         },
         "bottomRight": {
-          "text": "Watch the chaos",
+          "text": "Embrace the thrill of the unknown",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario40"
         }
       }
     },
     {
       "id": "scenario37",
-      "location": "Dice Table",
-      "text": "Your clever cheating wins coins, though suspicion lingers at the table.",
-      "backgroundImage": "dice_bg",
+      "location": "Guild Meeting Hall",
+      "text": "Within the merchant guild, your cunning strategies have secured you influence and power.",
+      "backgroundImage": "guild_meeting",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
-          "text": "Offer to share winnings",
+          "text": "Propose fair trade reforms",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario40"
         },
         "topRight": {
-          "text": "Keep the coin",
+          "text": "Celebrate innovative practices",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario40"
         },
         "bottomLeft": {
-          "text": "Double down",
+          "text": "Enforce strict market controls",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario40"
         },
         "bottomRight": {
-          "text": "Retreat quietly",
+          "text": "Manipulate rivals behind the scenes",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario40"
         }
       }
     },
     {
       "id": "scenario38",
-      "location": "Brawl Pit",
-      "text": "The tavern brawl escalates and you revel in the raw chaos surrounding you.",
-      "backgroundImage": "brawl_bg",
+      "location": "Underground Syndicate",
+      "text": "Your exploits in the criminal underworld have built a fearsome reputation. The shadows now recognize your name.",
+      "backgroundImage": "underground_syndicate",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
-          "text": "Try to calm the fight",
+          "text": "Organize your crew with disciplined planning",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario40"
         },
         "topRight": {
-          "text": "Join the fray",
+          "text": "Celebrate your bold, reckless streak",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario40"
         },
         "bottomLeft": {
-          "text": "Watch from afar",
+          "text": "Enforce a strict code among your allies",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario40"
         },
         "bottomRight": {
-          "text": "Make a quick escape",
+          "text": "Incite chaos for personal gain",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario9"
+          "leadsTo": "scenario40"
         }
       }
     },
     {
       "id": "scenario39",
-      "location": "Safe Path",
-      "text": "You guide the child safely home, and the gratitude in their eyes lightens your heart.",
-      "backgroundImage": "safe_path_bg",
+      "location": "Scholars' Retreat",
+      "text": "A path of knowledge calls, and you explore the arcane arts in a quiet retreat. Wisdom and magic intertwine here.",
+      "backgroundImage": "scholars_retreat",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
-          "text": "Return to your journey",
+          "text": "Study ancient texts and gain wisdom",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario1"
+          "leadsTo": "scenario40"
         },
         "topRight": {
-          "text": "Stay a while longer",
+          "text": "Share your magical insights with fellow scholars",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario1"
+          "leadsTo": "scenario40"
         },
         "bottomLeft": {
-          "text": "Offer more help",
+          "text": "Practice disciplined arcane rituals",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario1"
+          "leadsTo": "scenario40"
         },
         "bottomRight": {
-          "text": "Part ways quietly",
+          "text": "Experiment boldly with forbidden spells",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario1"
+          "leadsTo": "scenario40"
         }
       }
     },
     {
       "id": "scenario40",
-      "location": "Adventurous Trail",
-      "text": "Allowing the child a taste of adventure, you both stumble upon unexpected wonders.",
-      "backgroundImage": "trail_bg",
+      "location": "Future's Threshold",
+      "text": "At the end of your journey, your choices have carved a unique legacy. Whether you stand as a guardian of peace, a daring adventurer, a shrewd merchant, a notorious outlaw, or a scholar of the arcane, the future is yours to shape.",
+      "backgroundImage": "future_threshold",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
-          "text": "Investigate the wonder",
+          "text": "Embrace a future of honor and service",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario1"
+          "leadsTo": "scenario40"
         },
         "topRight": {
-          "text": "Return to safety",
+          "text": "Forge a destiny of bold adventure",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario1"
+          "leadsTo": "scenario40"
         },
         "bottomLeft": {
-          "text": "Share the discovery",
+          "text": "Command with calculated ambition",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario1"
+          "leadsTo": "scenario40"
         },
         "bottomRight": {
-          "text": "Continue onward",
+          "text": "Revel in a life of unpredictable chaos",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario41",
-      "location": "Mistrust Road",
-      "text": "Charging for guidance leaves you with a heavy conscience as the child’s confusion grows.",
-      "backgroundImage": "mistrust_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Offer a refund",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Justify your fee",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Ignore the child's plight",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Reconsider your ways",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario42",
-      "location": "Lonely Path",
-      "text": "Abandoning the child leaves a void within you as you continue your journey alone.",
-      "backgroundImage": "lonely_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Reflect on your choices",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Suppress the guilt",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Walk away faster",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Hide your feelings",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario43",
-      "location": "Rebel Camp",
-      "text": "Joining the rebels, you embrace a noble cause against tyranny.",
-      "backgroundImage": "camp_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Plan a strategic move",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Train with the rebels",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Secure supplies",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Stand guard",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario44",
-      "location": "Moonlit Dance",
-      "text": "Under the stars, you lose yourself in a fleeting, joyous dance.",
-      "backgroundImage": "dance_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Return to reality",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Invite a partner",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Keep dancing",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Rest a while",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario45",
-      "location": "Secret Archive",
-      "text": "Exploiting rebel secrets gives you a dangerous advantage.",
-      "backgroundImage": "secret_archive_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Sell the secrets",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Use them for leverage",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Keep them hidden",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Destroy the documents",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario46",
-      "location": "Sabotaged Camp",
-      "text": "Your act of sabotage disrupts the rebel camp, throwing everything into turmoil.",
-      "backgroundImage": "sabotaged_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Flee the scene",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Hide in the shadows",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Confront the rebels",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Relish the chaos",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario47",
-      "location": "Peaceful Mediation",
-      "text": "Your mediation calms the chaos of the market, even if just for a moment.",
-      "backgroundImage": "mediation_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Seek more harmony",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Encourage dialogue",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Offer practical solutions",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Withdraw quietly",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario48",
-      "location": "Riot's Edge",
-      "text": "You incite further chaos, pushing the market toward a fevered pitch of disorder.",
-      "backgroundImage": "riot_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Step back",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Keep inciting",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Watch the chaos",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Join the riot",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario49",
-      "location": "Backroom Deals",
-      "text": "Manipulating rival leaders in secret, you secure a profitable backroom deal.",
-      "backgroundImage": "backroom_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Seal the deal",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Double-cross them",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Reconsider your tactics",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Celebrate your cunning",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario50",
-      "location": "Flaming Chaos",
-      "text": "Fueling the riot further, you watch as the market burns in a display of symbolic fury.",
-      "backgroundImage": "flames_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Douse the flames",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Stoke the fire",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Escape the chaos",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Stand and watch",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario51",
-      "location": "Restored Honor",
-      "text": "Returning lost items, you feel a measure of redemption as you restore honor.",
-      "backgroundImage": "honor_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Continue with virtue",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Inspire others",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Reflect on your deeds",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Seek new adventures",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario52",
-      "location": "Festive Celebration",
-      "text": "Your freedom brings a burst of celebration. You share joy with newfound friends.",
-      "backgroundImage": "celebration_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Join the festivities",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Sing a song",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Dance away your past",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Retire for the night",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario53",
-      "location": "Stolen Riches",
-      "text": "Keeping the loot, you amass wealth that may soon begin to corrupt your soul.",
-      "backgroundImage": "riches_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Spend it wisely",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Invest in secret schemes",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Hide your fortune",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Show off your spoils",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "scenario54",
-      "location": "Ashes of Evidence",
-      "text": "Burning your tracks, you leave no evidence behind—only smoldering memories.",
-      "backgroundImage": "ashes_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Embrace a clean slate",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "topRight": {
-          "text": "Laugh at your past",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomLeft": {
-          "text": "Contemplate the loss",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        },
-        "bottomRight": {
-          "text": "Move on",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario1"
-        }
-      }
-    },
-    {
-      "id": "hell_entry",
-      "location": "Infernal Gate",
-      "text": "A towering door shrouded in flame and shadow stands before you—beckoning to those who choose darkness.",
-      "backgroundImage": "hell_gate_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Enter the darkness",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "hell_after"
-        },
-        "topRight": {
-          "text": "Embrace infernal power",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "hell_after"
-        },
-        "bottomLeft": {
-          "text": "Accept the unholy pact",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "hell_after"
-        },
-        "bottomRight": {
-          "text": "Step boldly forward",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "hell_after"
-        }
-      }
-    },
-    {
-      "id": "hell_after",
-      "location": "Infernal Abyss",
-      "text": "You descend into a realm of torment and twisted power, where suffering fuels your darkest desires.",
-      "backgroundImage": "infernal_abyss_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Command demonic forces",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "hell_dominion"
-        },
-        "topRight": {
-          "text": "Sow chaos and discord",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "hell_dominion"
-        },
-        "bottomLeft": {
-          "text": "Betray all trust",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "hell_dominion"
-        },
-        "bottomRight": {
-          "text": "Sever ties to mercy",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "hell_dominion"
-        }
-      }
-    },
-    {
-      "id": "hell_dominion",
-      "location": "Demon's Lair",
-      "text": "In the lair of demons, power comes at a steep price. Your dark ambitions find fertile ground here.",
-      "backgroundImage": "demons_lair_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Embrace your fate",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "infernal_conquest"
-        },
-        "topRight": {
-          "text": "Seek infernal riches",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "infernal_conquest"
-        },
-        "bottomLeft": {
-          "text": "Conquer lesser demons",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "infernal_conquest"
-        },
-        "bottomRight": {
-          "text": "Renounce your humanity",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "infernal_conquest"
-        }
-      }
-    },
-    {
-      "id": "infernal_conquest",
-      "location": "Realm of Eternal Night",
-      "text": "Your descent into darkness is complete. In this realm of eternal night, you wield power beyond mortal reckoning.",
-      "backgroundImage": "eternal_night_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Rule with terror",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "topRight": {
-          "text": "Indulge in excess",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Destroy your foes",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomRight": {
-          "text": "Embrace eternal damnation",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        }
-      }
-    },
-    {
-      "id": "scenario86",
-      "location": "Dark Wharf",
-      "text": "Without the infernal mark, your smuggling runs into complications and the authorities close in.",
-      "backgroundImage": "wharf_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Escape the wharf",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "topRight": {
-          "text": "Fight your way out",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Surrender to fate",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomRight": {
-          "text": "Hide in the shadows",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        }
-      }
-    },
-    {
-      "id": "scenario87",
-      "location": "Abandoned Warehouse",
-      "text": "You secretly tip off the authorities, and a crackdown on smuggling begins.",
-      "backgroundImage": "warehouse_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Lay low",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "topRight": {
-          "text": "Flee the city",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Change your identity",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomRight": {
-          "text": "Confront the smugglers",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        }
-      }
-    },
-    {
-      "id": "scenario88",
-      "location": "Rebel Hideout",
-      "text": "You deliver the goods to rebel forces—earning their trust and possibly a valuable reward.",
-      "backgroundImage": "hideout_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Join the rebellion",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "topRight": {
-          "text": "Gain their trust",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Secure a reward",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomRight": {
-          "text": "Plan further mischief",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        }
-      }
-    },
-    {
-      "id": "scenario89",
-      "location": "Underground Market",
-      "text": "You sell the forbidden goods to a shadowy figure and pocket a tidy sum.",
-      "backgroundImage": "market_bg",
-      "isFixedBackground": false,
-      "decisions": {
-        "topLeft": {
-          "text": "Spend the money lavishly",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "topRight": {
-          "text": "Invest in new schemes",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomLeft": {
-          "text": "Hide your fortune",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
-        },
-        "bottomRight": {
-          "text": "Donate anonymously",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario28"
+          "leadsTo": "scenario40"
         }
       }
     }

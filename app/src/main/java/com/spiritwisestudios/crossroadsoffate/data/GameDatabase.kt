@@ -3,20 +3,21 @@ package com.spiritwisestudios.crossroadsoffate.data
 import android.content.Context
 import androidx.room.*
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.spiritwisestudios.crossroadsoffate.data.models.PlayerProgress
-import com.spiritwisestudios.crossroadsoffate.data.models.ScenarioEntity
-import com.spiritwisestudios.crossroadsoffate.data.models.Converters
-import com.spiritwisestudios.crossroadsoffate.data.models.InventoryConverters
+import com.spiritwisestudios.crossroadsoffate.data.models.*
 
-@Database(entities = [ScenarioEntity::class, PlayerProgress::class], version = 2, exportSchema = false)
-@TypeConverters(Converters::class, InventoryConverters::class)
+@Database(
+    entities = [ScenarioEntity::class, PlayerProgress::class],
+    version = 3,
+    exportSchema = false
+)
+@TypeConverters(Converters::class, InventoryConverters::class, QuestConverters::class)
 abstract class GameDatabase : RoomDatabase() {
     abstract fun scenarioDao(): ScenarioDao
     abstract fun playerProgressDao(): PlayerProgressDao
 
     companion object {
         @Volatile
-        internal var INSTANCE: GameDatabase? = null
+        private var INSTANCE: GameDatabase? = null
 
         fun getDatabase(context: Context): GameDatabase {
             return INSTANCE ?: synchronized(this) {
