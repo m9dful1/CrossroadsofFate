@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -21,17 +20,21 @@ import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
 import com.spiritwisestudios.crossroadsoffate.R
 import com.spiritwisestudios.crossroadsoffate.data.models.ScenarioEntity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
+/**
+ * Main game screen composable that handles the display of scenarios, decisions, and UI elements
+ * @param gameViewModel ViewModel containing game logic and state
+ */
 @Composable
 fun MainGameScreen(gameViewModel: GameViewModel) {
+    // Collect state values from the ViewModel
     val isMapVisible = gameViewModel.isMapVisible.collectAsState().value
     val isCharacterMenuVisible = gameViewModel.isCharacterMenuVisible.collectAsState().value
     val playerProgress = gameViewModel.playerProgress.collectAsState().value
     val playerInventory = gameViewModel.playerInventory.collectAsState().value
     var currentScenario by remember { mutableStateOf<ScenarioEntity?>(null) }
 
+    // Load the current scenario based on player progress
     LaunchedEffect(playerProgress?.currentScenarioId) {
         playerProgress?.currentScenarioId?.let { scenarioId ->
             gameViewModel.loadScenarioById(scenarioId) { scenario ->
@@ -40,6 +43,7 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
         }
     }
 
+    // Update quest progress when a scenario is loaded
     LaunchedEffect(currentScenario?.id) {
         currentScenario?.id?.let { scenarioId ->
             // Check for quest objectives that match this scenario
@@ -53,8 +57,10 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
         }
     }
 
+    // Main container for game screen
     Box(modifier = Modifier.fillMaxSize()) {
         currentScenario?.let { scenario ->
+            //
             val backgroundId = when (scenario.backgroundImage) {
                 "hell_bg" -> R.drawable.hell_bg
                 "heaven_bg" -> R.drawable.heaven_bg
@@ -88,6 +94,8 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                 "future_threshold" -> R.drawable.future_threshold
                 else -> R.drawable.default_bg
             }
+
+            // Display background image
             Image(
                 painter = painterResource(id = backgroundId),
                 contentDescription = null,
@@ -95,12 +103,14 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                 contentScale = ContentScale.Crop
             )
 
+            // Display scenario text and decisions
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(
+                    // Apply layout modifiers in specific order for proper layering
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         //.fillMaxWidth()
@@ -136,12 +146,15 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                 }
             }
 
+            // Display decision buttons based on scenario decisions
             scenario.decisions.forEach { (position, decision) ->
+                // Check if the decision has a condition and if the player has the required item
                 val displayText = if (decision.condition?.requiredItem in playerInventory) {
                     decision.text
                 } else {
                     decision.fallbackText ?: decision.text
                 }
+                // Determine the alignment based on the position
                 val alignment = when (position) {
                     "topLeft" -> Alignment.TopStart
                     "topRight" -> Alignment.TopEnd
@@ -150,6 +163,7 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                     else -> Alignment.Center
                 }
 
+                // Display the decision button
                 Box(
                     modifier = Modifier
                         .align(alignment)
@@ -170,22 +184,31 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                 }
             }
 
+            // Display map or character menu if visible
             if (isMapVisible) {
                 MapScreen(
-                    locations = listOf(/* Add your map locations here */),
+                    locations = listOf(
+                        MapLocation(
+                            name = "Town Square",
+                            description = "A bustling marketplace full of traders and goods.",
+                            scenarioId = "town_square_revisit",
+                            isVisited = playerProgress?.visitedLocations?.contains("Market") == true
+                        ),
+                        // Add other locations as needed
+                    ),
                     onBack = { gameViewModel.hideMap() },
                     onLocationSelected = { location ->
-                        // Handle location selection
-                        gameViewModel.hideMap()
+                        gameViewModel.travelToLocation(location)
                     }
                 )
+                // Display character menu
             } else if (isCharacterMenuVisible) {
                 CharacterMenuScreen(
                     onBack = { gameViewModel.hideCharacterMenu() },
                     gameViewModel = gameViewModel
                 )
             } else {
-                // Map Button
+                // Map Screen Button
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -198,7 +221,7 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                         gameViewModel.showMap()                    }
                 }
 
-                // Character Button
+                // Character Menu Button
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopStart)

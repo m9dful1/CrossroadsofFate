@@ -31,9 +31,6 @@ fun CrossroadsOfFateTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        // If you have custom Typography or Shapes, add them here:
-        // typography = Typography,
-        // shapes = Shapes,
         content = content
     )
 }

@@ -543,7 +543,7 @@
           "text": "Resolve to follow the path of honor",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario30"
+          "leadsTo": "scenario41"
         },
         "topRight": {
           "text": "Embrace the free spirit of adventure",
@@ -561,7 +561,7 @@
           "text": "Succumb to darker impulses",
           "fallbackText": null,
           "condition": null,
-          "leadsTo": "scenario30"
+          "leadsTo": "scenario43"
         }
       }
     },
@@ -925,6 +925,249 @@
           "fallbackText": null,
           "condition": null,
           "leadsTo": "scenario40"
+        }
+      }
+    },
+    {
+      "id": "town_square_revisit",
+      "location": "Town Square",
+      "text": "You return to the familiar town square. What would you like to do here?",
+      "backgroundImage": "town_square",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Visit the market",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario7"
+        },
+        "topRight": {
+          "text": "Forge a destiny of bold adventure",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario40"
+        },
+        "bottomLeft": {
+          "text": "Command with calculated ambition",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario40"
+        },
+        "bottomRight": {
+          "text": "Revel in a life of unpredictable chaos",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario40"
+        }
+      }
+    },
+    {
+      "id": "scenario41",
+      "location": "Sacred Temple Approach",
+      "text": "Your unwavering commitment to honor has led you to the outskirts of a remote hill. Here, an ancient temple stands bathed in divine light. Rumors whisper that only the righteous may unlock the Celestial Door.",
+      "backgroundImage": "sacred_temple_approach",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Approach the temple with reverence",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario42"
+        },
+        "topRight": {
+          "text": "Seek counsel from a wise elder at the temple",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario42"
+        },
+        "bottomLeft": {
+          "text": "Examine ancient inscriptions for guidance",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario42"
+        },
+        "bottomRight": {
+          "text": "Steady your resolve and step forward",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario42"
+        }
+      }
+    },
+    {
+      "id": "scenario42",
+      "location": "Celestial Door",
+      "text": "Before you stands a radiant door adorned with angelic symbols. Your _holy_key_ glows as a testament to your noble deeds. With careful determination, you unlock the door.",
+      "backgroundImage": "celestial_door",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Enter the realm of eternal light",
+          "fallbackText": "You lack the holy_key.",
+          "condition": {
+            "requiredItem": "holy_key",
+            "removeOnUse": false
+          },
+          "leadsTo": {
+            "ifConditionMet": "scenario45",
+            "ifConditionNotMet": "scenario41"
+          }
+        },
+        "topRight": {
+          "text": "Kneel in humble gratitude before entering",
+          "fallbackText": null,
+          "condition": {
+            "requiredItem": "holy_key",
+            "removeOnUse": false
+          },
+          "leadsTo": {
+            "ifConditionMet": "scenario45",
+            "ifConditionNotMet": "scenario41"
+          }
+        },
+        "bottomLeft": {
+          "text": "Step forward with unwavering faith",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario41"
+        },
+        "bottomRight": {
+          "text": "Reflect on your journey and then enter",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario41"
+        }
+      }
+    },
+    {
+      "id": "scenario43",
+      "location": "Cursed Ruin Approach",
+      "text": "Your darker impulses have led you to a forsaken ruin. Amid crumbling stone and eerie whispers, a cursed portal is said to lie hidden—a gateway to untold power and peril.",
+      "backgroundImage": "cursed_ruin_approach",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Venture deeper into the ruin",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario44"
+        },
+        "topRight": {
+          "text": "Consult a sinister cult member for guidance",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario44"
+        },
+        "bottomLeft": {
+          "text": "Examine ominous carvings on the walls",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario44"
+        },
+        "bottomRight": {
+          "text": "Steady your dark resolve and press on",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario44"
+        }
+      }
+    },
+    {
+      "id": "scenario44",
+      "location": "Infernal Portal",
+      "text": "In a shadowed chamber, a portal pulsates with malevolent energy. Your _infernal_mark_ burns on your skin, fueling your dark ambition. With grim determination, you force open the portal.",
+      "backgroundImage": "infernal_portal",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Step through into the realm of shadows",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario46"
+        },
+        "topRight": {
+          "text": "Command the darkness to yield",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario46"
+        },
+        "bottomLeft": {
+          "text": "Embrace the infernal power within you",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario46"
+        },
+        "bottomRight": {
+          "text": "Let chaos consume you as you enter",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario46"
+        }
+      }
+    },
+    {
+      "id": "scenario45",
+      "location": "Eternal Celestial Court",
+      "text": "You emerge into a realm of divine serenity. In the Eternal Celestial Court, your legacy of honor, service, and compassion is celebrated, and you are entrusted with guiding future heroes.",
+      "backgroundImage": "eternal_court",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Accept new quests to protect the realm",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario45"
+        },
+        "topRight": {
+          "text": "Counsel mortal heroes with divine wisdom",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario45"
+        },
+        "bottomLeft": {
+          "text": "Uphold eternal justice in all corners",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario45"
+        },
+        "bottomRight": {
+          "text": "Rest in the peace of your everlasting legacy",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario45"
+        }
+      }
+    },
+    {
+      "id": "scenario46",
+      "location": "Abyssal Throne",
+      "text": "You stand upon the Abyssal Throne, ruling over a realm of dark ambition and ruthless power. Your journey has led you to eternal dominion in a land where chaos and cruelty reign supreme.",
+      "backgroundImage": "abyssal_throne",
+      "isFixedBackground": false,
+      "decisions": {
+        "topLeft": {
+          "text": "Expand your dominion with calculated terror",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario46"
+        },
+        "topRight": {
+          "text": "Forge alliances with fearsome demons",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario46"
+        },
+        "bottomLeft": {
+          "text": "Crush any opposition without mercy",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario46"
+        },
+        "bottomRight": {
+          "text": "Revel in the endless night of your reign",
+          "fallbackText": null,
+          "condition": null,
+          "leadsTo": "scenario46"
         }
       }
     }
