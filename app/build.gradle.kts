@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.spiritwisestudios.crossroadsoffate"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.spiritwisestudios.crossroadsoffate"
@@ -88,6 +88,9 @@ dependencies {
 
     // JSON parsing
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // Timber for logging
+    implementation("com.jakewharton.timber:timber:5.0.1")
 
     // For the 'viewModel()' function in Compose:
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")

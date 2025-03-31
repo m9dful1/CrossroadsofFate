@@ -119,6 +119,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
+     * Navigates to the title screen.
+     * Convenience method with same functionality as returnToTitle.
+     */
+    fun navigateToTitleScreen() {
+        returnToTitle()
+    }
+
+    /**
      * Saves current game progress to database
      */
     private fun saveProgress() {
