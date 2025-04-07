@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import androidx.room.ProvidedTypeConverter
 
 /**
  * Entity class representing a scenario in the game.
@@ -28,8 +29,10 @@ data class ScenarioEntity(
  */
 data class Decision(
     val text: String,           // Text displayed for this decision
-    val fallbackText: String?,  // Alternative text shown if condition not met
-    val condition: Condition?,  // Optional condition that must be met
+    // Alternative text shown if condition not met
+    val fallbackText: String? = null,  // Text shown if condition not met
+    // Optional condition that must be met
+    val condition: Condition? = null,  // Condition required for this decision
     val leadsTo: LeadsTo       // Where this decision leads to
 )
 
@@ -58,6 +61,7 @@ sealed class LeadsTo {
  * Room type converters for complex data types.
  * Handles conversion between objects and strings for database storage.
  */
+@ProvidedTypeConverter
 class Converters {
     // Configure Gson with custom LeadsTo deserializer and null handling
     private val gson = GsonBuilder()

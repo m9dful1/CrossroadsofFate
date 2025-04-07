@@ -1049,26 +1049,50 @@
         "topLeft": {
           "text": "Venture deeper into the ruin",
           "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario44"
+          "condition": {
+            "requiredItem": "infernal_mark",
+            "removeOnUse": false
+          },
+          "leadsTo": {
+            "ifConditionMet": "scenario44",
+            "ifConditionNotMet": "scenario29"
+          }
         },
         "topRight": {
           "text": "Consult a sinister cult member for guidance",
           "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario44"
+          "condition": {
+            "requiredItem": "infernal_mark",
+            "removeOnUse": false
+          },
+          "leadsTo": {
+            "ifConditionMet": "scenario44",
+            "ifConditionNotMet": "scenario29"
+          }
         },
         "bottomLeft": {
           "text": "Examine ominous carvings on the walls",
           "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario44"
+          "condition": {
+            "requiredItem": "infernal_mark",
+            "removeOnUse": false
+          },
+          "leadsTo": {
+            "ifConditionMet": "scenario44",
+            "ifConditionNotMet": "scenario29"
+          }
         },
         "bottomRight": {
           "text": "Steady your dark resolve and press on",
           "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario44"
+          "condition": {
+            "requiredItem": "infernal_mark",
+            "removeOnUse": false
+          },
+          "leadsTo": {
+            "ifConditionMet": "scenario44",
+            "ifConditionNotMet": "scenario29"
+          }
         }
       }
     },

@@ -61,7 +61,10 @@ abstract class GameDatabase : RoomDatabase() {
             "game_database"
         )
         .fallbackToDestructiveMigration()         // Recreate database if migration fails
-        .addTypeConverter(VisitedLocationsConverter()) // Add custom type converter
+        .addTypeConverter(Converters())           // Add scenario converters
+        .addTypeConverter(InventoryConverters())  // Add inventory converters
+        .addTypeConverter(QuestConverters())      // Add quest converters
+        .addTypeConverter(VisitedLocationsConverter()) // Add visited locations converter
         .addCallback(object : Callback() {
             // Enable foreign key support when database is created
             override fun onCreate(db: SupportSQLiteDatabase) {

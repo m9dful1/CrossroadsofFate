@@ -4,11 +4,14 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     // Needed for Room annotation processing
     id("org.jetbrains.kotlin.kapt")
+    id("com.google.devtools.ksp")
+    // Add the Compose Compiler plugin
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
 }
 
 android {
     namespace = "com.spiritwisestudios.crossroadsoffate"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.spiritwisestudios.crossroadsoffate"
@@ -39,27 +42,30 @@ android {
     // Ensure your sourceCompatibility/targetCompatibility match recommended Java versions.
     // Compose 1.5.1 works with Java 1.8 or higher. Java 17 is recommended.
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
 
     // Enable Compose
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        // IMPORTANT: Must match the Compose version used in your version catalog.
-        // e.g., if you're using Compose BOM 2023.08.00 or 1.5.1, set this accordingly.
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
 
     // Exclude certain resources from packaging if needed
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+    
+    // Robolectric configuration
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
         }
     }
 }
@@ -82,18 +88,19 @@ dependencies {
     implementation(libs.androidx.material3)         // e.g. androidx.compose.material3:material3
 
     // Room for database
-    implementation("androidx.room:room-runtime:2.6.1")
-    kapt("androidx.room:room-compiler:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.junit.ktx)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
 
     // JSON parsing
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation(libs.gson)
 
     // Timber for logging
-    implementation("com.jakewharton.timber:timber:5.0.1")
+    implementation(libs.timber)
 
     // For the 'viewModel()' function in Compose:
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     // Test dependencies
     testImplementation(libs.junit)
@@ -103,4 +110,37 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-}
+
+    // Testing dependencies
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.androidx.core.testing)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.core)
+    testImplementation(libs.androidx.runner)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.mockk)
+    
+    // Room testing
+    testImplementation(libs.androidx.room.testing)
+    testImplementation(libs.androidx.junit)
+    testImplementation(libs.androidx.truth)
+
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.kotlin.stdlib)
+    testImplementation(libs.kotlinx.coroutines.core)
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlin.test.junit)
+    
+    // Android instrumented tests
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.ui.test.junit4)
+    androidTestImplementation(libs.androidx.rules)
+    androidTestImplementation(libs.androidx.benchmark.junit4)
+    
+    // Debug dependencies for tests
+    debugImplementation(libs.ui.test.manifest)
+    }

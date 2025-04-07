@@ -27,6 +27,7 @@ package com.spiritwisestudios.crossroadsoffate.data.models
     )
 
     // Converter class for handling Quest list serialization/deserialization
+    @ProvidedTypeConverter
     class QuestConverters {
         // Convert List<Quest> to JSON string for storage
         @TypeConverter
@@ -41,6 +42,7 @@ package com.spiritwisestudios.crossroadsoffate.data.models
     }
 
     // Converter class for handling inventory list serialization/deserialization
+    @ProvidedTypeConverter
     class InventoryConverters {
         // Convert List<String> to JSON string for storage
         @TypeConverter
