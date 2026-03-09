@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     // Needed for Room annotation processing
-    id("org.jetbrains.kotlin.kapt")
     id("com.google.devtools.ksp")
     // Add the Compose Compiler plugin
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
@@ -54,6 +53,10 @@ android {
         compose = true
     }
 
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.1"
+    }
+
     // Exclude certain resources from packaging if needed
     packaging {
         resources {
@@ -69,9 +72,7 @@ android {
         }
     }
 }
-kapt {
-    correctErrorTypes = true
-}
+
 // Declare your dependencies, referencing version-catalog entries where possible
 dependencies {
     // Core AndroidX libraries
@@ -143,4 +144,4 @@ dependencies {
     
     // Debug dependencies for tests
     debugImplementation(libs.ui.test.manifest)
-    }
+}

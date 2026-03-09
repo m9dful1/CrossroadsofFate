@@ -12,20 +12,16 @@ import kotlinx.coroutines.withContext
  * Handles persistence of game scenarios and player progress.
  */
 @Database(
-    entities = [ScenarioEntity::class, PlayerProgress::class], // Define database entities
-    version = 6,                                               // Database version for migrations
+    entities = [ScenarioEntity::class, PlayerProgress::class, InteractiveMapLocation::class], // Define database entities
+    version = 11,                                               // Database version for migrations
     exportSchema = false                                       // Don't export database schema
 )
-@TypeConverters(
-    Converters::class,              // For scenario-related conversions
-    InventoryConverters::class,     // For player inventory conversions
-    QuestConverters::class,         // For quest data conversions
-    VisitedLocationsConverter::class // For visited locations conversions
-)
+@TypeConverters(Converters::class)
 abstract class GameDatabase : RoomDatabase() {
     // Data Access Objects (DAOs) for database operations
     abstract fun scenarioDao(): ScenarioDao
     abstract fun playerProgressDao(): PlayerProgressDao
+    abstract fun interactiveMapLocationDao(): InteractiveMapLocationDao
 
     companion object {
         // Singleton instance of the database
@@ -61,10 +57,7 @@ abstract class GameDatabase : RoomDatabase() {
             "game_database"
         )
         .fallbackToDestructiveMigration()         // Recreate database if migration fails
-        .addTypeConverter(Converters())           // Add scenario converters
-        .addTypeConverter(InventoryConverters())  // Add inventory converters
-        .addTypeConverter(QuestConverters())      // Add quest converters
-        .addTypeConverter(VisitedLocationsConverter()) // Add visited locations converter
+        .addTypeConverter(Converters())           // Provide the type converter instance
         .addCallback(object : Callback() {
             // Enable foreign key support when database is created
             override fun onCreate(db: SupportSQLiteDatabase) {

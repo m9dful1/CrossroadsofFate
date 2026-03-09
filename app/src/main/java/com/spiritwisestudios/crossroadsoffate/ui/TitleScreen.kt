@@ -2,6 +2,7 @@ package com.spiritwisestudios.crossroadsoffate.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,7 +29,8 @@ import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
 fun TitleScreen(
     onNewGame: () -> Unit,
     onLoadGame: () -> Unit,
-    onShowErrorLogger: () -> Unit
+    onShowErrorLogger: () -> Unit,
+    onShowDebugMenu: () -> Unit = {}
 ) {
     // Root container filling the entire screen
     Box(modifier = Modifier.fillMaxSize()) {
@@ -95,6 +97,17 @@ fun TitleScreen(
                 text = "Error Logger",
                 modifier = Modifier.padding(vertical = 8.dp)
             ) { onShowErrorLogger() }
+
+            Spacer(modifier = Modifier.height(32.dp))
+            Text(
+                text = "Debug Menu",
+                fontSize = 12.sp,
+                color = Color.White.copy(alpha = 0.4f),
+                modifier = Modifier
+                    .clickable { onShowDebugMenu() }
+                    .padding(8.dp),
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

@@ -3,6 +3,7 @@ package com.spiritwisestudios.crossroadsoffate.ui
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -199,21 +200,5 @@ fun ErrorLoggerScreen(
                 Text("Back")
             }
         }
-    }
-}
-
-@Composable
-fun Row(
-    modifier: Modifier = Modifier,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
-    verticalAlignment: Alignment.Vertical = Alignment.Top,
-    content: @Composable () -> Unit
-) {
-    androidx.compose.foundation.layout.Row(
-        modifier = modifier,
-        horizontalArrangement = horizontalArrangement,
-        verticalAlignment = verticalAlignment
-    ) {
-        content()
     }
 } 

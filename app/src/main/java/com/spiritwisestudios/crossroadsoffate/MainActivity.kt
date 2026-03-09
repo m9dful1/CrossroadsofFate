@@ -1,118 +1,119 @@
 package com.spiritwisestudios.crossroadsoffate
 
-    import android.os.Bundle
-    import androidx.activity.ComponentActivity
-    import androidx.activity.compose.setContent
-    import androidx.compose.runtime.collectAsState
-    import androidx.compose.runtime.getValue
-    import androidx.compose.runtime.mutableStateOf
-    import androidx.compose.runtime.remember
-    import androidx.compose.runtime.setValue
-    import androidx.lifecycle.lifecycleScope
-    import androidx.lifecycle.viewmodel.compose.viewModel
-    import com.spiritwisestudios.crossroadsoffate.data.GameDatabase
-    import com.spiritwisestudios.crossroadsoffate.ui.ErrorLoggerScreen
-    import com.spiritwisestudios.crossroadsoffate.ui.MainGameScreen
-    import com.spiritwisestudios.crossroadsoffate.ui.TitleScreen
-    import com.spiritwisestudios.crossroadsoffate.ui.theme.CrossroadsOfFateTheme
-    import com.spiritwisestudios.crossroadsoffate.util.ErrorLogger
-    import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
-    import kotlinx.coroutines.Dispatchers
-    import kotlinx.coroutines.launch
-    import kotlinx.coroutines.withContext
-    import timber.log.Timber
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.lifecycleScope
+import com.spiritwisestudios.crossroadsoffate.data.GameDatabase
+import com.spiritwisestudios.crossroadsoffate.repository.GameRepository
+import com.spiritwisestudios.crossroadsoffate.ui.DebugMenuScreen
+import com.spiritwisestudios.crossroadsoffate.ui.ErrorLoggerScreen
+import com.spiritwisestudios.crossroadsoffate.ui.MainGameScreen
+import com.spiritwisestudios.crossroadsoffate.ui.TitleScreen
+import com.spiritwisestudios.crossroadsoffate.ui.theme.CrossroadsOfFateTheme
+import com.spiritwisestudios.crossroadsoffate.util.ErrorLogger
+import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
+import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModelFactory
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
-    /**
-     * Main activity class for the Crossroads of Fate game.
-     * Handles initialization of the game UI and manages navigation between screens.
-     */
-    class MainActivity : ComponentActivity() {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
+class MainActivity : ComponentActivity() {
+    private var gameViewModel: GameViewModel? = null
 
-            // Log application startup
-            Timber.i("Application started")
-            ErrorLogger.logInfo("MainActivity created")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-            setContent {
-                // Apply the game's theme to all content
-                CrossroadsOfFateTheme {
-                    // Initialize the GameViewModel to manage game state
-                    val gameViewModel: GameViewModel = viewModel()
-                    // Observe whether we're on the title screen
-                    val isOnTitleScreen by gameViewModel.isOnTitleScreen.collectAsState()
-                    
-                    // State to track if error logger screen is shown
-                    var showErrorLogger by remember { mutableStateOf(false) }
-                    
-                    when {
-                        showErrorLogger -> {
-                            // Show error logger screen
-                            ErrorLoggerScreen(
-                                onBackClick = { 
-                                    showErrorLogger = false
-                                    // Return to title screen
-                                    if (!isOnTitleScreen) {
-                                        gameViewModel.navigateToTitleScreen()
-                                    }
+        Timber.i("Application started")
+        ErrorLogger.logInfo("MainActivity created")
+
+        setContent {
+            CrossroadsOfFateTheme {
+                val repository = GameRepository(GameDatabase.getDatabase(application), application)
+                val viewModelFactory = GameViewModelFactory(application, repository)
+                val viewModel: GameViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = viewModelFactory)
+                gameViewModel = viewModel
+                val isOnTitleScreen by viewModel.isOnTitleScreen.collectAsState()
+
+                var showErrorLogger by remember { mutableStateOf(false) }
+                var showDebugMenu by remember { mutableStateOf(false) }
+
+                when {
+                    showDebugMenu -> {
+                        DebugMenuScreen(
+                            gameViewModel = viewModel,
+                            onBack = {
+                                viewModel.debugEndSession()
+                                showDebugMenu = false
+                            },
+                            onShowErrorLogger = {
+                                showDebugMenu = false
+                                showErrorLogger = true
+                            }
+                        )
+                    }
+                    showErrorLogger -> {
+                        ErrorLoggerScreen(
+                            onBackClick = {
+                                showErrorLogger = false
+                                if (!isOnTitleScreen) {
+                                    viewModel.navigateToTitleScreen()
                                 }
-                            )
-                        }
-                        isOnTitleScreen -> {
-                            // Show title screen
-                            TitleScreen(
-                                // Handle new game button click
-                                onNewGame = {
-                                    lifecycleScope.launch {
-                                        try {
-                                            // Clear existing game data in background
-                                            withContext(Dispatchers.IO) {
-                                                GameDatabase.clearDatabase(applicationContext)
-                                            }
-                                            // Start fresh game
-                                            gameViewModel.startNewGame()
-                                        } catch (e: Exception) {
-                                            // Log any errors during game initialization
-                                            ErrorLogger.logException(e, "Failed to start new game")
-                                        }
-                                    }
-                                },
-                                // Handle load game button click
-                                onLoadGame = {
+                            }
+                        )
+                    }
+                    isOnTitleScreen -> {
+                        TitleScreen(
+                            onNewGame = {
+                                lifecycleScope.launch {
                                     try {
-                                        gameViewModel.loadGame()
+                                        viewModel.startNewGame()
                                     } catch (e: Exception) {
-                                        // Log any errors during game loading
-                                        ErrorLogger.logException(e, "Failed to load game")
+                                        ErrorLogger.logException(e, "Failed to start new game")
                                     }
-                                },
-                                // Add new option to view error logger
-                                onShowErrorLogger = {
-                                    showErrorLogger = true
                                 }
-                            )
-                        }
-                        else -> {
-                            // Display main game screen with current game state
-                            MainGameScreen(gameViewModel = gameViewModel)
-                        }
+                            },
+                            onLoadGame = {
+                                try {
+                                    viewModel.loadGame()
+                                } catch (e: Exception) {
+                                    ErrorLogger.logException(e, "Failed to load game")
+                                }
+                            },
+                            onShowErrorLogger = {
+                                showErrorLogger = true
+                            },
+                            onShowDebugMenu = {
+                                showDebugMenu = true
+                            }
+                        )
+                    }
+                    else -> {
+                        MainGameScreen(gameViewModel = viewModel)
                     }
                 }
             }
         }
-        
-        override fun onResume() {
-            super.onResume()
-            Timber.d("MainActivity resumed")
-        }
-        
-        override fun onPause() {
-            super.onPause()
-            Timber.d("MainActivity paused")
-        }
-        
-        override fun onDestroy() {
-            super.onDestroy()
-            Timber.d("MainActivity destroyed")
-        }
     }
+
+    override fun onResume() {
+        super.onResume()
+        gameViewModel?.onLifecycleResume()
+        Timber.d("MainActivity resumed")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        gameViewModel?.onLifecyclePause()
+        Timber.d("MainActivity paused")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Timber.d("MainActivity destroyed")
+    }
+}

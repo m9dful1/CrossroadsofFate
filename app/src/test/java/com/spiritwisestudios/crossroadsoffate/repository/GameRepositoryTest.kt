@@ -31,9 +31,6 @@ class GameRepositoryTest {
             context, GameDatabase::class.java
         )
         .addTypeConverter(Converters())
-        .addTypeConverter(InventoryConverters())
-        .addTypeConverter(QuestConverters())
-        .addTypeConverter(VisitedLocationsConverter())
         .fallbackToDestructiveMigration()
         .build()
         

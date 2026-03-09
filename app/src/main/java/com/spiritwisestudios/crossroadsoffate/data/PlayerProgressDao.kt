@@ -1,6 +1,9 @@
 package com.spiritwisestudios.crossroadsoffate.data
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import com.spiritwisestudios.crossroadsoffate.data.models.PlayerProgress
 
 /**
@@ -19,36 +22,16 @@ interface PlayerProgressDao {
     suspend fun getPlayerProgress(playerId: String): PlayerProgress?
 
     /**
-     * Inserts a new player progress record into the database.
+     * Inserts or replaces player progress.
      * If a record with the same playerId exists, it will be replaced.
-     *
-     * @param playerProgress The progress data to insert
-     * @return Row ID of the inserted record
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPlayerProgress(playerProgress: PlayerProgress): Long
+    suspend fun insertOrUpdate(progress: PlayerProgress)
 
     /**
-     * Updates an existing player progress record.
-     *
-     * @param playerProgress The progress data to update
+     * Deletes all player progress records from the database.
+     * Used for resetting game state.
      */
-    @Update
-    suspend fun updatePlayerProgress(playerProgress: PlayerProgress)
-
-    /**
-     * Atomically inserts or updates player progress.
-     * If a record exists for the player, it updates it; otherwise creates a new record.
-     *
-     * @param progress The player progress to insert or update
-     */
-    @Transaction
-    suspend fun insertOrUpdate(progress: PlayerProgress) {
-        val existing = getPlayerProgress(progress.playerId)
-        if (existing == null) {
-            insertPlayerProgress(progress)
-        } else {
-            updatePlayerProgress(progress)
-        }
-    }
+    @Query("DELETE FROM player_progress")
+    suspend fun deleteAll()
 }

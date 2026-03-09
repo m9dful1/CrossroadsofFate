@@ -31,6 +31,18 @@
           "condition": null,
           "leadsTo": "scenario3"
         }
+      },
+      "statsGranted": {
+        "topLeft": { "wisdom": 1 },
+        "topRight": { "charisma": 1 },
+        "bottomLeft": { "strength": 1 },
+        "bottomRight": { "cunning": 1 }
+      },
+      "reputationChanges": {
+        "topLeft": { "scholar": 1 },
+        "topRight": { "merchant": 1 },
+        "bottomLeft": { "guard": 1 },
+        "bottomRight": { "underworld": 1 }
       }
     },
     {
@@ -168,7 +180,7 @@
     {
       "id": "scenario6",
       "location": "Town Square",
-      "text": "The square teems with vendors, performers, and neighbors. Small interactions here can set your path.",
+      "text": "The square teems with vendors, performers, and neighbors. {rep:guard:1:The guards pay you no attention as you pass.|The guards nod respectfully as you walk by.} Small interactions here can set your path.",
       "backgroundImage": "town_square",
       "isFixedBackground": false,
       "decisions": {
@@ -196,6 +208,15 @@
           "condition": null,
           "leadsTo": "scenario7"
         }
+      },
+      "statsGranted": {
+        "topLeft": { "charisma": 1 },
+        "bottomRight": { "cunning": 1 }
+      },
+      "reputationChanges": {
+        "topLeft": { "guard": 1 },
+        "topRight": { "merchant": 1 },
+        "bottomRight": { "underworld": 1 }
       }
     },
     {
@@ -233,12 +254,21 @@
       "itemGiven": {
         "topLeft": "holy_key",
         "bottomRight": "infernal_mark"
+      },
+      "statsGranted": {
+        "topLeft": { "strength": 1 },
+        "bottomRight": { "cunning": 1 }
+      },
+      "reputationChanges": {
+        "topLeft": { "merchant": 1 },
+        "bottomLeft": { "merchant": 1 },
+        "bottomRight": { "underworld": 1, "guard": -1 }
       }
     },
     {
       "id": "scenario8",
       "location": "Town Crossroads",
-      "text": "Leaving the market, you find yourself at a figurative crossroads. Your next choice will set your career path.",
+      "text": "Leaving the market, you find yourself at a figurative crossroads. You feel your strengths crystallizing — strength at {stat:strength}, wisdom at {stat:wisdom}. Your next choice will set your career path.",
       "backgroundImage": "town_crossroads",
       "isFixedBackground": false,
       "decisions": {
@@ -266,6 +296,18 @@
           "condition": null,
           "leadsTo": "scenario12"
         }
+      },
+      "statsGranted": {
+        "topLeft": { "strength": 2 },
+        "topRight": { "wisdom": 2 },
+        "bottomLeft": { "charisma": 2 },
+        "bottomRight": { "cunning": 2 }
+      },
+      "reputationChanges": {
+        "topLeft": { "guard": 3 },
+        "topRight": { "scholar": 3 },
+        "bottomLeft": { "merchant": 3 },
+        "bottomRight": { "underworld": 3 }
       }
     },
     {
@@ -370,7 +412,7 @@
     {
       "id": "scenario12",
       "location": "Shadowed Alley",
-      "text": "Embracing the outlaw’s life, you navigate the underbelly of town with cunning and audacity.",
+      "text": "{rep:underworld:2:You step cautiously into the shadowed alley, an outsider in this world.|The shadows welcome you like an old friend as you navigate the underbelly of town with cunning and audacity.}",
       "backgroundImage": "shadow_alley",
       "isFixedBackground": false,
       "decisions": {
@@ -394,10 +436,16 @@
         },
         "bottomRight": {
           "text": "Embrace chaos and incite fear for personal gain",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario16"
+          "fallbackText": "The underworld doesn't respect you enough to follow",
+          "condition": { "requiredReputation": "underworld", "minReputationValue": 2 },
+          "leadsTo": { "ifConditionMet": "scenario16", "ifConditionNotMet": "scenario12" }
         }
+      },
+      "reputationChanges": {
+        "topLeft": { "underworld": 1 },
+        "topRight": { "underworld": 1 },
+        "bottomLeft": { "underworld": 1, "guard": -1 },
+        "bottomRight": { "underworld": 2, "guard": -2 }
       }
     },
     {
@@ -409,9 +457,9 @@
       "decisions": {
         "topLeft": {
           "text": "Intervene gently to help an innocent",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario29"
+          "fallbackText": "The guards don't trust you enough to intervene",
+          "condition": { "requiredReputation": "guard", "minReputationValue": 2 },
+          "leadsTo": { "ifConditionMet": "scenario29", "ifConditionNotMet": "scenario13" }
         },
         "topRight": {
           "text": "Use creative tactics to defuse the threat",
@@ -431,6 +479,12 @@
           "condition": null,
           "leadsTo": "scenario29"
         }
+      },
+      "reputationChanges": {
+        "topLeft": { "guard": 1 },
+        "topRight": { "scholar": 1 },
+        "bottomLeft": { "guard": 1 },
+        "bottomRight": { "guard": 1, "underworld": -1 }
       }
     },
     {
@@ -568,7 +622,7 @@
     {
       "id": "scenario30",
       "location": "Mentor's Cottage",
-      "text": "A wise mentor challenges you to consider the weight of your choices. Your past actions hint at a future of greatness—or ruin.",
+      "text": "A wise mentor challenges you to consider the weight of your choices. {stat:wisdom:3:The mentor senses you still have much to learn.|The mentor nods, recognizing your considerable wisdom.}",
       "backgroundImage": "mentor_cottage",
       "isFixedBackground": false,
       "decisions": {
@@ -592,9 +646,15 @@
         },
         "bottomRight": {
           "text": "Embrace the chaotic side of your nature",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario34"
+          "fallbackText": "You lack the cunning to embrace chaos",
+          "condition": {
+            "requiredStat": "cunning",
+            "minStatValue": 2
+          },
+          "leadsTo": {
+            "ifConditionMet": "scenario34",
+            "ifConditionNotMet": "scenario30"
+          }
         }
       }
     },
@@ -733,15 +793,15 @@
     {
       "id": "scenario35",
       "location": "Council Chamber",
-      "text": "Your leadership has earned you a respected place in the community. Now, your choices will shape your enduring legacy.",
+      "text": "Your leadership has earned you a respected place in the community. {stat:charisma:3:You sense the council watches you guardedly.|Your charisma fills the room with confidence.} Now, your choices will shape your enduring legacy.",
       "backgroundImage": "council_chamber",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
           "text": "Implement reforms to uplift the town",
-          "fallbackText": null,
-          "condition": null,
-          "leadsTo": "scenario40"
+          "fallbackText": "You lack the scholarly insight to propose reforms",
+          "condition": { "requiredReputation": "scholar", "minReputationValue": 2 },
+          "leadsTo": { "ifConditionMet": "scenario40", "ifConditionNotMet": "scenario35" }
         },
         "topRight": {
           "text": "Inspire others with acts of genuine heroism",
@@ -761,6 +821,12 @@
           "condition": null,
           "leadsTo": "scenario40"
         }
+      },
+      "reputationChanges": {
+        "topLeft": { "scholar": 1 },
+        "topRight": { "guard": 1 },
+        "bottomLeft": { "guard": 1 },
+        "bottomRight": { "merchant": 1 }
       }
     },
     {
@@ -997,16 +1063,18 @@
     {
       "id": "scenario42",
       "location": "Celestial Door",
-      "text": "Before you stands a radiant door adorned with angelic symbols. Your _holy_key_ glows as a testament to your noble deeds. With careful determination, you unlock the door.",
+      "text": "Before you stands a radiant door adorned with angelic symbols.{if:has:holy_key} Your Holy Key glows as a testament to your noble deeds.{/if}{if:!has:holy_key} You sense a powerful force behind the door, but something is missing.{/if}",
       "backgroundImage": "celestial_door",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
           "text": "Enter the realm of eternal light",
-          "fallbackText": "You lack the holy_key.",
+          "fallbackText": "You lack the holy_key or wisdom to enter.",
           "condition": {
             "requiredItem": "holy_key",
-            "removeOnUse": false
+            "removeOnUse": false,
+            "requiredStat": "wisdom",
+            "minStatValue": 3
           },
           "leadsTo": {
             "ifConditionMet": "scenario45",
@@ -1042,16 +1110,18 @@
     {
       "id": "scenario43",
       "location": "Cursed Ruin Approach",
-      "text": "Your darker impulses have led you to a forsaken ruin. Amid crumbling stone and eerie whispers, a cursed portal is said to lie hidden—a gateway to untold power and peril.",
+      "text": "Your darker impulses have led you to a forsaken ruin.{if:has:infernal_mark} The Infernal Mark on your skin burns with anticipation.{/if} Amid crumbling stone and eerie whispers, a cursed portal is said to lie hidden—a gateway to untold power and peril.",
       "backgroundImage": "cursed_ruin_approach",
       "isFixedBackground": false,
       "decisions": {
         "topLeft": {
           "text": "Venture deeper into the ruin",
-          "fallbackText": null,
+          "fallbackText": "You lack the infernal mark or cunning to proceed.",
           "condition": {
             "requiredItem": "infernal_mark",
-            "removeOnUse": false
+            "removeOnUse": false,
+            "requiredStat": "cunning",
+            "minStatValue": 3
           },
           "leadsTo": {
             "ifConditionMet": "scenario44",

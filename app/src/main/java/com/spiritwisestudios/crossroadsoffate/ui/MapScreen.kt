@@ -12,21 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.spiritwisestudios.crossroadsoffate.data.models.MapLocation
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
-
-/**
- * Data class representing a location on the game map
- * @property name The display name of the location
- * @property description A brief description of the location
- * @property scenarioId The ID of the scenario associated with this location
- * @property isVisited Whether the player has previously visited this location
- */
-data class MapLocation(
-    val name: String,
-    val description: String,
-    val scenarioId: String,
-    val isVisited: Boolean = false
-)
 
 /**
  * Composable that displays the map screen with available locations

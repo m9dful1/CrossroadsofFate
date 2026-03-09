@@ -16,7 +16,9 @@ data class Quest(
     val description: String,
     val objectives: List<QuestObjective>,
     val isCompleted: Boolean = false,
-    val rewards: List<String> = emptyList()
+    val rewards: List<String> = emptyList(),
+    val locationsUnlocked: List<String> = emptyList(),
+    val questType: QuestType = QuestType.MAIN
 )
 
 /**
@@ -31,5 +33,10 @@ data class QuestObjective(
     val id: String,
     val description: String,
     val isCompleted: Boolean = false,
-    val requiredScenarioId: String? = null
+    val requiredScenarioId: String? = null,
+    val requiredActivityId: String? = null,
+    val requiredItemId: String? = null,
+    val requiredActivityCount: Int? = null,
+    val requiredActivityType: String? = null,
+    val currentCount: Int = 0
 )

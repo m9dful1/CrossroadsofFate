@@ -38,4 +38,12 @@ interface ScenarioDao {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(scenarios: List<ScenarioEntity>)
+
+    /**
+     * Retrieves all scenario IDs from the database, ordered alphabetically.
+     *
+     * @return List of all scenario IDs
+     */
+    @Query("SELECT id FROM scenarios ORDER BY id")
+    suspend fun getAllScenarioIds(): List<String>
 }

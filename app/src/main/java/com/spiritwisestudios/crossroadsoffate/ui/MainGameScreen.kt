@@ -34,7 +34,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.spiritwisestudios.crossroadsoffate.R
 import com.spiritwisestudios.crossroadsoffate.data.models.ScenarioEntity
+import com.spiritwisestudios.crossroadsoffate.logic.TextResolver
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
+import com.spiritwisestudios.crossroadsoffate.ui.minigames.MiniGameOverlay
 import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
 
 /**
@@ -44,76 +46,23 @@ import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
 @Composable
 fun MainGameScreen(gameViewModel: GameViewModel) {
     // Collect state values from the ViewModel
-    val isMapVisible = gameViewModel.isMapVisible.collectAsState().value
-    val isCharacterMenuVisible = gameViewModel.isCharacterMenuVisible.collectAsState().value
-    val playerProgress = gameViewModel.playerProgress.collectAsState().value
-    val playerInventory = gameViewModel.playerInventory.collectAsState().value
-    var currentScenario by remember { mutableStateOf<ScenarioEntity?>(null) }
-
-    // Load the current scenario based on player progress
-    LaunchedEffect(playerProgress?.currentScenarioId) {
-        playerProgress?.currentScenarioId?.let { scenarioId ->
-            gameViewModel.loadScenarioById(scenarioId) { scenario ->
-                currentScenario = scenario
-            }
-        }
-    }
-
-    // Update quest progress when a scenario is loaded
-    LaunchedEffect(currentScenario?.id) {
-        currentScenario?.id?.let { scenarioId ->
-            // Check for quest objectives that match this scenario
-            gameViewModel.activeQuests.value.forEach { quest ->
-                quest.objectives.forEach { objective ->
-                    if (objective.requiredScenarioId == scenarioId && !objective.isCompleted) {
-                        gameViewModel.updateQuestProgress(quest.id, objective.id)
-                    }
-                }
-            }
-        }
-    }
+    val isMapVisible by gameViewModel.isMapVisible.collectAsState()
+    val isCharacterMenuVisible by gameViewModel.isCharacterMenuVisible.collectAsState()
+    val playerInventory by gameViewModel.playerInventory.collectAsState()
+    val currentScenario by gameViewModel.currentScenario.collectAsState()
+    val playerProgress by gameViewModel.playerProgress.collectAsState()
+    val playerStats by gameViewModel.playerStats.collectAsState()
+    val playerReputation by gameViewModel.playerReputation.collectAsState()
+    val isMiniGameActive by gameViewModel.isMiniGameActive.collectAsState()
+    val lastMiniGameResult by gameViewModel.lastMiniGameResult.collectAsState()
 
     // Main container for game screen
     Box(modifier = Modifier.fillMaxSize()) {
         currentScenario?.let { scenario ->
             //
-            val backgroundId = when (scenario.backgroundImage) {
-                "hell_bg" -> R.drawable.hell_bg
-                "heaven_bg" -> R.drawable.heaven_bg
-                "bedroom_morning" -> R.drawable.bedroom_morning
-                "dressing_room" -> R.drawable.dressing_room
-                "bedroom_sleep" -> R.drawable.bedroom_sleep
-                "front_door" -> R.drawable.front_door
-                "town_entrance" -> R.drawable.town_entrance
-                "town_square" -> R.drawable.town_square
-                "market" -> R.drawable.market
-                "town_crossroads" -> R.drawable.town_crossroads
-                "guard_training" -> R.drawable.guard_training
-                "wilderness_trail" -> R.drawable.wilderness_trail
-                "merchant_quarters" -> R.drawable.merchant_quarters
-                "shadow_alley" -> R.drawable.shadow_alley
-                "guard_patrol" -> R.drawable.guard_patrol
-                "ancient_ruins" -> R.drawable.ancient_ruins
-                "trade_lane" -> R.drawable.trade_lane
-                "criminal_hideout" -> R.drawable.criminal_hideout
-                "reflecting_area" -> R.drawable.reflecting_area
-                "mentor_cottage" -> R.drawable.mentor_cottage
-                "town_hall" -> R.drawable.town_hall
-                "wilderness_camp" -> R.drawable.wilderness_camp
-                "merchant_guild" -> R.drawable.merchant_guild
-                "criminal_underworld" -> R.drawable.criminal_underworld
-                "council_chamber" -> R.drawable.council_chamber
-                "wilderness_archive" -> R.drawable.wilderness_archive
-                "guild_meeting" -> R.drawable.guild_meeting
-                "underground_syndicate" -> R.drawable.underground_syndicate
-                "scholars_retreat" -> R.drawable.scholars_retreat
-                "future_threshold" -> R.drawable.future_threshold
-                else -> R.drawable.default_bg
-            }
-
             // Display background image
             Image(
-                painter = painterResource(id = backgroundId),
+                painter = painterForName(name = scenario.backgroundImage),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
@@ -153,7 +102,7 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = scenario.text,
+                            text = TextResolver.resolve(scenario.text, playerInventory, playerStats, playerReputation),
                             fontSize = 18.sp,
                             color = Color.White,
                             textAlign = TextAlign.Center
@@ -165,11 +114,11 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
             // Display decision buttons based on scenario decisions
             scenario.decisions.forEach { (position, decision) ->
                 // Check if the decision has a condition and if the player has the required item
-                val displayText = if (decision.condition != null && decision.condition.requiredItem in playerInventory) {
-                    decision.text
-                } else {
-                    decision.fallbackText ?: decision.text
-                }
+                val conditionMet = decision.condition?.isMet(playerInventory, playerStats, playerReputation) ?: true
+                val displayText = TextResolver.resolve(
+                    if (conditionMet) decision.text else decision.fallbackText ?: decision.text,
+                    playerInventory, playerStats, playerReputation
+                )
                 // Determine the alignment based on the position
                 val alignment = when (position) {
                     "topLeft" -> Alignment.TopStart
@@ -195,6 +144,7 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                         text = displayText,
                         modifier = Modifier.wrapContentSize().testTag("${position}DecisionButton")
                     ) {
+                        gameViewModel.playSfx("button_tap")
                         gameViewModel.onChoiceSelected(position)
                     }
                 }
@@ -202,20 +152,9 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
 
             // Display map or character menu if visible
             if (isMapVisible) {
-                MapScreen(
-                    locations = listOf(
-                        MapLocation(
-                            name = "Town Square",
-                            description = "A bustling marketplace full of traders and goods.",
-                            scenarioId = "town_square_revisit",
-                            isVisited = playerProgress?.visitedLocations?.contains("Market") == true
-                        ),
-                        // Add other locations as needed
-                    ),
-                    onBack = { gameViewModel.hideMap() },
-                    onLocationSelected = { location ->
-                        gameViewModel.travelToLocation(location)
-                    }
+                InteractiveMapScreen(
+                    gameViewModel = gameViewModel,
+                    onBack = { gameViewModel.hideMap() }
                 )
                 // Display character menu
             } else if (isCharacterMenuVisible) {
@@ -251,6 +190,20 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                     }
                 }
             }
+        }
+
+        // Mini-game overlay (renders on top of everything when a mini-game is active)
+        if (isMiniGameActive || lastMiniGameResult != null) {
+            MiniGameOverlay(gameViewModel = gameViewModel)
+        }
+
+        // Quest reward popup overlay
+        val questRewardNotification by gameViewModel.questRewardNotification.collectAsState()
+        questRewardNotification?.let { event ->
+            QuestRewardPopup(
+                event = event,
+                onDismiss = { gameViewModel.dismissQuestRewardNotification() }
+            )
         }
     }
 }

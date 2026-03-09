@@ -1,7 +1,12 @@
 package com.spiritwisestudios.crossroadsoffate.data
 
 import com.google.gson.GsonBuilder
-import com.spiritwisestudios.crossroadsoffate.data.models.*
+import com.spiritwisestudios.crossroadsoffate.data.models.Converters
+import com.spiritwisestudios.crossroadsoffate.data.models.Decision
+import com.spiritwisestudios.crossroadsoffate.data.models.LeadsTo
+import com.spiritwisestudios.crossroadsoffate.data.models.LeadsToDeserializer
+import com.spiritwisestudios.crossroadsoffate.data.models.Quest
+import com.spiritwisestudios.crossroadsoffate.data.models.QuestObjective
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertNull
@@ -81,8 +86,8 @@ class ScenarioEntityTest {
 class PlayerProgressTest {
     @Test
     fun testQuestConverters() {
-        // Test quest list serialization/deserialization
-        val converters = QuestConverters()
+        // Test quest list serialization/deserialization using the unified Converters class
+        val converters = Converters()
         
         val quests = listOf(
             Quest(
@@ -113,8 +118,8 @@ class PlayerProgressTest {
     
     @Test
     fun testInventoryConverters() {
-        // Test inventory serialization/deserialization
-        val converters = InventoryConverters()
+        // Test inventory serialization/deserialization using the unified Converters class
+        val converters = Converters()
         
         val inventory = listOf("item1", "item2", "item3")
         
@@ -129,8 +134,8 @@ class PlayerProgressTest {
     
     @Test
     fun testVisitedLocationsConverter() {
-        // Test visited locations serialization/deserialization
-        val converters = VisitedLocationsConverter()
+        // Test visited locations serialization/deserialization using the unified Converters class
+        val converters = Converters()
         
         val locations = setOf("location1", "location2")
         

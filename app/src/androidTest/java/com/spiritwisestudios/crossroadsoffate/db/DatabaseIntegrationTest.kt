@@ -32,9 +32,6 @@ class DatabaseIntegrationTest {
         )
         .allowMainThreadQueries()
         .addTypeConverter(Converters())
-        .addTypeConverter(InventoryConverters())
-        .addTypeConverter(QuestConverters())
-        .addTypeConverter(VisitedLocationsConverter())
         .build()
         
         scenarioDao = database?.scenarioDao()

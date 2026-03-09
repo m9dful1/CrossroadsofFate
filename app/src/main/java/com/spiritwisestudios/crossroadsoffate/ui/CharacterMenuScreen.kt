@@ -3,13 +3,17 @@ package com.spiritwisestudios.crossroadsoffate.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.spiritwisestudios.crossroadsoffate.data.models.QuestType
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
 import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
 
@@ -29,6 +33,11 @@ fun CharacterMenuScreen(
     val playerInventory = gameViewModel.playerInventory.collectAsState().value
     val activeQuests = gameViewModel.activeQuests.collectAsState().value
     val completedQuests = gameViewModel.completedQuests.collectAsState().value
+    val playerStats = gameViewModel.playerStats.collectAsState().value
+    val playerReputation = gameViewModel.playerReputation.collectAsState().value
+    val musicVolume = gameViewModel.musicVolume.collectAsState().value
+    val sfxVolume = gameViewModel.sfxVolume.collectAsState().value
+    val isMuted = gameViewModel.isMuted.collectAsState().value
 
     // Main container with semi-transparent black background
     Box(
@@ -40,6 +49,7 @@ fun CharacterMenuScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             // Top app bar with back button and title
             TopAppBar(
@@ -69,10 +79,17 @@ fun CharacterMenuScreen(
 
             // Character information sections
             listOf(
-                // Stats section showing current location
+                // Stats section showing current location and character stats
                 "Stats" to listOf(
-                    "Current Location: ${gameViewModel.currentScenario.collectAsState().value?.location ?: "Unknown"}"
-                ),
+                    "Current Location: ${gameViewModel.currentScenario.collectAsState().value?.location ?: "Unknown"}",
+                    ""
+                ) + playerStats.entries.sortedBy { it.key }.map { (stat, value) ->
+                    "${stat.replaceFirstChar { it.uppercase() }}: $value"
+                },
+                // Reputation section showing faction standings
+                "Reputation" to playerReputation.entries.sortedBy { it.key }.map { (faction, value) ->
+                    "${faction.replaceFirstChar { it.uppercase() }}: $value"
+                },
                 // Inventory section showing all items
                 "Inventory" to playerInventory.toList(),
                 // Active quests section with objectives and completion status
@@ -80,8 +97,16 @@ fun CharacterMenuScreen(
                     listOf("No active quests")
                 } else {
                     activeQuests.flatMap { quest ->
-                        listOf("${quest.title}:") + quest.objectives.map { objective ->
-                            ". ${objective.description} ${if (objective.isCompleted) "✓" else ""}"
+                        val typeLabel = when (quest.questType) {
+                            QuestType.MAIN -> "[Main]"
+                            QuestType.PATH -> "[Path]"
+                            QuestType.SIDE -> "[Side]"
+                        }
+                        listOf("$typeLabel ${quest.title}:") + quest.objectives.map { objective ->
+                            val progress = if (objective.requiredActivityCount != null) {
+                                " (${objective.currentCount}/${objective.requiredActivityCount})"
+                            } else ""
+                            ". ${objective.description}$progress ${if (objective.isCompleted) "✓" else ""}"
                         }
                     }
                 },
@@ -135,6 +160,88 @@ fun CharacterMenuScreen(
                                 )
                             }
                         }
+                    }
+                }
+            }
+
+            // Audio Settings section
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .background(
+                        Color.DarkGray.copy(alpha = 0.7f),
+                        MaterialTheme.shapes.medium
+                    )
+                    .border(
+                        1.dp,
+                        Color.White.copy(alpha = 0.7f),
+                        MaterialTheme.shapes.medium
+                    )
+                    .padding(16.dp)
+            ) {
+                Column {
+                    Text(
+                        text = "Audio Settings",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+
+                    // Music volume slider
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Music",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            modifier = Modifier.width(60.dp)
+                        )
+                        Slider(
+                            value = musicVolume,
+                            onValueChange = { gameViewModel.setMusicVolume(it) },
+                            modifier = Modifier.weight(1f),
+                            colors = SliderDefaults.colors(
+                                thumbColor = Color.White,
+                                activeTrackColor = Color.White.copy(alpha = 0.8f),
+                                inactiveTrackColor = Color.White.copy(alpha = 0.3f)
+                            )
+                        )
+                    }
+
+                    // SFX volume slider
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "SFX",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            modifier = Modifier.width(60.dp)
+                        )
+                        Slider(
+                            value = sfxVolume,
+                            onValueChange = { gameViewModel.setSfxVolume(it) },
+                            modifier = Modifier.weight(1f),
+                            colors = SliderDefaults.colors(
+                                thumbColor = Color.White,
+                                activeTrackColor = Color.White.copy(alpha = 0.8f),
+                                inactiveTrackColor = Color.White.copy(alpha = 0.3f)
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Mute toggle
+                    DecisionButton(
+                        text = if (isMuted) "Unmute" else "Mute",
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        gameViewModel.toggleMute()
                     }
                 }
             }

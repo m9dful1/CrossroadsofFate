@@ -7,6 +7,7 @@ import com.spiritwisestudios.crossroadsoffate.data.models.Decision
 import com.spiritwisestudios.crossroadsoffate.data.models.LeadsTo
 import com.spiritwisestudios.crossroadsoffate.data.models.ScenarioEntity
 import com.spiritwisestudios.crossroadsoffate.data.models.Condition
+import com.spiritwisestudios.crossroadsoffate.data.models.Converters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -20,7 +21,10 @@ object TestDatabaseUtil {
     fun createTestDatabase(context: Context): GameDatabase {
         return Room.inMemoryDatabaseBuilder(
             context, GameDatabase::class.java
-        ).allowMainThreadQueries().build()
+        )
+        .addTypeConverter(Converters())
+        .allowMainThreadQueries()
+        .build()
     }
     
     /**

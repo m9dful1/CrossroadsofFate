@@ -3,24 +3,39 @@ package com.spiritwisestudios.crossroadsoffate.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.spiritwisestudios.crossroadsoffate.data.GameDatabase
 import com.spiritwisestudios.crossroadsoffate.data.models.*
+import com.spiritwisestudios.crossroadsoffate.logic.ActivityManager
+import com.spiritwisestudios.crossroadsoffate.logic.GameAudioManager
+import com.spiritwisestudios.crossroadsoffate.logic.InventoryManager
+import com.spiritwisestudios.crossroadsoffate.logic.MiniGameManager
+import com.spiritwisestudios.crossroadsoffate.logic.QuestManager
+import com.spiritwisestudios.crossroadsoffate.logic.ReputationManager
+import com.spiritwisestudios.crossroadsoffate.logic.StatsManager
 import com.spiritwisestudios.crossroadsoffate.repository.GameRepository
-import com.spiritwisestudios.crossroadsoffate.ui.MapLocation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-//import org.robolectric.Shadows.shadowOf
+import timber.log.Timber
 
 /**
  * ViewModel responsible for managing game state and business logic.
  * Handles player progress, scenarios, inventory, quests, and UI state.
  */
-class GameViewModel(application: Application) : AndroidViewModel(application) {
-    // Repository instance for data operations
-    private val repository = GameRepository(GameDatabase.getDatabase(application), application)
+class GameViewModel(
+    application: Application,
+    private val repository: GameRepository,
+) : AndroidViewModel(application) {
+    // Logic managers
+    private val inventoryManager = InventoryManager()
+    private val questManager = QuestManager()
+    private val activityManager = ActivityManager()
+    private val miniGameManager = MiniGameManager()
+    private val statsManager = StatsManager()
+    private val reputationManager = ReputationManager()
+    private val audioManager = GameAudioManager(application)
 
     // State flows for observing game state changes
     private val _playerProgress = MutableStateFlow<PlayerProgress?>(null)
@@ -29,8 +44,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentScenario = MutableStateFlow<ScenarioEntity?>(null)
     val currentScenario: StateFlow<ScenarioEntity?> = _currentScenario
 
-    private val _playerInventory = MutableStateFlow<Set<String>>(emptySet())
-    val playerInventory: StateFlow<Set<String>> = _playerInventory
+    val playerInventory: StateFlow<Set<String>> = inventoryManager.inventory
+    val playerStats: StateFlow<Map<String, Int>> = statsManager.stats
+    val playerReputation: StateFlow<Map<String, Int>> = reputationManager.reputation
+
+    // Audio state
+    val musicVolume: StateFlow<Float> = audioManager.musicVolume
+    val sfxVolume: StateFlow<Float> = audioManager.sfxVolume
+    val isMuted: StateFlow<Boolean> = audioManager.isMuted
 
     // UI state flows
     private val _isMapVisible = MutableStateFlow(false)
@@ -40,51 +61,62 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val isCharacterMenuVisible: StateFlow<Boolean> = _isCharacterMenuVisible
 
     // Quest management state flows
-    private val _activeQuests = MutableStateFlow<List<Quest>>(emptyList())
-    val activeQuests: StateFlow<List<Quest>> = _activeQuests
-
-    private val _completedQuests = MutableStateFlow<List<Quest>>(emptyList())
-    val completedQuests: StateFlow<List<Quest>> = _completedQuests
+    val activeQuests: StateFlow<List<Quest>> = questManager.activeQuests
+    val completedQuests: StateFlow<List<Quest>> = questManager.completedQuests
 
     private val _availableLocations = MutableStateFlow<List<MapLocation>>(emptyList())
     val availableLocations: StateFlow<List<MapLocation>> = _availableLocations
 
-    // Main quest definition
-    private val mainQuest = Quest(
-        id = "quest_main_1",
-        title = "The Crossroads of Fate",
-        description = "Begin your journey through the town and find your path",
-        objectives = listOf(
-            QuestObjective(
-                id = "obj_1",
-                description = "Leave your home",
-                requiredScenarioId = "scenario4"
-            ),
-            QuestObjective(
-                id = "obj_2",
-                description = "Enter the town",
-                requiredScenarioId = "scenario5"
-            ),
-            QuestObjective(
-                id = "obj_3",
-                description = "Make your choice at the crossroads",
-                requiredScenarioId = "scenario8"
-            )
-        )
-    )
+    // Interactive map location state flows
+    private val _interactiveMapLocations = MutableStateFlow<List<InteractiveMapLocation>>(emptyList())
+    val interactiveMapLocations: StateFlow<List<InteractiveMapLocation>> = _interactiveMapLocations
+
+    // Activity management state flows
+    val completedActivities: StateFlow<Set<String>> = activityManager.completedActivities
+    val activityResults: StateFlow<List<ActivityResult>> = activityManager.activityResults
+    val unlockedLocations: StateFlow<Set<String>> = activityManager.unlockedLocations
+
+    // Mini-game management state flows
+    val currentMiniGame = miniGameManager.currentMiniGame
+    val currentMiniGameState = miniGameManager.currentGameState
+    val lastMiniGameResult = miniGameManager.lastResult
+    val isMiniGameActive = miniGameManager.isGameActive
+
+    // Quest reward notification
+    private val _questRewardNotification = MutableStateFlow<QuestCompletionEvent?>(null)
+    val questRewardNotification: StateFlow<QuestCompletionEvent?> = _questRewardNotification.asStateFlow()
 
     private val _isOnTitleScreen = MutableStateFlow(true)
     val isOnTitleScreen: StateFlow<Boolean> = _isOnTitleScreen
 
     // Initialize ViewModel
     init {
+        audioManager.initialize()
+
         viewModelScope.launch {
             try {
                 repository.loadScenariosFromJson()
+                repository.initializeInteractiveMapLocations()
                 loadPlayerProgress("default_player")
                 updateAvailableLocations()
+                updateInteractiveMapLocations()
+                
+                // Set up mini-game activity listener
+                miniGameManager.setActivityListener { gameId, result ->
+                    handleMiniGameResult(gameId, result)
+                }
+
+                // Observe quest completion events for rewards
+                launch {
+                    questManager.questCompletionEvents.collect { event ->
+                        handleQuestCompletion(event)
+                    }
+                }
+
+                // Play menu music on startup
+                audioManager.playMusic("menu")
             } catch (e: Exception) {
-                println("Initialization error: ${e.message}")
+                Timber.e(e, "Initialization error")
                 // Handle initialization errors, e.g., show an error state
             }
         }
@@ -97,17 +129,22 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 repository.resetPlayerProgress()
-                // Delay might not be reliable, ensure save completes before proceeding
-                // await repository.resetPlayerProgress() // If resetPlayerProgress becomes suspend
-
+                
+                // Ensure scenarios are loaded after reset
+                repository.loadScenariosFromJson()
+                
                 // Create a fresh PlayerProgress state directly
                 val freshProgress = PlayerProgress(
                     playerId = "default_player",
                     currentScenarioId = "scenario1", // Start at scenario1
                     playerInventory = emptyList(),
-                    activeQuests = listOf(mainQuest), // Start with the main quest
+                    activeQuests = questManager.getStartingQuests(), // Start with the main quest
                     completedQuests = emptyList(),
-                    visitedLocations = emptySet() // No locations visited initially
+                    visitedLocations = emptySet(), // No locations visited initially
+                    completedActivities = emptySet(),
+                    discoveredLocations = emptySet(),
+                    playerStats = StatsManager.DEFAULT_STATS,
+                    playerReputation = ReputationManager.DEFAULT_REPUTATION
                 )
                 // Save the fresh state
                 repository.savePlayerProgress(freshProgress)
@@ -118,15 +155,19 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 // Update StateFlows on the main thread
                 withContext(Dispatchers.Main) {
                     _playerProgress.value = freshProgress
-                    _playerInventory.value = freshProgress.playerInventory.toSet()
-                    _activeQuests.value = freshProgress.activeQuests
-                    _completedQuests.value = freshProgress.completedQuests
+                    inventoryManager.initialize(freshProgress.playerInventory)
+                    questManager.initialize(freshProgress.activeQuests, freshProgress.completedQuests)
+                    activityManager.initialize(freshProgress.completedActivities, freshProgress.discoveredLocations)
+                    statsManager.initialize(freshProgress.playerStats)
+                    reputationManager.initialize(freshProgress.playerReputation)
                     _currentScenario.value = initialScenario // Set initial scenario
                     _isOnTitleScreen.value = false
+                    initialScenario?.let { audioManager.playMusicForLocation(it.location) }
                     updateAvailableLocations() // Update locations based on fresh state
+                    updateInteractiveMapLocations() // Update interactive map locations
                 }
             } catch (e: Exception) {
-                println("Error starting new game: ${e.message}")
+                Timber.e(e, "Error starting new game")
             }
         }
     }
@@ -142,9 +183,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 // We just need to ensure the title screen flag is set correctly after loading
                 withContext(Dispatchers.Main) {
                     _isOnTitleScreen.value = false // Set on main thread after loading
+                    _currentScenario.value?.let { audioManager.playMusicForLocation(it.location) }
                 }
             } catch (e: Exception) {
-                 println("Error loading game: ${e.message}")
+                 Timber.e(e, "Error loading game")
             }
         }
     }
@@ -155,6 +197,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun returnToTitle() {
         _isOnTitleScreen.value = true
         hideCharacterMenu()
+        audioManager.playMusic("menu")
     }
 
     /**
@@ -174,19 +217,23 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             viewModelScope.launch(Dispatchers.IO) {
                 try {
                     // Make sure to save the latest state including inventory
+                    val (activeQ, completedQ) = questManager.getQuestState()
                     val progressToSave = currentProgress.copy(
-                        playerInventory = _playerInventory.value.toList(),
-                        activeQuests = _activeQuests.value,
-                        completedQuests = _completedQuests.value
+                        playerInventory = inventoryManager.getInventoryList(),
+                        activeQuests = activeQ,
+                        completedQuests = completedQ,
+                        completedActivities = activityManager.getCompletedActivitiesList(),
+                        discoveredLocations = activityManager.getUnlockedLocationsList(),
+                        playerStats = statsManager.getStatsMap(),
+                        playerReputation = reputationManager.getReputationMap()
                     )
                     repository.savePlayerProgress(progressToSave)
                 } catch (e: Exception) {
-                    println("Failed to save progress: ${e.message}")
-                    e.printStackTrace()
+                    Timber.e(e, "Failed to save progress")
                 }
             }
         } else {
-             println("Warning: Attempted to save null player progress.")
+             Timber.w("Attempted to save null player progress")
         }
     }
 
@@ -199,8 +246,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 playerId = playerId,
                 currentScenarioId = "scenario1",
                 playerInventory = emptyList(),
-                activeQuests = listOf(mainQuest),
-                completedQuests = emptyList()
+                activeQuests = questManager.getStartingQuests(),
+                completedQuests = emptyList(),
+                visitedLocations = emptySet(),
+                completedActivities = emptySet(),
+                discoveredLocations = emptySet(),
+                playerStats = StatsManager.DEFAULT_STATS,
+                playerReputation = ReputationManager.DEFAULT_REPUTATION
             )
             
             // Load the corresponding scenario
@@ -209,22 +261,26 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             // Update StateFlows on the main thread
             withContext(Dispatchers.Main) {
                 _playerProgress.value = progress
-                _playerInventory.value = progress.playerInventory.toSet()
-                _activeQuests.value = progress.activeQuests
-                _completedQuests.value = progress.completedQuests
+                inventoryManager.initialize(progress.playerInventory)
+                questManager.initialize(progress.activeQuests, progress.completedQuests)
+                activityManager.initialize(progress.completedActivities, progress.discoveredLocations)
+                statsManager.initialize(progress.playerStats)
+                reputationManager.initialize(progress.playerReputation)
                 _currentScenario.value = scenario // Set the loaded scenario
                 updateAvailableLocations() // Update locations after loading progress
+                updateInteractiveMapLocations() // Update interactive map locations
             }
         } catch (e: Exception) {
-            println("Error loading player progress: ${e.message}")
+            Timber.e(e, "Error loading player progress")
              // Handle error loading progress, maybe set default state?
              withContext(Dispatchers.Main) {
                  // Optionally reset to a known safe state or show error
                  _playerProgress.value = null // Indicate loading failed
                  _currentScenario.value = null
-                 _playerInventory.value = emptySet()
-                 _activeQuests.value = emptyList()
-                 _completedQuests.value = emptyList()
+                 inventoryManager.initialize(emptyList())
+                 questManager.initialize(emptyList(), emptyList())
+                 statsManager.initialize(emptyMap())
+                 reputationManager.initialize(emptyMap())
              }
         }
     }
@@ -238,7 +294,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 scenario = repository.getScenarioById(id)
             } catch (e: Exception) {
-                 println("Error loading scenario $id: ${e.message}")
+                 Timber.e(e, "Error loading scenario %s", id)
             } finally {
                  // Switch to main thread to invoke callback safely
                  withContext(Dispatchers.Main) {
@@ -246,25 +302,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                  }
             }
         }
-    }
-
-    /**
-     * Updates game state after a player decision (Scenario and Visited Locations).
-     */
-    private fun updateScenarioState(nextScenario: ScenarioEntity, targetScenarioId: String) {
-         val updatedVisitedLocations = (_playerProgress.value?.visitedLocations ?: emptySet())
-            .toMutableSet()
-            .apply {
-                add(nextScenario.location)
-            }
-
-        _currentScenario.value = nextScenario
-        _playerProgress.value = _playerProgress.value?.copy(
-            currentScenarioId = targetScenarioId,
-            visitedLocations = updatedVisitedLocations
-            // Inventory and quests are handled separately
-        ) ?: throw IllegalStateException("Player progress is null during scenario update")
-        // saveProgress() will be called at the end of onChoiceSelected
     }
 
     /**
@@ -290,7 +327,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _availableLocations.value = locations
             }
         } catch (e: Exception) {
-             println("Error updating available locations: ${e.message}")
+             Timber.e(e, "Error updating available locations")
         }
     }
 
@@ -302,270 +339,26 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
              try {
                 val scenario = repository.getScenarioById(location.scenarioId)
                  if (scenario != null) {
+                    questManager.checkAndCompleteObjectives(scenario.id)
+                    val (updatedActive, updatedCompleted) = questManager.getQuestState()
+
                     withContext(Dispatchers.Main) {
                         _currentScenario.value = scenario
                         _playerProgress.value = _playerProgress.value?.copy(
-                            currentScenarioId = location.scenarioId
+                            currentScenarioId = location.scenarioId,
+                            activeQuests = updatedActive,
+                            completedQuests = updatedCompleted
                         )
                         hideMap()
                         saveProgress() // Save after traveling
                     }
                  } else {
-                      println("Error: Scenario ${location.scenarioId} not found for travel.")
+                      Timber.e("Scenario %s not found for travel", location.scenarioId)
                  }
              } catch (e: Exception) {
-                  println("Error traveling to ${location.name}: ${e.message}")
+                  Timber.e(e, "Error traveling to %s", location.name)
              }
         }
-    }
-
-    /**
-     * Calculates the result of inventory modifications without updating state flows.
-     * Returns the resulting inventory list.
-     */
-    private fun calculateInventoryChanges(currentInventory: List<String>, addItems: List<String> = emptyList(), removeItems: List<String> = emptyList()): List<String> {
-        println("DEBUG: Calculating inventory changes from: $currentInventory")
-        println("DEBUG: Requested items to add: $addItems")
-        println("DEBUG: Requested items to remove: $removeItems")
-
-        val updatedInventoryList = currentInventory.toMutableList()
-        var changed = false
-
-        // Process removals
-        for (item in removeItems) {
-            if (updatedInventoryList.remove(item)) {
-                println("DEBUG: (Calc) Successfully removed item: $item")
-                changed = true
-            } else {
-                println("DEBUG: (Calc) Failed to remove item: $item - not found")
-            }
-        }
-
-        // Process additions
-        for (item in addItems) {
-            if (item.isNotBlank() && !updatedInventoryList.contains(item)) {
-                updatedInventoryList.add(item)
-                println("DEBUG: (Calc) Successfully added item: $item")
-                changed = true
-            }
-        }
-
-        val finalInventory = updatedInventoryList.toList()
-        println("DEBUG: Calculated final inventory: $finalInventory")
-        return finalInventory
-    }
-
-    /**
-     * DEPRECATED: Directly modifies inventory and ensures all state flows are updated consistently.
-     * Use calculateInventoryChanges and update state flows explicitly instead.
-     */
-    @Deprecated("Use calculateInventoryChanges and update state flows explicitly")
-    private fun modifyInventory(addItems: List<String> = emptyList(), removeItems: List<String> = emptyList()) {
-        val currentProgress = _playerProgress.value ?: return
-        println("DEBUG: Before inventory modification - currentProgress inventory: ${currentProgress.playerInventory}")
-        println("DEBUG: Before inventory modification - inventory flow: ${_playerInventory.value}")
-        println("DEBUG: Requested items to add: $addItems")
-        println("DEBUG: Requested items to remove: $removeItems")
-
-        // Start with current inventory as lists for easier manipulation
-        val updatedInventoryList = currentProgress.playerInventory.toMutableList()
-        
-        // Process removals
-        var changed = false
-        for (item in removeItems) {
-            if (updatedInventoryList.remove(item)) {
-                println("DEBUG: Successfully removed item: $item from inventory list")
-                changed = true
-            } else {
-                println("DEBUG: Failed to remove item: $item - not found in list")
-            }
-        }
-        
-        // Process additions
-        for (item in addItems) {
-            if (item.isNotBlank() && !updatedInventoryList.contains(item)) {
-                updatedInventoryList.add(item)
-                println("DEBUG: Successfully added item: $item to inventory list")
-                changed = true
-            }
-        }
-        
-        if (changed) {
-            // Create final versions of the inventory
-            val newInventoryList = updatedInventoryList.toList() // Immutable copy
-            val newInventorySet = newInventoryList.toSet()
-            
-            println("DEBUG: Updated inventory list: $newInventoryList")
-            println("DEBUG: Updated inventory set: $newInventorySet")
-            
-            // Update both the inventory and player progress
-            _playerInventory.value = newInventorySet
-            _playerProgress.value = currentProgress.copy(playerInventory = newInventoryList)
-            
-            println("DEBUG: After update - inventory flow: ${_playerInventory.value}")
-            println("DEBUG: After update - player progress inventory: ${_playerProgress.value?.playerInventory}")
-        } else {
-            println("DEBUG: No inventory changes detected.")
-        }
-    }
-
-    /**
-     * Called when a player selects a choice. Handles all game state updates.
-     */
-    fun onChoiceSelected(position: String) {
-        // Launch on the default viewModelScope dispatcher, which is controlled by runTest
-        viewModelScope.launch {
-            val currentScenario = _currentScenario.value
-            val currentProgress = _playerProgress.value
-            val currentInventory = _playerInventory.value
-            val currentActiveQuests = _activeQuests.value
-            val currentCompletedQuests = _completedQuests.value
-
-            if (currentScenario == null || currentProgress == null) {
-                println("Error: Scenario or Progress is null during choice selection")
-                return@launch
-            }
-
-            val decision = currentScenario.decisions[position] ?: return@launch
-
-            try {
-                // 1. Evaluate Condition
-                val conditionMet = decision.condition?.let {
-                    it.requiredItem in currentInventory
-                } ?: true // No condition means condition is met
-
-                // 2. Determine Target Scenario ID
-                val targetScenarioId = when (val leadsTo = decision.leadsTo) {
-                    is LeadsTo.Simple -> leadsTo.scenarioId
-                    is LeadsTo.Conditional -> if (conditionMet) leadsTo.ifConditionMet else leadsTo.ifConditionNotMet
-                }
-
-                // 3. Load the next scenario
-                val nextScenario = repository.getScenarioById(targetScenarioId) ?: run {
-                    println("Error: Next scenario '$targetScenarioId' not found.")
-                    return@launch
-                }
-
-                // --- Calculate all state changes before applying --- 
-
-                // 4. Calculate Inventory Changes
-                val itemToAdd = currentScenario.itemGiven?.get(position)?.takeIf { it.isNotBlank() }
-                val itemToRemove = if (conditionMet && decision.condition?.removeOnUse == true) {
-                    decision.condition!!.requiredItem
-                } else {
-                    null
-                }
-                val finalInventoryList = calculateInventoryChanges(
-                    currentInventory = currentProgress.playerInventory, // Use list from progress
-                    addItems = listOfNotNull(itemToAdd),
-                    removeItems = listOfNotNull(itemToRemove)
-                )
-                val finalInventorySet = finalInventoryList.toSet()
-
-                // 5. Calculate Quest Updates
-                var finalActiveQuests = currentActiveQuests
-                var finalCompletedQuests = currentCompletedQuests
-                currentActiveQuests.forEach { quest ->
-                    quest.objectives.forEach { objective ->
-                        if (objective.requiredScenarioId == targetScenarioId && !objective.isCompleted) {
-                            val (updatedActive, updatedCompleted) = calculateQuestUpdates(
-                                currentActiveQuests = finalActiveQuests, // Use potentially updated lists from previous iteration
-                                currentCompletedQuests = finalCompletedQuests,
-                                questId = quest.id,
-                                objectiveId = objective.id
-                            )
-                            // Update lists for the next potential objective check in the same choice selection
-                            finalActiveQuests = updatedActive
-                            finalCompletedQuests = updatedCompleted
-                        }
-                    }
-                }
-
-                // 6. Calculate Visited Locations
-                val finalVisitedLocations = currentProgress.visitedLocations.toMutableSet().apply {
-                    add(nextScenario.location)
-                }.toSet()
-
-                // 7. Construct Final Player Progress
-                val finalProgress = currentProgress.copy(
-                    currentScenarioId = targetScenarioId,
-                    playerInventory = finalInventoryList,
-                    activeQuests = finalActiveQuests,
-                    completedQuests = finalCompletedQuests,
-                    visitedLocations = finalVisitedLocations
-                )
-
-                // --- Apply all state changes atomically ---
-                println("DEBUG: Applying final state updates")
-                _playerInventory.value = finalInventorySet
-                _activeQuests.value = finalActiveQuests
-                _completedQuests.value = finalCompletedQuests
-                _currentScenario.value = nextScenario
-                _playerProgress.value = finalProgress // The single final update
-                println("DEBUG: Final _playerProgress.value set to: $finalProgress")
-
-                // 8. Save final progress to repository
-                saveProgress() // Reads the latest _playerProgress state
-            } catch (e: Exception) {
-                println("Error in choice selection: ${e.message}")
-                e.printStackTrace()
-            }
-        }
-    }
-
-    /**
-     * Calculates the result of quest updates without modifying state flows.
-     * Returns a Pair of updated active quests and completed quests lists.
-     */
-    private fun calculateQuestUpdates(
-        currentActiveQuests: List<Quest>,
-        currentCompletedQuests: List<Quest>,
-        questId: String,
-        objectiveId: String
-    ): Pair<List<Quest>, List<Quest>> {
-        println("DEBUG: Calculating quest updates for quest $questId, objective $objectiveId")
-        val activeQuests = currentActiveQuests.toMutableList()
-        val completedQuests = currentCompletedQuests.toMutableList()
-        var questListChanged = false
-
-        val questIndex = activeQuests.indexOfFirst { it.id == questId }
-        if (questIndex != -1) {
-            val quest = activeQuests[questIndex]
-            var objectiveUpdated = false
-            val updatedObjectives = quest.objectives.map {
-                if (it.id == objectiveId && !it.isCompleted) {
-                    objectiveUpdated = true
-                    it.copy(isCompleted = true)
-                } else {
-                    it
-                }
-            }
-
-            if (objectiveUpdated) {
-                val updatedQuest = quest.copy(
-                    objectives = updatedObjectives,
-                    isCompleted = updatedObjectives.all { it.isCompleted }
-                )
-
-                if (updatedQuest.isCompleted) {
-                    activeQuests.removeAt(questIndex)
-                    if (completedQuests.none { it.id == updatedQuest.id }) {
-                        completedQuests.add(updatedQuest)
-                    }
-                    println("DEBUG: (Calc) Quest ${updatedQuest.id} completed and moved.")
-                } else {
-                    activeQuests[questIndex] = updatedQuest
-                    println("DEBUG: (Calc) Quest ${updatedQuest.id} objective $objectiveId completed.")
-                }
-                questListChanged = true
-            }
-        }
-
-        val finalActive = activeQuests.toList()
-        val finalCompleted = completedQuests.toList()
-        println("DEBUG: Calculated final active quests: ${finalActive.map { it.id }}")
-        println("DEBUG: Calculated final completed quests: ${finalCompleted.map { it.id }}")
-        return Pair(finalActive, finalCompleted)
     }
 
     /**
@@ -573,31 +366,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
      * Called externally (e.g., from UI) or internally when needed.
      */
     fun updateQuestProgress(questId: String, objectiveId: String) {
-        // Use the calculation function internally
-        val (updatedActive, updatedCompleted) = calculateQuestUpdates(
-            currentActiveQuests = _activeQuests.value,
-            currentCompletedQuests = _completedQuests.value,
-            questId = questId,
-            objectiveId = objectiveId
-        )
-
-        // Check if the lists actually changed before updating state flows
-        if (updatedActive != _activeQuests.value || updatedCompleted != _completedQuests.value) {
-            println("DEBUG: Applying quest updates from external call")
-            _activeQuests.value = updatedActive
-            _completedQuests.value = updatedCompleted
-
-            // Update player progress with the new quest lists
-            _playerProgress.value = _playerProgress.value?.copy(
-                activeQuests = updatedActive,
-                completedQuests = updatedCompleted
-            )
-            // Consider if saveProgress() should be called here too, depending on usage.
-            // If called from UI interaction that expects persistence, maybe yes.
-            // If called as part of a larger operation (like onChoiceSelected was), maybe no.
-            // For now, let's assume separate calls might warrant a save.
-            saveProgress()
-        }
+        questManager.updateObjectiveStatus(questId, objectiveId)
+        saveProgress()
     }
 
     // UI visibility control functions
@@ -616,4 +386,544 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun hideCharacterMenu() {
         _isCharacterMenuVisible.value = false
     }
+
+    fun dismissQuestRewardNotification() {
+        _questRewardNotification.value = null
+    }
+
+    private fun handleQuestCompletion(event: QuestCompletionEvent) {
+        event.rewardItems.forEach { inventoryManager.addItem(it) }
+        event.locationsUnlocked.forEach { activityManager.unlockLocation(it) }
+        _questRewardNotification.value = event
+        audioManager.playSfx("quest_completed")
+        saveProgress()
+    }
+
+    fun onChoiceSelected(position: String) {
+        viewModelScope.launch {
+            val currentScenario = _currentScenario.value
+            val currentProgress = _playerProgress.value
+
+            if (currentScenario == null || currentProgress == null) {
+                Timber.e("Scenario or Progress is null during choice selection")
+                return@launch
+            }
+
+            val decision = currentScenario.decisions[position] ?: return@launch
+
+            try {
+                val conditionMet = decision.condition?.isMet(
+                    inventoryManager.getInventorySet(),
+                    statsManager.getStatsMap(),
+                    reputationManager.getReputationMap()
+                ) ?: true
+
+                val targetScenarioId = when (val leadsTo = decision.leadsTo) {
+                    is LeadsTo.Simple -> leadsTo.scenarioId
+                    is LeadsTo.Conditional -> if (conditionMet) leadsTo.ifConditionMet else leadsTo.ifConditionNotMet
+                }
+
+                val nextScenario = repository.getScenarioById(targetScenarioId) ?: run {
+                    Timber.e("Next scenario '%s' not found", targetScenarioId)
+                    return@launch
+                }
+
+               if (conditionMet) {
+                   currentScenario.itemGiven?.get(position)?.let { item ->
+                       inventoryManager.addItem(item)
+                       questManager.checkItemObjectives(item)
+                       audioManager.playSfx("item_acquired")
+                   }
+
+                   // Grant stats for the chosen position
+                   currentScenario.statsGranted?.get(position)?.forEach { (stat, amount) ->
+                       statsManager.addStat(stat, amount)
+                   }
+
+                   // Apply reputation changes for the chosen position
+                   currentScenario.reputationChanges?.get(position)?.forEach { (faction, amount) ->
+                       reputationManager.adjustReputation(faction, amount)
+                   }
+
+                   // Remove item if the item should be removed on use
+                   if (decision.condition?.removeOnUse == true) {
+                       decision.condition.requiredItem?.let { inventoryManager.removeItem(it) }
+                   }
+               }
+
+               questManager.checkAndCompleteObjectives(targetScenarioId)
+
+               // Activate path quest when leaving the crossroads (scenario8)
+               if (currentScenario.id == "scenario8") {
+                   questManager.activatePathQuest(targetScenarioId)
+               }
+
+               // Activate side quests when reaching the town (scenario6)
+               if (targetScenarioId == "scenario6") {
+                   questManager.activateSideQuests()
+               }
+
+               val visitedLocations = currentProgress.visitedLocations.toMutableSet().apply {
+                    add(nextScenario.location)
+                }.toSet()
+
+               val (activeQ, completedQ) = questManager.getQuestState()
+               _playerProgress.value = currentProgress.copy(
+                    currentScenarioId = targetScenarioId,
+                    playerInventory = inventoryManager.getInventoryList(),
+                    activeQuests = activeQ,
+                    completedQuests = completedQ,
+                    visitedLocations = visitedLocations,
+                    playerStats = statsManager.getStatsMap(),
+                    playerReputation = reputationManager.getReputationMap()
+                )
+
+                _currentScenario.value = nextScenario
+                audioManager.playMusicForLocation(nextScenario.location)
+                saveProgress()
+            } catch (e: Exception) {
+                Timber.e(e, "Error in choice selection")
+            }
+        }
+    }
+
+    // --- Interactive Map Location Methods ---
+
+    /**
+     * Updates the interactive map locations based on current game state
+     */
+    private suspend fun updateInteractiveMapLocations() {
+        try {
+            val currentProgress = _playerProgress.value
+            if (currentProgress != null) {
+                val discoveredLocations = repository.getDiscoveredLocations(
+                    playerInventory = inventoryManager.getInventorySet(),
+                    visitedLocations = currentProgress.visitedLocations,
+                    unlockedLocations = activityManager.getUnlockedLocationsList()
+                )
+                
+                withContext(Dispatchers.Main) {
+                    _interactiveMapLocations.value = discoveredLocations
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error updating interactive map locations")
+        }
+    }
+
+    /**
+     * Handles traveling to an interactive map location
+     */
+    fun travelToInteractiveLocation(location: InteractiveMapLocation) {
+        viewModelScope.launch {
+            try {
+                // Mark location as visited
+                repository.updateLocationVisitStatus(location.id, true)
+                
+                // Travel to the associated scenario
+                val scenario = repository.getScenarioById(location.scenarioId)
+                if (scenario != null) {
+                    questManager.checkAndCompleteObjectives(scenario.id)
+                    val (updatedActive, updatedCompleted) = questManager.getQuestState()
+
+                    val currentProgress = _playerProgress.value
+                    withContext(Dispatchers.Main) {
+                        _currentScenario.value = scenario
+                        _playerProgress.value = currentProgress?.copy(
+                            currentScenarioId = location.scenarioId,
+                            activeQuests = updatedActive,
+                            completedQuests = updatedCompleted,
+                            visitedLocations = currentProgress.visitedLocations + location.name
+                        )
+                        hideMap()
+                        saveProgress() // Save after traveling
+                        updateInteractiveMapLocations() // Refresh map state
+                    }
+                } else {
+                    Timber.e("Scenario %s not found for interactive travel", location.scenarioId)
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error traveling to interactive location %s", location.name)
+            }
+        }
+    }
+
+    /**
+     * Starts an activity at a specific location
+     */
+    fun startActivity(locationId: String, activityId: String) {
+        viewModelScope.launch {
+            try {
+                val location = repository.getInteractiveMapLocationById(locationId)
+                if (location != null) {
+                    val activity = location.availableActivities.find { it.id == activityId }
+                    if (activity != null) {
+                        when (activity.type) {
+                            ActivityType.MINIGAME -> {
+                                // Launch mini-game based on activity requirements
+                                val gameId = selectMiniGameForActivity(activity)
+                                if (gameId != null) {
+                                    miniGameManager.startMiniGame(gameId)
+                                } else {
+                                    // Fallback to direct completion
+                                    completeActivityDirectly(activityId, locationId)
+                                }
+                            }
+                            ActivityType.TRADING -> {
+                                // Launch trading mini-game
+                                miniGameManager.startMiniGame("trading_balanced")
+                            }
+                            else -> {
+                                // For other activity types, complete directly for now
+                                completeActivityDirectly(activityId, locationId)
+                            }
+                        }
+                    } else {
+                        Timber.w("Activity %s not found at location %s", activityId, locationId)
+                    }
+                } else {
+                    Timber.w("Location %s not found", locationId)
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error starting activity")
+            }
+        }
+    }
+
+    /**
+     * Gets available activities for a specific location
+     */
+    fun getAvailableActivitiesForLocation(locationId: String): List<LocationActivity> {
+        val location = _interactiveMapLocations.value.find { it.id == locationId }
+        return if (location != null) {
+            activityManager.getAvailableActivities(location, inventoryManager.getInventorySet())
+        } else {
+            emptyList()
+        }
+    }
+
+    /**
+     * Checks if a location has any available activities
+     */
+    fun hasAvailableActivities(locationId: String): Boolean {
+        val location = _interactiveMapLocations.value.find { it.id == locationId }
+        return if (location != null) {
+            activityManager.hasAvailableActivities(location, inventoryManager.getInventorySet())
+        } else {
+            false
+        }
+    }
+
+    /**
+     * Gets the completion rate for a specific location
+     */
+    fun getLocationCompletionRate(locationId: String): Float {
+        val location = _interactiveMapLocations.value.find { it.id == locationId }
+        return if (location != null) {
+            activityManager.getLocationCompletionRate(location)
+        } else {
+            0f
+        }
+    }
+
+    /**
+     * Gets activities by type for a specific location
+     */
+    fun getActivitiesByType(locationId: String, activityType: ActivityType): List<LocationActivity> {
+        val location = _interactiveMapLocations.value.find { it.id == locationId }
+        return if (location != null) {
+            activityManager.getActivitiesByType(location, activityType, inventoryManager.getInventorySet())
+        } else {
+            emptyList()
+        }
+    }
+
+    /**
+     * Looks up the ActivityType name for a given activity ID from loaded locations.
+     */
+    private fun findActivityType(activityId: String): String? {
+        for (location in _interactiveMapLocations.value) {
+            val activity = location.availableActivities.find { it.id == activityId }
+            if (activity != null) return activity.type.name
+        }
+        return null
+    }
+
+    // --- Mini-Game Management Methods ---
+
+    /**
+     * Selects an appropriate mini-game based on activity details
+     */
+    private fun selectMiniGameForActivity(activity: LocationActivity): String? {
+        return when {
+            activity.name.contains("lock", ignoreCase = true) -> {
+                when (activity.difficulty) {
+                    1, 2 -> "lockpicking_1_locks"
+                    3 -> "lockpicking_2_locks"
+                    4, 5 -> "lockpicking_3_locks"
+                    else -> "lockpicking_2_locks"
+                }
+            }
+            activity.name.contains("trade", ignoreCase = true) -> "trading_balanced"
+            activity.name.contains("negotiate", ignoreCase = true) -> "trading_friendly"
+            else -> null
+        }
+    }
+
+    /**
+     * Handles the result of a completed mini-game
+     */
+    private fun handleMiniGameResult(gameId: String, result: com.spiritwisestudios.crossroadsoffate.minigames.MiniGameResult) {
+        viewModelScope.launch {
+            try {
+                val activityResult = activityManager.processMiniGameResult(gameId, result)
+
+                activityResult.itemsGained.forEach { item ->
+                    inventoryManager.addItem(item)
+                    questManager.checkItemObjectives(item)
+                }
+
+                activityResult.itemsLost.forEach { item ->
+                    inventoryManager.removeItem(item)
+                }
+
+                // Determine activity type from the location data
+                val activityType = findActivityType(gameId)
+                questManager.checkActivityObjectives(gameId, activityType)
+
+                withContext(Dispatchers.Main) {
+                    saveProgress()
+                    updateInteractiveMapLocations()
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error handling mini-game result")
+            }
+        }
+    }
+
+    /**
+     * Completes an activity directly without a mini-game
+     */
+    private fun completeActivityDirectly(activityId: String, locationId: String) {
+        viewModelScope.launch {
+            try {
+                val testResult = miniGameManager.createTestResult(activityId, success = true)
+                val activityResult = activityManager.processMiniGameResult(activityId, testResult)
+
+                activityResult.itemsGained.forEach { item ->
+                    inventoryManager.addItem(item)
+                    questManager.checkItemObjectives(item)
+                }
+
+                val activityType = findActivityType(activityId)
+                questManager.checkActivityObjectives(activityId, activityType)
+
+                withContext(Dispatchers.Main) {
+                    saveProgress()
+                    updateInteractiveMapLocations()
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error completing activity directly")
+            }
+        }
+    }
+
+    /**
+     * Starts a specific mini-game by ID
+     */
+    fun startMiniGame(gameId: String): Boolean {
+        return miniGameManager.startMiniGame(gameId)
+    }
+
+    /**
+     * Processes input for the current mini-game
+     */
+    fun processMiniGameInput(input: com.spiritwisestudios.crossroadsoffate.minigames.MiniGameInput): Boolean {
+        return miniGameManager.processInput(input)
+    }
+
+    /**
+     * Cancels the current mini-game
+     */
+    fun cancelCurrentMiniGame() {
+        miniGameManager.cancelCurrentGame()
+    }
+
+    /**
+     * Gets all available mini-games
+     */
+    fun getAvailableMiniGames(): List<com.spiritwisestudios.crossroadsoffate.minigames.MiniGame> {
+        return miniGameManager.getAllMiniGames()
+    }
+
+    /**
+     * Clears the last mini-game result (for UI state management)
+     */
+    fun clearLastMiniGameResult() {
+        miniGameManager.clearLastResult()
+    }
+
+    /**
+     * Gets the current progress of the active mini-game
+     */
+    fun getCurrentMiniGameProgress(): Float {
+        return miniGameManager.getCurrentProgress()
+    }
+
+    /**
+     * Updates animation state for the current mini-game (called per frame from UI)
+     */
+    fun updateMiniGameAnimation() {
+        miniGameManager.updateAnimationTick()
+    }
+
+    // --- Audio Management Methods ---
+
+    fun playSfx(name: String) {
+        audioManager.playSfx(name)
+    }
+
+    fun setMusicVolume(volume: Float) {
+        audioManager.setMusicVolume(volume)
+    }
+
+    fun setSfxVolume(volume: Float) {
+        audioManager.setSfxVolume(volume)
+    }
+
+    fun toggleMute() {
+        audioManager.toggleMute()
+    }
+
+    fun onLifecyclePause() {
+        audioManager.onPause()
+    }
+
+    fun onLifecycleResume() {
+        audioManager.onResume()
+    }
+
+    fun playMenuMusic() {
+        audioManager.playMusic("menu")
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        audioManager.release()
+    }
+
+    // ========================
+    // Debug Menu Methods
+    // ========================
+
+    private var _isDebugSession = false
+    val isDebugSession: Boolean get() = _isDebugSession
+
+    fun debugStartSession() {
+        if (_isDebugSession) return
+        _isDebugSession = true
+        val debugProgress = PlayerProgress(
+            playerId = "debug_player",
+            currentScenarioId = "scenario1",
+            playerInventory = listOf("torch"),
+            activeQuests = questManager.getStartingQuests(),
+            completedQuests = emptyList(),
+            visitedLocations = emptySet(),
+            completedActivities = emptySet(),
+            discoveredLocations = emptySet(),
+            playerStats = StatsManager.DEFAULT_STATS,
+            playerReputation = ReputationManager.DEFAULT_REPUTATION
+        )
+        _playerProgress.value = debugProgress
+        inventoryManager.initialize(debugProgress.playerInventory)
+        questManager.initialize(debugProgress.activeQuests, debugProgress.completedQuests)
+        activityManager.initialize(debugProgress.completedActivities, debugProgress.discoveredLocations)
+        statsManager.initialize(debugProgress.playerStats)
+        reputationManager.initialize(debugProgress.playerReputation)
+        _isOnTitleScreen.value = false
+        viewModelScope.launch {
+            _currentScenario.value = repository.getScenarioById("scenario1")
+            updateInteractiveMapLocations()
+        }
+    }
+
+    fun debugEndSession() {
+        if (!_isDebugSession) return
+        _isDebugSession = false
+        _isOnTitleScreen.value = true
+        hideMap()
+        hideCharacterMenu()
+        cancelCurrentMiniGame()
+        viewModelScope.launch { loadPlayerProgress("default_player") }
+        audioManager.playMusic("menu")
+    }
+
+    fun debugAddItem(item: String) { ensureDebugSession(); inventoryManager.addItem(item) }
+    fun debugRemoveItem(item: String) { ensureDebugSession(); inventoryManager.removeItem(item) }
+    fun debugClearInventory() { ensureDebugSession(); inventoryManager.initialize(emptyList()) }
+    fun debugModifyStat(stat: String, delta: Int) { ensureDebugSession(); statsManager.addStat(stat, delta) }
+    fun debugModifyReputation(faction: String, delta: Int) { ensureDebugSession(); reputationManager.adjustReputation(faction, delta) }
+
+    fun debugActivateQuest(id: String) {
+        ensureDebugSession()
+        when (id) {
+            "main" -> questManager.initialize(questManager.getStartingQuests(), emptyList())
+            "side_all" -> questManager.activateSideQuests()
+            "path_guard" -> questManager.activatePathQuest("scenario9")
+            "path_merchant" -> questManager.activatePathQuest("scenario11")
+            "path_adventurer" -> questManager.activatePathQuest("scenario10")
+            "path_outlaw" -> questManager.activatePathQuest("scenario12")
+        }
+    }
+
+    fun debugCompleteNextObjective(questId: String) {
+        ensureDebugSession()
+        val quest = questManager.activeQuests.value.find { it.id == questId } ?: return
+        val next = quest.objectives.firstOrNull { !it.isCompleted } ?: return
+        questManager.updateObjectiveStatus(questId, next.id)
+    }
+
+    fun debugJumpToScenario(scenarioId: String) {
+        ensureDebugSession()
+        viewModelScope.launch {
+            val scenario = repository.getScenarioById(scenarioId)
+            if (scenario != null) {
+                withContext(Dispatchers.Main) {
+                    _currentScenario.value = scenario
+                    _playerProgress.value = _playerProgress.value?.copy(currentScenarioId = scenarioId)
+                }
+            } else {
+                Timber.w("Debug: scenario %s not found", scenarioId)
+            }
+        }
+    }
+
+    fun debugUnlockAllLocations() {
+        ensureDebugSession()
+        viewModelScope.launch {
+            listOf("town_square", "merchant_quarters", "guard_training_grounds", "ancient_ruins",
+                "council_chamber", "wilderness_trail", "mentor_cottage", "shadow_alley",
+                "criminal_hideout", "scholars_retreat", "sacred_temple", "cursed_ruins")
+                .forEach { activityManager.unlockLocation(it) }
+            updateInteractiveMapLocations()
+        }
+    }
+
+    fun debugGetAllScenarioIds(callback: (List<String>) -> Unit) {
+        viewModelScope.launch {
+            val ids = repository.getAllScenarioIds()
+            withContext(Dispatchers.Main) { callback(ids) }
+        }
+    }
+
+    fun debugResetProgress() {
+        viewModelScope.launch {
+            repository.resetPlayerProgress()
+            debugStartSession()
+        }
+    }
+
+    fun debugPlayMusic(track: String) { audioManager.playMusic(track) }
+
+    private fun ensureDebugSession() { if (!_isDebugSession) debugStartSession() }
 }
