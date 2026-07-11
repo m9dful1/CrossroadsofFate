@@ -79,13 +79,13 @@ data class MiniGameResult(
  * Sealed class representing different types of player input
  */
 sealed class MiniGameInput {
-    data class Tap(val x: Float, val y: Float) : MiniGameInput()
     data class Swipe(val direction: SwipeDirection) : MiniGameInput()
     data class TextInput(val text: String) : MiniGameInput()
     data class NumberInput(val number: Int) : MiniGameInput()
     data class Choice(val choice: String) : MiniGameInput()
     object Confirm : MiniGameInput()
     object Cancel : MiniGameInput()
+    object Slip : MiniGameInput()
     object Skip : MiniGameInput()
 }
 

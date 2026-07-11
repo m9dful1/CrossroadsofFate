@@ -63,7 +63,7 @@ fun MiniGameOverlay(gameViewModel: GameViewModel) {
             is LockPickingGame -> LockPickingScreen(
                 gameState = currentGameState!!,
                 onLockPicked = { gameViewModel.processMiniGameInput(MiniGameInput.Confirm) },
-                onPickSlipped = { gameViewModel.processMiniGameInput(MiniGameInput.Tap(0f, 0f)) },
+                onPickSlipped = { gameViewModel.processMiniGameInput(MiniGameInput.Slip) },
                 onCancel = { gameViewModel.cancelCurrentMiniGame() }
             )
 

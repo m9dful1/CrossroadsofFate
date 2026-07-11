@@ -879,15 +879,52 @@ Phase 1 provides the complete foundation for interactive map features. Players c
 - Lock picks have durability (3 uses) — each restart costs 1 durability; pick breaks when durability reaches 0
 - Bottom arch has visual checkpoint markers (tick marks + circles) that change color as phases are completed
 - Tension floor mechanism: once a checkpoint is reached, the bottom arch progress can't go below it
-- Phase advancement is local to the UI; `MiniGameInput.Confirm` sent only on final completion, `MiniGameInput.Tap` on any slip/restart
+- Phase advancement is local to the UI; `MiniGameInput.Confirm` sent only on final completion, `MiniGameInput.Slip` on any slip/restart
 - Game IDs: `lockpicking_1_locks` (easy, 45s), `lockpicking_2_locks` (medium, 75s), `lockpicking_3_locks` (hard, 90s)
 
 **Data Flow**:
 1. Interactive map activity start → `GameViewModel.startActivity()` → `MiniGameManager.startMiniGame()`
 2. UI observes `isMiniGameActive` + `currentMiniGame` StateFlows → renders appropriate screen
-3. Player interaction → `MiniGameInput.Confirm`/`Tap`/`Choice` → `MiniGameManager.processInput()` → state update
+3. Player interaction → `MiniGameInput.Confirm`/`Slip`/`Choice` → `MiniGameManager.processInput()` → state update
 4. Game completion → `MiniGameManager.completeGame()` → `lastResult` set → result screen shown
 5. Player dismisses result → `clearLastMiniGameResult()` → overlay hidden
+
+### 15.8 Lock Picking Mini-Game Refactoring
+
+[Date of modification: 2026-03-10]
+[Description: Pure refactoring of lock picking mini-game code — no behavioral changes]
+
+#### Changes
+
+**Semantic input type** (`MiniGameFramework.kt`, `LockPickingGame.kt`, `MiniGameOverlay.kt`):
+- Added `MiniGameInput.Slip` to the sealed class, replacing the misuse of `MiniGameInput.Tap(0f, 0f)` for pick-slip events
+- `LockPickingGame.processInput` now matches on `MiniGameInput.Slip` instead of `MiniGameInput.Tap`
+- `MiniGameOverlay` sends `MiniGameInput.Slip` on pick slip
+
+**Named color constants** (`LockPickingScreen.kt`):
+- Extracted `LockPickingColors` private object with 15 named colors, replacing ~20 inline hex color literals
+
+**Sweet spot helper** (`LockPickingScreen.kt`):
+- Extracted `isAngleInSweetSpot(angle, center, size)` helper, replacing 5 inline `abs(x - y) <= size / 2` expressions
+
+**Draw parameter data classes** (`LockPickingScreen.kt`):
+- Introduced `LockPickState`, `TensionState`, and `PhaseState` data classes
+- `drawLockVisualization` signature reduced from 12 parameters to 3
+
+**Wrench handle helper** (`LockPickingScreen.kt`):
+- Extracted `DrawScope.drawWrenchHandle(tip, angleRad, color)`, replacing 2 duplicated handle-drawing blocks
+
+**Slip-reset consolidation** (`LockPickingScreen.kt`):
+- Extracted `resetPhaseOnSlip` lambda to consolidate the repeated `onPickSlipped() + localPhase=0 + tensionFloor=0f + phaseSpotFound=false` pattern
+
+**Pointer input decomposition** (`LockPickingScreen.kt`):
+- Extracted 4 local functions inside the `pointerInput` block: `handlePointerDown`, `handlePickTracking`, `handleTensionTracking`, `handlePointerUp`
+- Main event loop reduced to a clean dispatch of these handlers
+
+**Minor fixes** (`LockPickingScreen.kt`):
+- Timer `delay(100)` changed to `delay(1000)` — display only shows whole seconds
+- Added comments explaining why `cx/cy/arcR` are computed independently in `pointerInput` and `DrawScope`
+- Added comment on strain `LaunchedEffect(Unit)` explaining the closure-based state reading pattern
 
 ## 16. Quest Expansion & Reward System
 

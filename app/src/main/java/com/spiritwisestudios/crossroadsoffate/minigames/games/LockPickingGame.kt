@@ -95,7 +95,7 @@ class LockPickingGame(
     /**
      * Processes high-level game events from the UI:
      * - Confirm = all phases completed, lock is open
-     * - Tap = pick slipped / finger lifted — restart attempt, reduce durability
+     * - Slip = pick slipped / finger lifted — restart attempt, reduce durability
      * - Cancel = player cancelled the game
      */
     override fun processInput(currentState: MiniGameState, input: MiniGameInput): MiniGameState {
@@ -103,7 +103,7 @@ class LockPickingGame(
 
         return when (input) {
             is MiniGameInput.Confirm -> processLockOpened(currentState)
-            is MiniGameInput.Tap -> processPickSlipped(currentState)
+            is MiniGameInput.Slip -> processPickSlipped(currentState)
             is MiniGameInput.Cancel -> currentState.copy(isActive = false)
             else -> currentState
         }
