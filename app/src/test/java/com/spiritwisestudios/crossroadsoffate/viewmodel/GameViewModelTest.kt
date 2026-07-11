@@ -2,11 +2,14 @@ package com.spiritwisestudios.crossroadsoffate.viewmodel
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import com.spiritwisestudios.crossroadsoffate.data.models.ActivityType
 import com.spiritwisestudios.crossroadsoffate.data.models.Condition
 import com.spiritwisestudios.crossroadsoffate.data.models.Decision
 import com.spiritwisestudios.crossroadsoffate.data.models.ExplorationMap
 import com.spiritwisestudios.crossroadsoffate.data.models.ExplorationMapSet
+import com.spiritwisestudios.crossroadsoffate.data.models.InteractiveMapLocation
 import com.spiritwisestudios.crossroadsoffate.data.models.LeadsTo
+import com.spiritwisestudios.crossroadsoffate.data.models.LocationActivity
 import com.spiritwisestudios.crossroadsoffate.data.models.MapEntity
 import com.spiritwisestudios.crossroadsoffate.data.models.MapEntityType
 import com.spiritwisestudios.crossroadsoffate.data.models.MapPoint
@@ -205,8 +208,11 @@ class GameViewModelTest {
 
     // --- Exploration flow ---
 
-    /** A one-map catalog covering "Town Square" with the story marker right next to spawn. */
-    private fun explorationCatalog() = ExplorationMapSet(
+    /**
+     * A one-map catalog covering "Town Square" with the story marker right next
+     * to spawn, plus an optional ACTIVITY entity (also within interact range).
+     */
+    private fun explorationCatalog(activityId: String? = null) = ExplorationMapSet(
         listOf(
             ExplorationMap(
                 id = "test_town",
@@ -215,24 +221,51 @@ class GameViewModelTest {
                 width = 400f,
                 height = 400f,
                 spawn = MapPoint(200f, 200f),
-                entities = listOf(
+                entities = listOfNotNull(
                     MapEntity(
                         id = "story", type = MapEntityType.STORY, icon = "❗",
                         label = "Story", x = 220f, y = 200f
-                    )
+                    ),
+                    activityId?.let {
+                        MapEntity(
+                            id = "activity_$it", type = MapEntityType.ACTIVITY, icon = "🎲",
+                            label = "Play", x = 200f, y = 160f, activityId = it
+                        )
+                    }
                 )
             )
         )
     )
 
     /** Builds a ViewModel whose catalog covers scenario2's location "Town Square". */
-    private fun viewModelWithExploration(): GameViewModel = runBlockingStubs {
-        whenever(repository.loadExplorationMaps()).thenReturn(explorationCatalog())
+    private fun viewModelWithExploration(activityId: String? = null): GameViewModel = runBlockingStubs {
+        whenever(repository.loadExplorationMaps()).thenReturn(explorationCatalog(activityId))
         val choice = createTestDecision(targetScenarioId = "scenario2")
         val start = createTestScenario(id = "scenario1", decisions = mapOf("bottomLeft" to choice))
         val next = createTestScenario(id = "scenario2", location = "Town Square")
         whenever(repository.getScenarioById("scenario1")).thenReturn(start)
         whenever(repository.getScenarioById("scenario2")).thenReturn(next)
+    }
+
+    /** Enters exploration on the test map, ready to tap entities. */
+    private fun GameViewModel.startExploring() {
+        onChoiceSelected("bottomLeft")
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertTrue("Precondition: should be exploring", isExploring.value)
+    }
+
+    private fun stubLocation(vararg activities: LocationActivity) {
+        kotlinx.coroutines.runBlocking {
+            whenever(repository.getInteractiveMapLocationById("test_town")).thenReturn(
+                InteractiveMapLocation(
+                    id = "test_town",
+                    name = "Test Town",
+                    description = "A town for tests",
+                    scenarioId = "scenario2",
+                    availableActivities = activities.toList()
+                )
+            )
+        }
     }
 
     private fun runBlockingStubs(stubs: suspend () -> Unit): GameViewModel {
@@ -294,5 +327,74 @@ class GameViewModelTest {
 
         assertFalse(viewModel.isExploring.value)
         assertFalse(viewModel.isStoryMarkerVisible.value)
+    }
+
+    // --- Exploration activities ---
+
+    @Test
+    fun explorationActivity_launchesMatchingMiniGame_whenAvailable() {
+        stubLocation(
+            LocationActivity(
+                id = "practice_lock", type = ActivityType.MINIGAME,
+                name = "Practice lock picking", description = "Pick a training lock",
+                difficulty = 1, isRepeatable = true
+            )
+        )
+        val viewModel = viewModelWithExploration(activityId = "practice_lock")
+        viewModel.startExploring()
+
+        viewModel.onExplorationTap(200f, 160f) // activity entity is within interact range
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue("Mini-game should start", viewModel.isMiniGameActive.value)
+        assertEquals("lockpicking_1_locks", viewModel.currentMiniGame.value?.id)
+    }
+
+    @Test
+    fun explorationActivity_showsMissingItems_insteadOfLaunching() {
+        stubLocation(
+            LocationActivity(
+                id = "sealed_deal", type = ActivityType.MINIGAME,
+                name = "High-stakes lock job", description = "Requires credentials",
+                requiredItems = listOf("merchant_seal")
+            )
+        )
+        val viewModel = viewModelWithExploration(activityId = "sealed_deal")
+        viewModel.startExploring()
+
+        viewModel.onExplorationTap(200f, 160f)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse("Game must not start without required items", viewModel.isMiniGameActive.value)
+        assertEquals("You need: merchant_seal.", viewModel.explorationDialog.value?.line)
+    }
+
+    @Test
+    fun explorationActivity_directCompletion_marksCompleted_andBlocksRepeat() {
+        stubLocation(
+            LocationActivity(
+                id = "town_chat", type = ActivityType.NPC_INTERACTION,
+                name = "Gather Gossip", description = "Listen for rumors",
+                isRepeatable = false
+            )
+        )
+        val viewModel = viewModelWithExploration(activityId = "town_chat")
+        viewModel.startExploring()
+
+        viewModel.onExplorationTap(200f, 160f)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue("Activity should be marked completed",
+            viewModel.completedActivities.value.contains("town_chat"))
+        assertTrue("Should confirm completion in the dialog bubble",
+            viewModel.explorationDialog.value?.line.orEmpty().startsWith("Done!"))
+
+        // Second attempt: non-repeatable, so it should refuse politely
+        viewModel.dismissExplorationDialog()
+        viewModel.onExplorationTap(200f, 160f)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals("Nothing more to do here.", viewModel.explorationDialog.value?.line)
+        assertFalse(viewModel.isMiniGameActive.value)
     }
 }

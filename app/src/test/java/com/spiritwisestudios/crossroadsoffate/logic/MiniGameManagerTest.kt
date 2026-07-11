@@ -67,6 +67,31 @@ class MiniGameManagerTest {
     }
 
     @Test
+    fun completion_reportsLaunchingActivityId_whenProvided() {
+        var notified: Pair<String, MiniGameResult>? = null
+        manager.setActivityListener { activityId, result -> notified = activityId to result }
+        manager.startMiniGame("lockpicking_1_locks", activityId = "hideout_lockpicking")
+
+        assertTrue(manager.processInput(MiniGameInput.Confirm))
+
+        assertEquals("hideout_lockpicking", notified?.first)
+    }
+
+    @Test
+    fun pendingActivityId_doesNotLeakIntoNextSession() {
+        var notified: Pair<String, MiniGameResult>? = null
+        manager.setActivityListener { activityId, result -> notified = activityId to result }
+
+        // First session launched for an activity, second one launched bare
+        manager.startMiniGame("lockpicking_1_locks", activityId = "hideout_lockpicking")
+        assertTrue(manager.processInput(MiniGameInput.Confirm))
+        manager.startMiniGame("lockpicking_1_locks")
+        assertTrue(manager.processInput(MiniGameInput.Confirm))
+
+        assertEquals("lockpicking_1_locks", notified?.first)
+    }
+
+    @Test
     fun cancelCurrentGame_clearsSessionWithoutResult() {
         manager.startMiniGame("trading_balanced")
         manager.cancelCurrentGame()

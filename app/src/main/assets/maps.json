@@ -330,6 +330,30 @@
           "y": 560,
           "targetMapId": "wilderness_trail",
           "dialog": null
+        },
+        {
+          "id": "activity_town_square_trading",
+          "type": "ACTIVITY",
+          "icon": "💰",
+          "label": "Trade",
+          "x": 150,
+          "y": 380,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "town_square_trading"
+        },
+        {
+          "id": "activity_town_square_gossip",
+          "type": "ACTIVITY",
+          "icon": "🗣",
+          "label": "Gossip",
+          "x": 240,
+          "y": 300,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "town_square_gossip"
         }
       ]
     },
@@ -487,6 +511,18 @@
           "y": 560,
           "targetMapId": "criminal_hideout",
           "dialog": null
+        },
+        {
+          "id": "activity_merchant_negotiation",
+          "type": "ACTIVITY",
+          "icon": "🤝",
+          "label": "Negotiation",
+          "x": 500,
+          "y": 320,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "merchant_negotiation"
         }
       ]
     },
@@ -639,6 +675,30 @@
           "y": 560,
           "targetMapId": "town_square",
           "dialog": null
+        },
+        {
+          "id": "activity_council_discourse",
+          "type": "ACTIVITY",
+          "icon": "🗣",
+          "label": "Discourse",
+          "x": 350,
+          "y": 470,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "council_discourse"
+        },
+        {
+          "id": "activity_council_trade",
+          "type": "ACTIVITY",
+          "icon": "💰",
+          "label": "Trade Deals",
+          "x": 650,
+          "y": 300,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "council_trade"
         }
       ]
     },
@@ -777,6 +837,30 @@
           "y": 300,
           "targetMapId": "town_square",
           "dialog": null
+        },
+        {
+          "id": "activity_combat_training",
+          "type": "ACTIVITY",
+          "icon": "⚔",
+          "label": "Combat Training",
+          "x": 480,
+          "y": 180,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "combat_training"
+        },
+        {
+          "id": "activity_guard_investigation",
+          "type": "ACTIVITY",
+          "icon": "🔍",
+          "label": "Investigate",
+          "x": 700,
+          "y": 300,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "guard_investigation"
         }
       ]
     },
@@ -924,6 +1008,30 @@
           "y": 560,
           "targetMapId": "criminal_hideout",
           "dialog": null
+        },
+        {
+          "id": "activity_shadow_investigation",
+          "type": "ACTIVITY",
+          "icon": "🔍",
+          "label": "Investigate",
+          "x": 380,
+          "y": 200,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "shadow_investigation"
+        },
+        {
+          "id": "activity_underworld_contacts",
+          "type": "ACTIVITY",
+          "icon": "🗣",
+          "label": "Contacts",
+          "x": 600,
+          "y": 470,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "underworld_contacts"
         }
       ]
     },
@@ -1067,6 +1175,30 @@
           "y": 300,
           "targetMapId": "merchant_quarters",
           "dialog": null
+        },
+        {
+          "id": "activity_hideout_lockpicking",
+          "type": "ACTIVITY",
+          "icon": "🔓",
+          "label": "Pick Locks",
+          "x": 620,
+          "y": 470,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "hideout_lockpicking"
+        },
+        {
+          "id": "activity_hideout_intel",
+          "type": "ACTIVITY",
+          "icon": "🗺",
+          "label": "Gather Intel",
+          "x": 300,
+          "y": 150,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "hideout_intel"
         }
       ]
     },
@@ -1258,6 +1390,30 @@
           "y": 560,
           "targetMapId": "sacred_temple",
           "dialog": null
+        },
+        {
+          "id": "activity_trail_exploration",
+          "type": "ACTIVITY",
+          "icon": "🧭",
+          "label": "Explore",
+          "x": 620,
+          "y": 180,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "trail_exploration"
+        },
+        {
+          "id": "activity_wilderness_combat",
+          "type": "ACTIVITY",
+          "icon": "⚔",
+          "label": "Fight Beasts",
+          "x": 150,
+          "y": 450,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "wilderness_combat"
         }
       ]
     },
@@ -1395,6 +1551,30 @@
           "y": 300,
           "targetMapId": "wilderness_trail",
           "dialog": null
+        },
+        {
+          "id": "activity_mentor_wisdom",
+          "type": "ACTIVITY",
+          "icon": "📜",
+          "label": "Seek Wisdom",
+          "x": 520,
+          "y": 430,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "mentor_wisdom"
+        },
+        {
+          "id": "activity_mentor_crafting",
+          "type": "ACTIVITY",
+          "icon": "⚒",
+          "label": "Crafting",
+          "x": 250,
+          "y": 300,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "mentor_crafting"
         }
       ]
     },
@@ -1549,6 +1729,30 @@
           "y": 300,
           "targetMapId": "cursed_ruins",
           "dialog": null
+        },
+        {
+          "id": "activity_ruins_exploration",
+          "type": "ACTIVITY",
+          "icon": "🔦",
+          "label": "Explore Ruins",
+          "x": 350,
+          "y": 420,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "ruins_exploration"
+        },
+        {
+          "id": "activity_rune_puzzle",
+          "type": "ACTIVITY",
+          "icon": "🧩",
+          "label": "Rune Puzzle",
+          "x": 760,
+          "y": 320,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "rune_puzzle"
         }
       ]
     },
@@ -1693,6 +1897,30 @@
           "y": 40,
           "targetMapId": "wilderness_trail",
           "dialog": null
+        },
+        {
+          "id": "activity_ancient_translations",
+          "type": "ACTIVITY",
+          "icon": "🧩",
+          "label": "Translations",
+          "x": 620,
+          "y": 300,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "ancient_translations"
+        },
+        {
+          "id": "activity_library_archives",
+          "type": "ACTIVITY",
+          "icon": "📖",
+          "label": "Archives",
+          "x": 220,
+          "y": 300,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "library_archives"
         }
       ]
     },
@@ -1848,6 +2076,30 @@
           "y": 220,
           "targetMapId": "celestial_court",
           "dialog": null
+        },
+        {
+          "id": "activity_temple_mysteries",
+          "type": "ACTIVITY",
+          "icon": "🧩",
+          "label": "Mysteries",
+          "x": 620,
+          "y": 330,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "temple_mysteries"
+        },
+        {
+          "id": "activity_sacred_archives",
+          "type": "ACTIVITY",
+          "icon": "📖",
+          "label": "Archives",
+          "x": 350,
+          "y": 470,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "sacred_archives"
         }
       ]
     },
@@ -1995,6 +2247,30 @@
           "y": 500,
           "targetMapId": "infernal_depths",
           "dialog": null
+        },
+        {
+          "id": "activity_cursed_guardians",
+          "type": "ACTIVITY",
+          "icon": "⚔",
+          "label": "Guardians",
+          "x": 350,
+          "y": 250,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "cursed_guardians"
+        },
+        {
+          "id": "activity_dark_secrets",
+          "type": "ACTIVITY",
+          "icon": "🔍",
+          "label": "Dark Secrets",
+          "x": 620,
+          "y": 400,
+          "targetMapId": null,
+          "dialog": null,
+          "locationId": null,
+          "activityId": "dark_secrets"
         }
       ]
     },

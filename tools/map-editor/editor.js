@@ -6,12 +6,13 @@
 
 const PLAYER_RADIUS = 12;   // keep in sync with ExplorationManager.PLAYER_RADIUS
 const NAV_CELL = 25;        // keep in sync with ExplorationManager.NAV_CELL
-const ENTITY_TYPES = ["STORY", "NPC", "EXIT"];
+const ENTITY_TYPES = ["STORY", "NPC", "EXIT", "ACTIVITY"];
 const ICONS = [
   "❗", "🚪", "🏠", "🏘", "🏪", "🏛", "🛡", "🌑", "🌲", "🏡", "🏚", "📚", "⛩", "💀", "🔥", "🌟",
   "🧙", "🧝‍♀️", "🧑‍🍳", "🧒", "👮", "🧕", "🧔", "🕵", "🦹", "🥷", "👻", "👼", "🔮", "👺", "🐈", "🐦‍⬛",
   "⛲", "🛏", "🪑", "📦", "🪨", "🌳", "🌿", "🌸", "💧", "🕯", "🏮", "⚱", "🎯", "🗼", "💰", "⛓",
-  "🃏", "🦴", "🕳", "🥀", "🌋", "🖤", "☁", "✨", "👑", "🗿", "🌀", "⚰", "🕸", "🛢", "🌼", "🪵"
+  "🃏", "🦴", "🕳", "🥀", "🌋", "🖤", "☁", "✨", "👑", "🗿", "🌀", "⚰", "🕸", "🛢", "🌼", "🪵",
+  "🗣", "🤝", "🔓", "🧭", "🧩", "⚒", "🔍", "📖", "🗺", "🔦", "📜", "🎲"
 ];
 
 let data = null;             // {maps:[...]}
@@ -187,6 +188,12 @@ function render() {
       ctx.strokeStyle = "rgba(255,215,0,0.9)";
       ctx.lineWidth = ws(2);
       ctx.beginPath(); ctx.arc(cx, cy, ws(19), 0, Math.PI * 2); ctx.stroke();
+    }
+    if (e.type === "ACTIVITY") {
+      // Same accent ring the game draws around playable activities
+      ctx.strokeStyle = hexWithAlpha(t.accent || "#FFD700", 0.85);
+      ctx.lineWidth = ws(2);
+      ctx.beginPath(); ctx.arc(cx, cy, ws(20), 0, Math.PI * 2); ctx.stroke();
     }
     ctx.fillStyle = e.type === "STORY" ? "rgba(64,48,16,0.7)" : "rgba(0,0,0,0.45)";
     ctx.beginPath(); ctx.arc(cx, cy, ws(17), 0, Math.PI * 2); ctx.fill();
@@ -513,6 +520,11 @@ function renderSelForm() {
     if (obj.type === "NPC") {
       html += field("dialog", `<textarea id="sf_dialog" title="One line per row">${esc((obj.dialog || []).join("\n"))}</textarea>`);
     }
+    if (obj.type === "ACTIVITY") {
+      html +=
+        field("activityId", `<input type="text" id="sf_activity" value="${esc(obj.activityId || "")}" title="LocationActivity id from locations.json">`) +
+        field("locationId", `<input type="text" id="sf_location" value="${esc(obj.locationId || "")}" placeholder="(defaults to map id)">`);
+    }
   } else if (k === "obstacle") {
     html +=
       field("icon", `<input type="text" id="sf_icon" value="${esc(obj.icon || "")}">`) +
@@ -546,12 +558,15 @@ function renderSelForm() {
   bind("sf_scale", (v) => { obj.scale = +v || 1; });
   bind("sf_target", (v) => { obj.targetMapId = v || null; });
   bind("sf_dialog", (v) => { obj.dialog = v.split("\n").filter((s) => s.length); });
+  bind("sf_activity", (v) => { obj.activityId = v.trim() || null; });
+  bind("sf_location", (v) => { obj.locationId = v.trim() || null; });
   const typeSel = document.getElementById("sf_type");
   if (typeSel) typeSel.addEventListener("change", () => {
     pushUndo();
     obj.type = typeSel.value;
     if (obj.type !== "EXIT") obj.targetMapId = null;
     if (obj.type !== "NPC") obj.dialog = null;
+    if (obj.type !== "ACTIVITY") { obj.activityId = null; obj.locationId = null; }
     markDirty(); refreshForms(); render(); validate();
   });
   const del = document.getElementById("sf_delete");
@@ -596,6 +611,9 @@ function validate() {
           const back = (target.entities || []).some((x) => x.type === "EXIT" && x.targetMapId === m.id);
           if (!back) problems.push({ err: false, msg: `${m.id} → ${e.targetMapId}: no exit back` });
         }
+      }
+      if (e.type === "ACTIVITY" && !e.activityId) {
+        problems.push({ err: true, msg: `${m.id}/${e.id}: ACTIVITY needs an activityId` });
       }
     });
 

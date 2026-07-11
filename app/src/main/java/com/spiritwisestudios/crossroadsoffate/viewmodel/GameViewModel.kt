@@ -169,6 +169,11 @@ class GameViewModel(
                     _isExploring.value = false
                 }
 
+                // Walking to an ACTIVITY entity launches its location activity
+                explorationManager.setActivityListener { entity ->
+                    handleExplorationActivity(entity)
+                }
+
                 // Keep music in sync while roaming between maps through exits
                 launch {
                     explorationManager.currentMap.collect { map ->
@@ -422,6 +427,79 @@ class GameViewModel(
         if (!enabled && _isExploring.value) skipExploration()
     }
 
+    /**
+     * Launches the location activity behind an ACTIVITY map entity: starts its
+     * mini-game (lock picking, trading...), or completes simpler activity types
+     * directly. Unavailable activities (already done, missing required items)
+     * surface feedback in the exploration dialog bubble instead.
+     */
+    private fun handleExplorationActivity(entity: MapEntity) {
+        viewModelScope.launch {
+            try {
+                val locationId = entity.locationId ?: explorationManager.currentMap.value?.id ?: return@launch
+                val activityId = entity.activityId ?: run {
+                    Timber.w("ACTIVITY entity %s has no activityId", entity.id)
+                    return@launch
+                }
+                val location = repository.getInteractiveMapLocationById(locationId) ?: run {
+                    Timber.w("ACTIVITY entity %s: unknown location %s", entity.id, locationId)
+                    return@launch
+                }
+                val activity = location.availableActivities.find { it.id == activityId } ?: run {
+                    Timber.w("ACTIVITY entity %s: no activity %s at %s", entity.id, activityId, locationId)
+                    return@launch
+                }
+
+                val inventory = inventoryManager.getInventorySet()
+                val isAvailable = activityManager
+                    .getAvailableActivities(location, inventory)
+                    .any { it.id == activityId }
+                if (!isAvailable) {
+                    val missing = activity.requiredItems.filterNot { inventory.contains(it) }
+                    val message = if (missing.isNotEmpty()) {
+                        "You need: ${missing.joinToString(", ")}."
+                    } else {
+                        "Nothing more to do here."
+                    }
+                    explorationManager.showMessage(entity.icon, activity.name, message)
+                    return@launch
+                }
+
+                when (activity.type) {
+                    ActivityType.MINIGAME -> {
+                        val gameId = selectMiniGameForActivity(activity)
+                        if (gameId != null) {
+                            miniGameManager.startMiniGame(gameId, activityId)
+                        } else {
+                            completeExplorationActivityDirectly(entity, activity, locationId)
+                        }
+                    }
+                    ActivityType.TRADING -> miniGameManager.startMiniGame("trading_balanced", activityId)
+                    else -> completeExplorationActivityDirectly(entity, activity, locationId)
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error launching exploration activity")
+            }
+        }
+    }
+
+    private suspend fun completeExplorationActivityDirectly(
+        entity: MapEntity,
+        activity: LocationActivity,
+        locationId: String
+    ) {
+        val result = miniGameManager.createDirectCompletionResult(activity.id, success = true)
+        val activityResult = applyActivityResult(activity.id, result)
+        val gained = activityResult.itemsGained
+        val message = if (gained.isNotEmpty()) {
+            "Done! Gained: ${gained.joinToString(", ")}."
+        } else {
+            "Done!"
+        }
+        explorationManager.showMessage(entity.icon, activity.name, message)
+        Timber.d("Exploration activity %s completed directly at %s", activity.id, locationId)
+    }
+
     private fun handleQuestCompletion(event: QuestCompletionEvent) {
         event.rewardItems.forEach { inventoryManager.addItem(it) }
         event.locationsUnlocked.forEach { activityManager.unlockLocation(it) }
@@ -596,7 +674,7 @@ class GameViewModel(
                                 // Launch mini-game based on activity requirements
                                 val gameId = selectMiniGameForActivity(activity)
                                 if (gameId != null) {
-                                    miniGameManager.startMiniGame(gameId)
+                                    miniGameManager.startMiniGame(gameId, activityId)
                                 } else {
                                     // Fallback to direct completion
                                     completeActivityDirectly(activityId, locationId)
@@ -604,7 +682,7 @@ class GameViewModel(
                             }
                             ActivityType.TRADING -> {
                                 // Launch trading mini-game
-                                miniGameManager.startMiniGame("trading_balanced")
+                                miniGameManager.startMiniGame("trading_balanced", activityId)
                             }
                             else -> {
                                 // For other activity types, complete directly for now
@@ -706,8 +784,9 @@ class GameViewModel(
     /**
      * Applies a mini-game or direct-completion result to the game state:
      * inventory and quest effects, then persist and refresh the map.
+     * Returns the processed result so callers can show reward feedback.
      */
-    private suspend fun applyActivityResult(activityId: String, result: MiniGameResult) {
+    private suspend fun applyActivityResult(activityId: String, result: MiniGameResult): ActivityResult {
         val activityResult = activityManager.processMiniGameResult(activityId, result)
 
         activityResult.itemsGained.forEach { item ->
@@ -726,6 +805,7 @@ class GameViewModel(
             saveProgress()
             updateInteractiveMapLocations()
         }
+        return activityResult
     }
 
     /**

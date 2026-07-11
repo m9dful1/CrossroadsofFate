@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.spiritwisestudios.crossroadsoffate.data.models.ExplorationMapSet
 import com.spiritwisestudios.crossroadsoffate.data.models.GameJson
+import com.spiritwisestudios.crossroadsoffate.data.models.InteractiveMapLocation
 import com.spiritwisestudios.crossroadsoffate.data.models.MapEntityType
 import com.spiritwisestudios.crossroadsoffate.data.models.MapPoint
 import com.spiritwisestudios.crossroadsoffate.data.models.ScenarioEntity
@@ -31,8 +32,10 @@ class ExplorationMapCatalogTest {
 
     private lateinit var catalog: ExplorationMapSet
     private lateinit var scenarioLocations: Set<String>
+    private lateinit var locationActivities: Map<String, Set<String>>
 
     private data class ScenariosDoc(val scenarios: List<ScenarioEntity>)
+    private data class LocationsDoc(val locations: List<InteractiveMapLocation>)
 
     @Before
     fun load() {
@@ -43,6 +46,9 @@ class ExplorationMapCatalogTest {
         scenarioLocations = context.assets.open("scenarios.json").use {
             GameJson.gson.fromJson(InputStreamReader(it), ScenariosDoc::class.java)
         }.scenarios.map { it.location }.toSet()
+        locationActivities = context.assets.open("locations.json").use {
+            GameJson.gson.fromJson(InputStreamReader(it), LocationsDoc::class.java)
+        }.locations.associate { loc -> loc.id to loc.availableActivities.map { it.id }.toSet() }
     }
 
     @Test
@@ -112,6 +118,38 @@ class ExplorationMapCatalogTest {
             map.entities.forEach { entity ->
                 val path = grid.findPath(map.spawn, MapPoint(entity.x, entity.y))
                 assertTrue("${map.id}/${entity.id} is unreachable from spawn", path.isNotEmpty())
+            }
+        }
+    }
+
+    @Test
+    fun activityEntities_referenceRealLocationActivities() {
+        catalog.maps.forEach { map ->
+            map.entities.filter { it.type == MapEntityType.ACTIVITY }.forEach { entity ->
+                val locationId = entity.locationId ?: map.id
+                val activities = locationActivities[locationId]
+                assertTrue("${map.id}/${entity.id}: unknown location '$locationId'",
+                    activities != null)
+                assertTrue(
+                    "${map.id}/${entity.id}: activity '${entity.activityId}' not offered at '$locationId'",
+                    activities!!.contains(entity.activityId)
+                )
+            }
+        }
+    }
+
+    @Test
+    fun everyLocationActivity_isPlacedOnItsMap() {
+        val placed = catalog.maps.flatMap { map ->
+            map.entities.filter { it.type == MapEntityType.ACTIVITY }
+                .map { (it.locationId ?: map.id) to it.activityId }
+        }.toSet()
+        locationActivities.forEach { (locationId, activityIds) ->
+            activityIds.forEach { activityId ->
+                assertTrue(
+                    "Activity $locationId/$activityId has no ACTIVITY entity on any map",
+                    placed.contains(locationId to activityId)
+                )
             }
         }
     }

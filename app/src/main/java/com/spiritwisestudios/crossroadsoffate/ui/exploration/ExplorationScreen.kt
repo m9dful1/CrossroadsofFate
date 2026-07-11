@@ -72,6 +72,7 @@ fun ExplorationScreen(gameViewModel: GameViewModel) {
     val player by gameViewModel.explorationPlayer.collectAsState()
     val dialog by gameViewModel.explorationDialog.collectAsState()
     val showStoryMarker by gameViewModel.isStoryMarkerVisible.collectAsState()
+    val completedActivities by gameViewModel.completedActivities.collectAsState()
 
     val currentMap = map ?: return
 
@@ -99,6 +100,7 @@ fun ExplorationScreen(gameViewModel: GameViewModel) {
     val detailColor = parseMapColor(currentMap.theme.groundDetail, Color(0xFF5C7C4D))
     val obstacleFill = parseMapColor(currentMap.theme.obstacleFill, Color(0xFF5B4A3A))
     val obstacleStroke = parseMapColor(currentMap.theme.obstacleStroke, Color(0xFF3E3228))
+    val accentColor = parseMapColor(currentMap.theme.accent, GameColors.Gold)
 
     // Deterministic scatter of ground detail (grass tufts / pebbles) per map
     val groundDetails = remember(currentMap.id) {
@@ -190,7 +192,7 @@ fun ExplorationScreen(gameViewModel: GameViewModel) {
             // Interactive entities
             currentMap.entities.forEach { entity ->
                 if (entity.type == MapEntityType.STORY && !showStoryMarker) return@forEach
-                drawEntity(entity, t, player, pulse)
+                drawEntity(entity, t, player, pulse, accentColor, completedActivities)
             }
 
             // The player avatar, drawn last so it stays in front
@@ -311,11 +313,14 @@ private fun DrawScope.drawEntity(
     entity: MapEntity,
     t: WorldTransform,
     player: ExplorationPlayerState,
-    pulse: Float
+    pulse: Float,
+    accent: Color,
+    completedActivities: Set<String>
 ) {
     val cx = t.x(entity.x)
     val cy = t.y(entity.y)
     val isStory = entity.type == MapEntityType.STORY
+    val isActivity = entity.type == MapEntityType.ACTIVITY
 
     // Proximity ring when the avatar is close enough to interact soon
     val dx = entity.x - player.position.x
@@ -335,6 +340,11 @@ private fun DrawScope.drawEntity(
         drawCircle(GameColors.Gold.copy(alpha = 0.9f), t.s(19f), Offset(cx, cy), style = Stroke(t.s(2f)))
     }
 
+    if (isActivity) {
+        // Steady accent ring marks something playable here
+        drawCircle(accent.copy(alpha = 0.85f), t.s(20f), Offset(cx, cy), style = Stroke(t.s(2f)))
+    }
+
     // Icon badge
     val badgeColor = if (isStory) Color(0xB3403010) else Color.Black.copy(alpha = 0.45f)
     drawCircle(badgeColor, t.s(17f), Offset(cx, cy))
@@ -342,6 +352,14 @@ private fun DrawScope.drawEntity(
 
     val bounce = if (isStory) sin(pulse * 2f * Math.PI).toFloat() * t.s(3f) else 0f
     drawEmoji(entity.icon, cx, cy + bounce, t.s(22f))
+
+    // Green tick once the linked activity has been completed
+    if (isActivity && entity.activityId != null && completedActivities.contains(entity.activityId)) {
+        val tickCenter = Offset(cx + t.s(13f), cy - t.s(13f))
+        drawCircle(Color(0xFF2E8B57), t.s(7f), tickCenter)
+        drawCircle(Color.White.copy(alpha = 0.9f), t.s(7f), tickCenter, style = Stroke(t.s(1f)))
+        drawMapLabel("✓", tickCenter.x, tickCenter.y + t.s(3.5f), t.s(10f))
+    }
 
     if (entity.label.isNotEmpty()) {
         drawMapLabel(entity.label, cx, cy + t.s(30f), t.s(11f))

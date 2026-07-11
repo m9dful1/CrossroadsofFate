@@ -82,6 +82,7 @@ class ExplorationManager {
 
     private var storyMapId: String? = null
     private var storyReachedListener: (() -> Unit)? = null
+    private var activityListener: ((MapEntity) -> Unit)? = null
 
     private var navGrid: NavGrid? = null
     private var waypoints = ArrayDeque<MapPoint>()
@@ -99,6 +100,27 @@ class ExplorationManager {
     /** Called when the avatar reaches the story marker; set by the ViewModel. */
     fun setStoryReachedListener(listener: (() -> Unit)?) {
         storyReachedListener = listener
+    }
+
+    /** Called when the avatar reaches an ACTIVITY entity; set by the ViewModel. */
+    fun setActivityListener(listener: ((MapEntity) -> Unit)?) {
+        activityListener = listener
+    }
+
+    /**
+     * Shows a one-off message in the dialog bubble (activity feedback like
+     * "you need a torch"). Not tied to an NPC, so advancing is a no-op and
+     * dismissing just closes it.
+     */
+    fun showMessage(icon: String, title: String, line: String) {
+        _activeDialog.value = ExplorationDialog(
+            entityId = "system_message",
+            icon = icon,
+            speakerName = title,
+            line = line,
+            lineNumber = 1,
+            totalLines = 1
+        )
     }
 
     /**
@@ -275,6 +297,7 @@ class ExplorationManager {
             }
             MapEntityType.NPC -> showNpcLine(entity)
             MapEntityType.EXIT -> followExit(entity)
+            MapEntityType.ACTIVITY -> activityListener?.invoke(entity)
         }
     }
 

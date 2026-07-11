@@ -59,11 +59,19 @@ enum class MapEntityType {
     NPC,
 
     /** Doorway/path to another map; walking to it loads [MapEntity.targetMapId]. */
-    EXIT
+    EXIT,
+
+    /**
+     * A location activity ([MapEntity.activityId] on the [MapEntity.locationId]
+     * InteractiveMapLocation, defaulting to the map's own id). Launches the
+     * activity's mini-game, or completes it directly for non-mini-game types.
+     */
+    ACTIVITY
 }
 
 /**
- * An interactive object placed on a map: the story marker, an ambient NPC, or an exit.
+ * An interactive object placed on a map: the story marker, an ambient NPC,
+ * an exit, or a location activity.
  */
 data class MapEntity(
     val id: String = "",
@@ -73,7 +81,9 @@ data class MapEntity(
     val x: Float = 0f,
     val y: Float = 0f,
     val targetMapId: String? = null,
-    val dialog: List<String>? = null
+    val dialog: List<String>? = null,
+    val locationId: String? = null,
+    val activityId: String? = null
 )
 
 /**

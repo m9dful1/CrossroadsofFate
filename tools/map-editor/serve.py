@@ -98,10 +98,12 @@ def validate(payload):
             if key not in m or m[key] in (None, ""):
                 problems.append(f"{mid}: missing '{key}'")
         for e in m.get("entities", []):
-            if e.get("type") not in ("STORY", "NPC", "EXIT"):
+            if e.get("type") not in ("STORY", "NPC", "EXIT", "ACTIVITY"):
                 problems.append(f"{mid}/{e.get('id')}: bad entity type '{e.get('type')}'")
             if e.get("type") == "EXIT" and not e.get("targetMapId"):
                 problems.append(f"{mid}/{e.get('id')}: EXIT needs targetMapId")
+            if e.get("type") == "ACTIVITY" and not e.get("activityId"):
+                problems.append(f"{mid}/{e.get('id')}: ACTIVITY needs activityId")
     for m in maps:
         for e in m.get("entities", []):
             if e.get("type") == "EXIT" and e.get("targetMapId") not in ids:

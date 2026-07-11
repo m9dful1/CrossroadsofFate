@@ -45,6 +45,10 @@ class ExplorationManagerTest {
                 MapEntity(
                     id = "exit_beta", type = MapEntityType.EXIT, icon = "🚪", label = "To Beta",
                     x = 60f, y = 450f, targetMapId = "beta"
+                ),
+                MapEntity(
+                    id = "activity_forge", type = MapEntityType.ACTIVITY, icon = "⚒", label = "Forge",
+                    x = 300f, y = 60f, activityId = "forge_crafting"
                 )
             )
         )
@@ -190,6 +194,35 @@ class ExplorationManagerTest {
 
         manager.onTap(60f, 300f) // ~20 units away: no walking needed
         assertNotNull("Nearby tap should interact without settling", manager.activeDialog.value)
+    }
+
+    @Test
+    fun tapOnActivityEntity_walksOverAndFiresActivityListener() {
+        var launched: MapEntity? = null
+        manager.setActivityListener { launched = it }
+        manager.enterMapForLocation("Alpha Town")
+
+        manager.onTap(300f, 60f)
+        settle()
+
+        assertEquals("forge_crafting", launched?.activityId)
+        assertEquals("activity_forge", launched?.id)
+    }
+
+    @Test
+    fun showMessage_displaysSystemDialog_andAdvanceIsNoOp() {
+        manager.enterMapForLocation("Alpha Town")
+        manager.showMessage("⚒", "Forge", "You need: hammer.")
+
+        val dialog = manager.activeDialog.value
+        assertEquals("Forge", dialog?.speakerName)
+        assertEquals("You need: hammer.", dialog?.line)
+
+        manager.advanceDialog() // not an NPC — should not change or crash
+        assertEquals("You need: hammer.", manager.activeDialog.value?.line)
+
+        manager.dismissDialog()
+        assertNull(manager.activeDialog.value)
     }
 
     @Test

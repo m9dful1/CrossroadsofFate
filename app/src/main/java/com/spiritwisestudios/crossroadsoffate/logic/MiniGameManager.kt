@@ -36,7 +36,12 @@ class MiniGameManager {
     val isGameActive: StateFlow<Boolean> = _isGameActive.asStateFlow()
     
     private var gameStartTime: Long = 0L
-    
+
+    // The location activity this game session was launched for, if any.
+    // Completion events report this id (falling back to the game id) so the
+    // activity system marks the right activity complete.
+    private var pendingActivityId: String? = null
+
     // External listener for activity completion events
     private var activityListener: ((String, MiniGameResult) -> Unit)? = null
     
@@ -78,24 +83,29 @@ class MiniGameManager {
     }
     
     /**
-     * Starts a mini-game session
+     * Starts a mini-game session.
+     *
+     * @param activityId The location activity this game fulfills; completion is
+     * reported under this id so [ActivityManager] tracks the correct activity.
+     * When null (e.g. debug launches), completion reports the game id itself.
      */
-    fun startMiniGame(gameId: String): Boolean {
+    fun startMiniGame(gameId: String, activityId: String? = null): Boolean {
         val miniGame = miniGameRegistry[gameId] ?: return false
-        
+
         if (_isGameActive.value) {
             // End current game first
             endCurrentGame()
         }
-        
+
         try {
             val initialState = miniGame.initialize()
             _currentMiniGame.value = miniGame
             _currentGameState.value = initialState
             _isGameActive.value = true
+            pendingActivityId = activityId
             gameStartTime = System.currentTimeMillis()
 
-            Timber.d("Mini-game started: %s", gameId)
+            Timber.d("Mini-game started: %s (activity: %s)", gameId, activityId)
             return true
         } catch (e: Exception) {
             Timber.e(e, "Error starting mini-game %s", gameId)
@@ -160,10 +170,10 @@ class MiniGameManager {
 
         Timber.d("Mini-game completed: %s, Success: %s, Score: %d",
             currentGame.id, finalResult.success, finalResult.score)
-        activityListener?.invoke(currentGame.id, finalResult)
+        activityListener?.invoke(pendingActivityId ?: currentGame.id, finalResult)
         endCurrentGame()
     }
-    
+
     /**
      * Ends the current game session
      */
@@ -171,6 +181,7 @@ class MiniGameManager {
         _currentMiniGame.value = null
         _currentGameState.value = null
         _isGameActive.value = false
+        pendingActivityId = null
         gameStartTime = 0L
     }
     
