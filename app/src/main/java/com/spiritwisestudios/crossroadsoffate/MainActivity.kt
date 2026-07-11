@@ -56,6 +56,9 @@ class MainActivity : ComponentActivity() {
                             onShowErrorLogger = {
                                 showDebugMenu = false
                                 showErrorLogger = true
+                            },
+                            onPlay = {
+                                showDebugMenu = false
                             }
                         )
                     }

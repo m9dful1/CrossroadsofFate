@@ -141,6 +141,18 @@ class GameRepositoryTest {
     }
 
     @Test
+    fun loadExplorationMaps_readsCatalogFromAsset() = runBlocking {
+        val catalog = repository.loadExplorationMaps()
+
+        assertEquals(15, catalog.maps.size)
+        assertNotNull(catalog.findMapById("town_square"))
+        // Scenario location strings resolve to maps (the full coverage sweep lives
+        // in ExplorationMapCatalogTest; this just proves the repository wiring)
+        assertEquals("town_square", catalog.findMapForLocation("Town Square")?.id)
+        assertEquals("home", catalog.findMapForLocation("Your Bedroom")?.id)
+    }
+
+    @Test
     fun initializeInteractiveMapLocations_seedsFromAsset() = runBlocking {
         repository.initializeInteractiveMapLocations()
 

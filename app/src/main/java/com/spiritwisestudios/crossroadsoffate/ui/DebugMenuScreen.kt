@@ -26,7 +26,8 @@ import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
 fun DebugMenuScreen(
     gameViewModel: GameViewModel,
     onBack: () -> Unit,
-    onShowErrorLogger: () -> Unit
+    onShowErrorLogger: () -> Unit,
+    onPlay: () -> Unit = {}
 ) {
     val playerInventory by gameViewModel.playerInventory.collectAsState()
     val playerStats by gameViewModel.playerStats.collectAsState()
@@ -71,7 +72,13 @@ fun DebugMenuScreen(
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
-                Spacer(modifier = Modifier.width(80.dp))
+                // Leaves the debug session running and returns to gameplay,
+                // so scenario/map jumps can actually be played
+                if (gameViewModel.isDebugSession) {
+                    DecisionButton(text = "Play ▶", modifier = Modifier.width(80.dp)) { onPlay() }
+                } else {
+                    Spacer(modifier = Modifier.width(80.dp))
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -278,6 +285,37 @@ fun DebugMenuScreen(
                         color = Color.White,
                         fontSize = 12.sp
                     )
+                }
+            }
+
+            // Exploration
+            DebugSection(title = "Exploration") {
+                val explorationEnabled by gameViewModel.explorationEnabled.collectAsState()
+                DecisionButton(
+                    text = if (explorationEnabled) "Exploration: ON" else "Exploration: OFF",
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    gameViewModel.setExplorationEnabled(!explorationEnabled)
+                }
+                val mapIds = remember { gameViewModel.debugGetAllExplorationMapIds() }
+                if (mapIds.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Jump to Map:", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    mapIds.chunked(2).forEach { row ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            row.forEach { id ->
+                                DecisionButton(
+                                    text = id,
+                                    modifier = Modifier.weight(1f).padding(vertical = 2.dp)
+                                ) { gameViewModel.debugEnterExplorationMap(id) }
+                            }
+                            repeat(2 - row.size) { Spacer(modifier = Modifier.weight(1f)) }
+                        }
+                    }
                 }
             }
 

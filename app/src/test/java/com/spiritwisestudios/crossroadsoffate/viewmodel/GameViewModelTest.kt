@@ -4,8 +4,14 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.spiritwisestudios.crossroadsoffate.data.models.Condition
 import com.spiritwisestudios.crossroadsoffate.data.models.Decision
+import com.spiritwisestudios.crossroadsoffate.data.models.ExplorationMap
+import com.spiritwisestudios.crossroadsoffate.data.models.ExplorationMapSet
 import com.spiritwisestudios.crossroadsoffate.data.models.LeadsTo
+import com.spiritwisestudios.crossroadsoffate.data.models.MapEntity
+import com.spiritwisestudios.crossroadsoffate.data.models.MapEntityType
+import com.spiritwisestudios.crossroadsoffate.data.models.MapPoint
 import com.spiritwisestudios.crossroadsoffate.repository.GameRepository
+import com.spiritwisestudios.crossroadsoffate.util.TestDataFactory.createTestDecision
 import com.spiritwisestudios.crossroadsoffate.util.TestDataFactory.createTestPlayerProgress
 import com.spiritwisestudios.crossroadsoffate.util.TestDataFactory.createTestScenario
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +58,7 @@ class GameViewModelTest {
         runTest {
             whenever(repository.loadScenariosFromJson()).thenReturn(Unit)
             whenever(repository.initializeInteractiveMapLocations()).thenReturn(Unit)
+            whenever(repository.loadExplorationMaps()).thenReturn(ExplorationMapSet())
             whenever(repository.getPlayerProgress(any())).thenReturn(defaultProgress)
             whenever(repository.savePlayerProgress(any())).thenReturn(Unit)
             whenever(repository.getScenarioById("scenario1")).thenReturn(defaultScenario)
@@ -194,5 +201,98 @@ class GameViewModelTest {
 
         // Assert
         assertFalse("Character menu should be hidden after hideCharacterMenu()", gameViewModel.isCharacterMenuVisible.value)
+    }
+
+    // --- Exploration flow ---
+
+    /** A one-map catalog covering "Town Square" with the story marker right next to spawn. */
+    private fun explorationCatalog() = ExplorationMapSet(
+        listOf(
+            ExplorationMap(
+                id = "test_town",
+                name = "Test Town",
+                locationNames = listOf("Town Square"),
+                width = 400f,
+                height = 400f,
+                spawn = MapPoint(200f, 200f),
+                entities = listOf(
+                    MapEntity(
+                        id = "story", type = MapEntityType.STORY, icon = "❗",
+                        label = "Story", x = 220f, y = 200f
+                    )
+                )
+            )
+        )
+    )
+
+    /** Builds a ViewModel whose catalog covers scenario2's location "Town Square". */
+    private fun viewModelWithExploration(): GameViewModel = runBlockingStubs {
+        whenever(repository.loadExplorationMaps()).thenReturn(explorationCatalog())
+        val choice = createTestDecision(targetScenarioId = "scenario2")
+        val start = createTestScenario(id = "scenario1", decisions = mapOf("bottomLeft" to choice))
+        val next = createTestScenario(id = "scenario2", location = "Town Square")
+        whenever(repository.getScenarioById("scenario1")).thenReturn(start)
+        whenever(repository.getScenarioById("scenario2")).thenReturn(next)
+    }
+
+    private fun runBlockingStubs(stubs: suspend () -> Unit): GameViewModel {
+        kotlinx.coroutines.runBlocking { stubs() }
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        val viewModel = GameViewModel(application, repository)
+        testDispatcher.scheduler.advanceUntilIdle()
+        return viewModel
+    }
+
+    @Test
+    fun onChoiceSelected_entersExploration_whenMapCoversNextLocation() {
+        val viewModel = viewModelWithExploration()
+
+        viewModel.onChoiceSelected("bottomLeft")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue("Choice should hand off to exploration", viewModel.isExploring.value)
+        assertEquals("test_town", viewModel.explorationMap.value?.id)
+        assertTrue("Pending story beat should show its marker", viewModel.isStoryMarkerVisible.value)
+        assertEquals("scenario2", viewModel.currentScenario.value?.id)
+    }
+
+    @Test
+    fun onChoiceSelected_showsScenarioDirectly_whenExplorationDisabled() {
+        val viewModel = viewModelWithExploration()
+        viewModel.setExplorationEnabled(false)
+
+        viewModel.onChoiceSelected("bottomLeft")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse("Exploration disabled: scenario should show directly", viewModel.isExploring.value)
+        assertEquals("scenario2", viewModel.currentScenario.value?.id)
+    }
+
+    @Test
+    fun reachingStoryMarker_returnsToScenarioView() {
+        val viewModel = viewModelWithExploration()
+        viewModel.onChoiceSelected("bottomLeft")
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertTrue(viewModel.isExploring.value)
+
+        // The marker sits 20 units from spawn — within interact range, so a tap
+        // on it interacts without needing to walk
+        viewModel.onExplorationTap(220f, 200f)
+
+        assertFalse("Reaching the marker should end exploration", viewModel.isExploring.value)
+        assertFalse(viewModel.isStoryMarkerVisible.value)
+    }
+
+    @Test
+    fun skipExploration_returnsToScenarioView() {
+        val viewModel = viewModelWithExploration()
+        viewModel.onChoiceSelected("bottomLeft")
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertTrue(viewModel.isExploring.value)
+
+        viewModel.skipExploration()
+
+        assertFalse(viewModel.isExploring.value)
+        assertFalse(viewModel.isStoryMarkerVisible.value)
     }
 }

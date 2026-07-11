@@ -5,6 +5,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.spiritwisestudios.crossroadsoffate.data.models.*
 import com.spiritwisestudios.crossroadsoffate.logic.ActivityManager
+import com.spiritwisestudios.crossroadsoffate.logic.ExplorationDialog
+import com.spiritwisestudios.crossroadsoffate.logic.ExplorationManager
+import com.spiritwisestudios.crossroadsoffate.logic.ExplorationPlayerState
 import com.spiritwisestudios.crossroadsoffate.logic.GameAudioManager
 import com.spiritwisestudios.crossroadsoffate.logic.InventoryManager
 import com.spiritwisestudios.crossroadsoffate.logic.MiniGameManager
@@ -50,6 +53,7 @@ class GameViewModel(
     private val statsManager = StatsManager()
     private val reputationManager = ReputationManager()
     private val audioManager = GameAudioManager(application)
+    private val explorationManager = ExplorationManager()
 
     // State flows for observing game state changes
     private val _playerProgress = MutableStateFlow<PlayerProgress?>(null)
@@ -129,6 +133,19 @@ class GameViewModel(
     private val _isOnTitleScreen = MutableStateFlow(true)
     val isOnTitleScreen: StateFlow<Boolean> = _isOnTitleScreen
 
+    // Exploration state flows: after each story beat the player roams the location's
+    // map and walks to the story marker to continue.
+    private val _isExploring = MutableStateFlow(false)
+    val isExploring: StateFlow<Boolean> = _isExploring.asStateFlow()
+
+    private val _explorationEnabled = MutableStateFlow(true)
+    val explorationEnabled: StateFlow<Boolean> = _explorationEnabled.asStateFlow()
+
+    val explorationMap: StateFlow<ExplorationMap?> = explorationManager.currentMap
+    val explorationPlayer: StateFlow<ExplorationPlayerState> = explorationManager.playerState
+    val explorationDialog: StateFlow<ExplorationDialog?> = explorationManager.activeDialog
+    val isStoryMarkerVisible: StateFlow<Boolean> = explorationManager.storyMarkerVisible
+
     // Initialize ViewModel
     init {
         audioManager.initialize()
@@ -137,12 +154,28 @@ class GameViewModel(
             try {
                 repository.loadScenariosFromJson()
                 repository.initializeInteractiveMapLocations()
+                explorationManager.loadCatalog(repository.loadExplorationMaps())
                 loadPlayerProgress(DEFAULT_PLAYER_ID)
                 updateInteractiveMapLocations()
-                
+
                 // Set up mini-game activity listener
                 miniGameManager.setActivityListener { gameId, result ->
                     handleMiniGameResult(gameId, result)
+                }
+
+                // Walking to the story marker ends exploration and shows the pending scenario
+                explorationManager.setStoryReachedListener {
+                    explorationManager.markStoryConsumed()
+                    _isExploring.value = false
+                }
+
+                // Keep music in sync while roaming between maps through exits
+                launch {
+                    explorationManager.currentMap.collect { map ->
+                        if (map != null && _isExploring.value) {
+                            audioManager.playMusicForLocation(map.name)
+                        }
+                    }
                 }
 
                 // Observe quest completion events for rewards
@@ -234,7 +267,10 @@ class GameViewModel(
                 // We just need to ensure the title screen flag is set correctly after loading
                 withContext(Dispatchers.Main) {
                     _isOnTitleScreen.value = false // Set on main thread after loading
-                    _currentScenario.value?.let { audioManager.playMusicForLocation(it.location) }
+                    _currentScenario.value?.let {
+                        audioManager.playMusicForLocation(it.location)
+                        enterExplorationFor(it)
+                    }
                 }
             } catch (e: Exception) {
                  Timber.e(e, "Error loading game")
@@ -248,6 +284,8 @@ class GameViewModel(
     fun returnToTitle() {
         _isOnTitleScreen.value = true
         hideCharacterMenu()
+        _isExploring.value = false
+        explorationManager.reset()
         audioManager.playMusic("menu")
     }
 
@@ -341,6 +379,49 @@ class GameViewModel(
         _questRewardNotification.value = null
     }
 
+    // --- Exploration Methods ---
+
+    /**
+     * Switches to free-roam exploration on the map covering [scenario]'s location.
+     * No-op (scenario shows directly) when exploration is disabled or no map exists.
+     */
+    private fun enterExplorationFor(scenario: ScenarioEntity) {
+        if (!_explorationEnabled.value) return
+        if (explorationManager.enterMapForLocation(scenario.location)) {
+            _isExploring.value = true
+        }
+    }
+
+    /** Tap on the exploration map, in world coordinates. */
+    fun onExplorationTap(x: Float, y: Float) {
+        explorationManager.onTap(x, y)
+    }
+
+    /** Advances exploration movement; called once per frame by the UI. */
+    fun updateExploration(deltaMillis: Long) {
+        explorationManager.update(deltaMillis)
+    }
+
+    fun advanceExplorationDialog() {
+        explorationManager.advanceDialog()
+    }
+
+    fun dismissExplorationDialog() {
+        explorationManager.dismissDialog()
+    }
+
+    /** Jumps straight to the pending scenario without walking to the marker. */
+    fun skipExploration() {
+        explorationManager.markStoryConsumed()
+        _isExploring.value = false
+    }
+
+    /** Enables/disables the exploration phase between story beats. */
+    fun setExplorationEnabled(enabled: Boolean) {
+        _explorationEnabled.value = enabled
+        if (!enabled && _isExploring.value) skipExploration()
+    }
+
     private fun handleQuestCompletion(event: QuestCompletionEvent) {
         event.rewardItems.forEach { inventoryManager.addItem(it) }
         event.locationsUnlocked.forEach { activityManager.unlockLocation(it) }
@@ -430,6 +511,7 @@ class GameViewModel(
 
                 _currentScenario.value = nextScenario
                 audioManager.playMusicForLocation(nextScenario.location)
+                enterExplorationFor(nextScenario)
                 saveProgress()
             } catch (e: Exception) {
                 Timber.e(e, "Error in choice selection")
@@ -486,6 +568,7 @@ class GameViewModel(
                             visitedLocations = currentProgress.visitedLocations + location.name
                         )
                         hideMap()
+                        enterExplorationFor(scenario)
                         saveProgress() // Save after traveling
                         updateInteractiveMapLocations() // Refresh map state
                     }
@@ -781,6 +864,8 @@ class GameViewModel(
         hideMap()
         hideCharacterMenu()
         cancelCurrentMiniGame()
+        _isExploring.value = false
+        explorationManager.reset()
         viewModelScope.launch { loadPlayerProgress(DEFAULT_PLAYER_ID) }
         audioManager.playMusic("menu")
     }
@@ -848,6 +933,15 @@ class GameViewModel(
     }
 
     fun debugPlayMusic(track: String) { audioManager.playMusic(track) }
+
+    fun debugGetAllExplorationMapIds(): List<String> = explorationManager.getAllMapIds()
+
+    fun debugEnterExplorationMap(mapId: String) {
+        ensureDebugSession()
+        if (explorationManager.debugEnterMap(mapId)) {
+            _isExploring.value = true
+        }
+    }
 
     private fun ensureDebugSession() { if (!_isDebugSession) debugStartSession() }
 }

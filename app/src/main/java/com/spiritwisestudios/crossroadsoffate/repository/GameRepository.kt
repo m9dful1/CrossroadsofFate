@@ -105,6 +105,18 @@ class GameRepository(private val database: GameDatabase, private val context: Co
         }
     }
 
+    /**
+     * Loads the exploration map catalog from assets/maps.json.
+     * Returns an empty catalog on failure so exploration degrades gracefully
+     * (the game falls back to showing scenarios directly).
+     */
+    suspend fun loadExplorationMaps(): ExplorationMapSet =
+        dbRead("loading maps.json", ExplorationMapSet()) {
+            context.assets.open("maps.json").use { inputStream ->
+                gson.fromJson(InputStreamReader(inputStream), ExplorationMapSet::class.java)
+            }
+        }
+
     suspend fun getAllScenarioIds(): List<String> =
         dbRead("getting scenario IDs", emptyList()) {
             database.scenarioDao().getAllScenarioIds()

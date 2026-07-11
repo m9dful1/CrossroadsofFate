@@ -30,11 +30,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
+import com.spiritwisestudios.crossroadsoffate.ui.exploration.ExplorationScreen
 import com.spiritwisestudios.crossroadsoffate.ui.minigames.MiniGameOverlay
 import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
 
 /**
- * Main game screen composable that handles the display of scenarios, decisions, and UI elements
+ * Main game screen composable that handles the display of scenarios, decisions, and UI elements.
+ * Between story beats it swaps to [ExplorationScreen] so the player can roam the location's map.
  * @param gameViewModel ViewModel containing game logic and state
  */
 @Composable
@@ -45,10 +47,13 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
     val scenarioDisplay by gameViewModel.scenarioDisplay.collectAsState()
     val isMiniGameActive by gameViewModel.isMiniGameActive.collectAsState()
     val lastMiniGameResult by gameViewModel.lastMiniGameResult.collectAsState()
+    val isExploring by gameViewModel.isExploring.collectAsState()
 
     // Main container for game screen
     Box(modifier = Modifier.fillMaxSize()) {
-        scenarioDisplay?.let { scenario ->
+        if (isExploring) {
+            ExplorationScreen(gameViewModel = gameViewModel)
+        } else scenarioDisplay?.let { scenario ->
             //
             // Display background image
             Image(
@@ -134,7 +139,11 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                 }
             }
 
-            // Display map or character menu if visible
+        }
+
+        // Map / character overlays and their toggle buttons are shared by both the
+        // scenario view and exploration mode
+        if (isExploring || scenarioDisplay != null) {
             if (isMapVisible) {
                 InteractiveMapScreen(
                     gameViewModel = gameViewModel,

@@ -1,0 +1,2279 @@
+{
+  "maps": [
+    {
+      "id": "home",
+      "name": "Home",
+      "locationNames": [
+        "Your Bedroom",
+        "Dressing Room",
+        "Home - Front Door"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#8A6F4D",
+        "groundDetail": "#7A6143",
+        "obstacleFill": "#5C4630",
+        "obstacleStroke": "#3E2F20",
+        "accent": "#FFD700"
+      },
+      "spawn": {
+        "x": 500.0,
+        "y": 500.0
+      },
+      "obstacles": [
+        {
+          "x": 120.0,
+          "y": 80.0,
+          "width": 150.0,
+          "height": 90.0,
+          "icon": "🛏",
+          "label": "Bed"
+        },
+        {
+          "x": 700.0,
+          "y": 70.0,
+          "width": 130.0,
+          "height": 70.0,
+          "icon": "👔",
+          "label": "Wardrobe"
+        },
+        {
+          "x": 420.0,
+          "y": 240.0,
+          "width": 130.0,
+          "height": 80.0,
+          "icon": "🪑",
+          "label": "Table"
+        },
+        {
+          "x": 60.0,
+          "y": 300.0,
+          "width": 90.0,
+          "height": 150.0,
+          "icon": "📚",
+          "label": "Bookshelf"
+        },
+        {
+          "x": 850.0,
+          "y": 300.0,
+          "width": 90.0,
+          "height": 120.0,
+          "icon": "🔥",
+          "label": "Hearth"
+        }
+      ],
+      "decor": [
+        {
+          "x": 340.0,
+          "y": 130.0,
+          "icon": "🕯",
+          "scale": 1.0
+        },
+        {
+          "x": 940.0,
+          "y": 90.0,
+          "icon": "🪴",
+          "scale": 1.0
+        },
+        {
+          "x": 620.0,
+          "y": 420.0,
+          "icon": "🧺",
+          "scale": 1.0
+        },
+        {
+          "x": 200.0,
+          "y": 520.0,
+          "icon": "🐁",
+          "scale": 0.8
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Step into your day",
+          "x": 500.0,
+          "y": 400.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_cat",
+          "type": "NPC",
+          "icon": "🐈",
+          "label": "Whiskers",
+          "x": 260.0,
+          "y": 460.0,
+          "targetMapId": null,
+          "dialog": [
+            "Mrrow.",
+            "The cat stares through you, unimpressed.",
+            "It purrs. You feel slightly braver."
+          ]
+        },
+        {
+          "id": "exit_town_square",
+          "type": "EXIT",
+          "icon": "🚪",
+          "label": "To Town",
+          "x": 500.0,
+          "y": 560.0,
+          "targetMapId": "town_square",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "town_square",
+      "name": "Town Square",
+      "locationNames": [
+        "Town Square",
+        "Town Entrance",
+        "Town Crossroads"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#9A9284",
+        "groundDetail": "#877F70",
+        "obstacleFill": "#6E5A44",
+        "obstacleStroke": "#4A3C2C",
+        "accent": "#FFD700"
+      },
+      "spawn": {
+        "x": 500.0,
+        "y": 470.0
+      },
+      "obstacles": [
+        {
+          "x": 80.0,
+          "y": 80.0,
+          "width": 180.0,
+          "height": 120.0,
+          "icon": "🍺",
+          "label": "The Gilded Goose"
+        },
+        {
+          "x": 740.0,
+          "y": 80.0,
+          "width": 180.0,
+          "height": 110.0,
+          "icon": "🥖",
+          "label": "Bakery"
+        },
+        {
+          "x": 460.0,
+          "y": 250.0,
+          "width": 80.0,
+          "height": 80.0,
+          "icon": "⛲",
+          "label": "Fountain"
+        },
+        {
+          "x": 290.0,
+          "y": 410.0,
+          "width": 70.0,
+          "height": 45.0,
+          "icon": "📜",
+          "label": "Notice Board"
+        }
+      ],
+      "decor": [
+        {
+          "x": 320.0,
+          "y": 90.0,
+          "icon": "🌳",
+          "scale": 1.3
+        },
+        {
+          "x": 680.0,
+          "y": 200.0,
+          "icon": "🌳",
+          "scale": 1.2
+        },
+        {
+          "x": 150.0,
+          "y": 300.0,
+          "icon": "🛒",
+          "scale": 1.0
+        },
+        {
+          "x": 560.0,
+          "y": 180.0,
+          "icon": "🕊",
+          "scale": 0.8
+        },
+        {
+          "x": 90.0,
+          "y": 480.0,
+          "icon": "🌼",
+          "scale": 0.9
+        },
+        {
+          "x": 920.0,
+          "y": 470.0,
+          "icon": "🌼",
+          "scale": 0.9
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Continue the story",
+          "x": 500.0,
+          "y": 380.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_crier",
+          "type": "NPC",
+          "icon": "📣",
+          "label": "Town Crier",
+          "x": 350.0,
+          "y": 220.0,
+          "targetMapId": null,
+          "dialog": [
+            "Hear ye! The council convenes at dusk!",
+            "Strange lights over the old ruins, they say...",
+            "Guards are recruiting. Merchants are hiring. Choose wisely!"
+          ]
+        },
+        {
+          "id": "npc_baker",
+          "type": "NPC",
+          "icon": "🧑‍🍳",
+          "label": "Mara the Baker",
+          "x": 700.0,
+          "y": 240.0,
+          "targetMapId": null,
+          "dialog": [
+            "Fresh loaves! Still warm!",
+            "The syndicate's been leaning on honest folk again.",
+            "You look like someone standing at a crossroads, dear."
+          ]
+        },
+        {
+          "id": "npc_urchin",
+          "type": "NPC",
+          "icon": "🧒",
+          "label": "Pip",
+          "x": 610.0,
+          "y": 440.0,
+          "targetMapId": null,
+          "dialog": [
+            "Psst. The alley folk pay coin for quiet feet.",
+            "I seen the Magpie once! Honest!"
+          ]
+        },
+        {
+          "id": "exit_home",
+          "type": "EXIT",
+          "icon": "🏠",
+          "label": "Home",
+          "x": 860.0,
+          "y": 40.0,
+          "targetMapId": "home",
+          "dialog": null
+        },
+        {
+          "id": "exit_council_chamber",
+          "type": "EXIT",
+          "icon": "🏛",
+          "label": "Council Chamber",
+          "x": 420.0,
+          "y": 40.0,
+          "targetMapId": "council_chamber",
+          "dialog": null
+        },
+        {
+          "id": "exit_merchant_quarters",
+          "type": "EXIT",
+          "icon": "🏪",
+          "label": "Merchant Quarters",
+          "x": 40.0,
+          "y": 280.0,
+          "targetMapId": "merchant_quarters",
+          "dialog": null
+        },
+        {
+          "id": "exit_guard_training_grounds",
+          "type": "EXIT",
+          "icon": "🛡",
+          "label": "Training Grounds",
+          "x": 960.0,
+          "y": 280.0,
+          "targetMapId": "guard_training_grounds",
+          "dialog": null
+        },
+        {
+          "id": "exit_shadow_alley",
+          "type": "EXIT",
+          "icon": "🌑",
+          "label": "Shadowed Alley",
+          "x": 880.0,
+          "y": 560.0,
+          "targetMapId": "shadow_alley",
+          "dialog": null
+        },
+        {
+          "id": "exit_wilderness_trail",
+          "type": "EXIT",
+          "icon": "🌲",
+          "label": "Town Gate",
+          "x": 380.0,
+          "y": 560.0,
+          "targetMapId": "wilderness_trail",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "merchant_quarters",
+      "name": "Merchant Quarters",
+      "locationNames": [
+        "Merchant's Quarters",
+        "Market",
+        "Trade Lane",
+        "Merchant Guild",
+        "Guild Meeting Hall"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#A08B6C",
+        "groundDetail": "#8D7A5E",
+        "obstacleFill": "#7A4E35",
+        "obstacleStroke": "#4E3222",
+        "accent": "#FFD700"
+      },
+      "spawn": {
+        "x": 880.0,
+        "y": 280.0
+      },
+      "obstacles": [
+        {
+          "x": 360.0,
+          "y": 60.0,
+          "width": 280.0,
+          "height": 140.0,
+          "icon": "🏛",
+          "label": "Merchant Guild"
+        },
+        {
+          "x": 100.0,
+          "y": 300.0,
+          "width": 140.0,
+          "height": 70.0,
+          "icon": "⛺",
+          "label": "Silk Stall"
+        },
+        {
+          "x": 100.0,
+          "y": 450.0,
+          "width": 140.0,
+          "height": 70.0,
+          "icon": "🍎",
+          "label": "Produce Stall"
+        },
+        {
+          "x": 760.0,
+          "y": 300.0,
+          "width": 150.0,
+          "height": 70.0,
+          "icon": "⚱",
+          "label": "Curios"
+        },
+        {
+          "x": 760.0,
+          "y": 430.0,
+          "width": 150.0,
+          "height": 100.0,
+          "icon": "📦",
+          "label": "Warehouse"
+        }
+      ],
+      "decor": [
+        {
+          "x": 300.0,
+          "y": 250.0,
+          "icon": "🧵",
+          "scale": 1.0
+        },
+        {
+          "x": 680.0,
+          "y": 250.0,
+          "icon": "🪙",
+          "scale": 1.0
+        },
+        {
+          "x": 500.0,
+          "y": 520.0,
+          "icon": "🐪",
+          "scale": 1.4
+        },
+        {
+          "x": 60.0,
+          "y": 200.0,
+          "icon": "🏮",
+          "scale": 1.0
+        },
+        {
+          "x": 940.0,
+          "y": 200.0,
+          "icon": "🏮",
+          "scale": 1.0
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Talk business",
+          "x": 500.0,
+          "y": 400.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_guildmistress",
+          "type": "NPC",
+          "icon": "🧕",
+          "label": "Guildmistress Sela",
+          "x": 500.0,
+          "y": 240.0,
+          "targetMapId": null,
+          "dialog": [
+            "The Guild rewards sharp minds and sharper ledgers.",
+            "Reputation is currency here. Spend it wisely.",
+            "The syndicate undercuts us with smuggled goods. It must stop."
+          ]
+        },
+        {
+          "id": "npc_hawker",
+          "type": "NPC",
+          "icon": "🧔",
+          "label": "Tobin the Hawker",
+          "x": 300.0,
+          "y": 350.0,
+          "targetMapId": null,
+          "dialog": [
+            "Trinkets! Charms! Slightly cursed amulets, half price!",
+            "A merchant's seal opens doors, friend. Earn one."
+          ]
+        },
+        {
+          "id": "exit_town_square",
+          "type": "EXIT",
+          "icon": "🏘",
+          "label": "Town Square",
+          "x": 960.0,
+          "y": 280.0,
+          "targetMapId": "town_square",
+          "dialog": null
+        },
+        {
+          "id": "exit_criminal_hideout",
+          "type": "EXIT",
+          "icon": "🕳",
+          "label": "Shadowy Back Door",
+          "x": 620.0,
+          "y": 560.0,
+          "targetMapId": "criminal_hideout",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "council_chamber",
+      "name": "Council Chamber",
+      "locationNames": [
+        "Council Chamber",
+        "Town Hall"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#B0AB9E",
+        "groundDetail": "#9C978A",
+        "obstacleFill": "#7D7668",
+        "obstacleStroke": "#57524A",
+        "accent": "#FFD700"
+      },
+      "spawn": {
+        "x": 420.0,
+        "y": 500.0
+      },
+      "obstacles": [
+        {
+          "x": 350.0,
+          "y": 80.0,
+          "width": 300.0,
+          "height": 100.0,
+          "icon": "👑",
+          "label": "Council Dais"
+        },
+        {
+          "x": 200.0,
+          "y": 220.0,
+          "width": 60.0,
+          "height": 60.0,
+          "icon": "🏛",
+          "label": null
+        },
+        {
+          "x": 740.0,
+          "y": 220.0,
+          "width": 60.0,
+          "height": 60.0,
+          "icon": "🏛",
+          "label": null
+        },
+        {
+          "x": 200.0,
+          "y": 400.0,
+          "width": 60.0,
+          "height": 60.0,
+          "icon": "🏛",
+          "label": null
+        },
+        {
+          "x": 740.0,
+          "y": 400.0,
+          "width": 60.0,
+          "height": 60.0,
+          "icon": "🏛",
+          "label": null
+        },
+        {
+          "x": 450.0,
+          "y": 300.0,
+          "width": 100.0,
+          "height": 60.0,
+          "icon": "📜",
+          "label": "Records Table"
+        }
+      ],
+      "decor": [
+        {
+          "x": 120.0,
+          "y": 120.0,
+          "icon": "🕰",
+          "scale": 1.0
+        },
+        {
+          "x": 880.0,
+          "y": 120.0,
+          "icon": "🗺",
+          "scale": 1.0
+        },
+        {
+          "x": 500.0,
+          "y": 550.0,
+          "icon": "🧵",
+          "scale": 0.8
+        },
+        {
+          "x": 320.0,
+          "y": 470.0,
+          "icon": "🪔",
+          "scale": 1.0
+        },
+        {
+          "x": 680.0,
+          "y": 470.0,
+          "icon": "🪔",
+          "scale": 1.0
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Address the council",
+          "x": 500.0,
+          "y": 230.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_clerk",
+          "type": "NPC",
+          "icon": "🧑‍💼",
+          "label": "Clerk Ottway",
+          "x": 330.0,
+          "y": 320.0,
+          "targetMapId": null,
+          "dialog": [
+            "Petitions in triplicate, please.",
+            "The council debates the ruins expedition again.",
+            "Between us: the treasury is thinner than it looks."
+          ]
+        },
+        {
+          "id": "npc_chamber_guard",
+          "type": "NPC",
+          "icon": "💂",
+          "label": "Chamber Guard",
+          "x": 660.0,
+          "y": 470.0,
+          "targetMapId": null,
+          "dialog": [
+            "No weapons past the columns.",
+            "The captain speaks well of new recruits."
+          ]
+        },
+        {
+          "id": "exit_town_square",
+          "type": "EXIT",
+          "icon": "🏘",
+          "label": "Town Square",
+          "x": 500.0,
+          "y": 560.0,
+          "targetMapId": "town_square",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "guard_training_grounds",
+      "name": "Guard Training Grounds",
+      "locationNames": [
+        "Guard Training Grounds",
+        "Guard Patrol"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#96805C",
+        "groundDetail": "#84704F",
+        "obstacleFill": "#6B5B45",
+        "obstacleStroke": "#463B2C",
+        "accent": "#FFD700"
+      },
+      "spawn": {
+        "x": 120.0,
+        "y": 300.0
+      },
+      "obstacles": [
+        {
+          "x": 80.0,
+          "y": 80.0,
+          "width": 240.0,
+          "height": 120.0,
+          "icon": "🏠",
+          "label": "Barracks"
+        },
+        {
+          "x": 760.0,
+          "y": 80.0,
+          "width": 160.0,
+          "height": 110.0,
+          "icon": "⚔",
+          "label": "Armory"
+        },
+        {
+          "x": 420.0,
+          "y": 240.0,
+          "width": 60.0,
+          "height": 50.0,
+          "icon": "🎯",
+          "label": null
+        },
+        {
+          "x": 560.0,
+          "y": 330.0,
+          "width": 60.0,
+          "height": 50.0,
+          "icon": "🎯",
+          "label": null
+        },
+        {
+          "x": 840.0,
+          "y": 420.0,
+          "width": 90.0,
+          "height": 110.0,
+          "icon": "🗼",
+          "label": "Watchtower"
+        }
+      ],
+      "decor": [
+        {
+          "x": 380.0,
+          "y": 120.0,
+          "icon": "🛡",
+          "scale": 1.0
+        },
+        {
+          "x": 650.0,
+          "y": 200.0,
+          "icon": "🪖",
+          "scale": 1.0
+        },
+        {
+          "x": 200.0,
+          "y": 480.0,
+          "icon": "🐎",
+          "scale": 1.4
+        },
+        {
+          "x": 500.0,
+          "y": 550.0,
+          "icon": "🏳",
+          "scale": 0.9
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Report for duty",
+          "x": 300.0,
+          "y": 380.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_captain",
+          "type": "NPC",
+          "icon": "👮",
+          "label": "Captain Bren",
+          "x": 380.0,
+          "y": 180.0,
+          "targetMapId": null,
+          "dialog": [
+            "Stand straight. The town watches its watchmen.",
+            "Discipline first. Glory is a rumor.",
+            "Prove yourself and the guard will open its ranks."
+          ]
+        },
+        {
+          "id": "npc_recruit",
+          "type": "NPC",
+          "icon": "🤺",
+          "label": "Recruit Anya",
+          "x": 530.0,
+          "y": 440.0,
+          "targetMapId": null,
+          "dialog": [
+            "My arms ache from drills...",
+            "They say the captain never sleeps."
+          ]
+        },
+        {
+          "id": "exit_town_square",
+          "type": "EXIT",
+          "icon": "🏘",
+          "label": "Town Square",
+          "x": 40.0,
+          "y": 300.0,
+          "targetMapId": "town_square",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "shadow_alley",
+      "name": "Shadowed Alley",
+      "locationNames": [
+        "Shadowed Alley"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#5A5561",
+        "groundDetail": "#4B4752",
+        "obstacleFill": "#3A3642",
+        "obstacleStroke": "#26232D",
+        "accent": "#B58CFF"
+      },
+      "spawn": {
+        "x": 500.0,
+        "y": 90.0
+      },
+      "obstacles": [
+        {
+          "x": 60.0,
+          "y": 60.0,
+          "width": 220.0,
+          "height": 160.0,
+          "icon": "🏚",
+          "label": null
+        },
+        {
+          "x": 620.0,
+          "y": 40.0,
+          "width": 260.0,
+          "height": 140.0,
+          "icon": "🏚",
+          "label": null
+        },
+        {
+          "x": 100.0,
+          "y": 340.0,
+          "width": 180.0,
+          "height": 160.0,
+          "icon": "🏚",
+          "label": null
+        },
+        {
+          "x": 700.0,
+          "y": 360.0,
+          "width": 200.0,
+          "height": 130.0,
+          "icon": "🏚",
+          "label": "Fence's Den"
+        },
+        {
+          "x": 450.0,
+          "y": 260.0,
+          "width": 60.0,
+          "height": 50.0,
+          "icon": "📦",
+          "label": null
+        }
+      ],
+      "decor": [
+        {
+          "x": 330.0,
+          "y": 300.0,
+          "icon": "🕸",
+          "scale": 1.0
+        },
+        {
+          "x": 590.0,
+          "y": 200.0,
+          "icon": "🐀",
+          "scale": 0.8
+        },
+        {
+          "x": 540.0,
+          "y": 480.0,
+          "icon": "🛢",
+          "scale": 1.0
+        },
+        {
+          "x": 300.0,
+          "y": 520.0,
+          "icon": "🕯",
+          "scale": 0.8
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Follow the whisper",
+          "x": 480.0,
+          "y": 420.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_fence",
+          "type": "NPC",
+          "icon": "🕵",
+          "label": "Weasel",
+          "x": 600.0,
+          "y": 310.0,
+          "targetMapId": null,
+          "dialog": [
+            "Buying? Selling? Forgetting you saw me?",
+            "The hideout's below. Knock twice, then don't knock.",
+            "The Magpie collects favors like coins."
+          ]
+        },
+        {
+          "id": "npc_beggar",
+          "type": "NPC",
+          "icon": "🧙",
+          "label": "Old Marn",
+          "x": 250.0,
+          "y": 280.0,
+          "targetMapId": null,
+          "dialog": [
+            "Spare a coin for a seer past her prime?",
+            "I see two doors in your fate, child. Gold... and shadow."
+          ]
+        },
+        {
+          "id": "exit_town_square",
+          "type": "EXIT",
+          "icon": "🏘",
+          "label": "Town Square",
+          "x": 400.0,
+          "y": 40.0,
+          "targetMapId": "town_square",
+          "dialog": null
+        },
+        {
+          "id": "exit_criminal_hideout",
+          "type": "EXIT",
+          "icon": "🕳",
+          "label": "Hideout Entrance",
+          "x": 500.0,
+          "y": 560.0,
+          "targetMapId": "criminal_hideout",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "criminal_hideout",
+      "name": "Criminal Hideout",
+      "locationNames": [
+        "Underground Hideout",
+        "Underground Syndicate",
+        "Criminal Underworld"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#565049",
+        "groundDetail": "#47423C",
+        "obstacleFill": "#38332E",
+        "obstacleStroke": "#231F1B",
+        "accent": "#E0483E"
+      },
+      "spawn": {
+        "x": 500.0,
+        "y": 90.0
+      },
+      "obstacles": [
+        {
+          "x": 60.0,
+          "y": 60.0,
+          "width": 180.0,
+          "height": 180.0,
+          "icon": "🪨",
+          "label": null
+        },
+        {
+          "x": 760.0,
+          "y": 80.0,
+          "width": 180.0,
+          "height": 160.0,
+          "icon": "🪨",
+          "label": null
+        },
+        {
+          "x": 430.0,
+          "y": 260.0,
+          "width": 140.0,
+          "height": 70.0,
+          "icon": "🃏",
+          "label": "Card Table"
+        },
+        {
+          "x": 150.0,
+          "y": 430.0,
+          "width": 120.0,
+          "height": 80.0,
+          "icon": "💰",
+          "label": "Spoils"
+        },
+        {
+          "x": 700.0,
+          "y": 430.0,
+          "width": 180.0,
+          "height": 100.0,
+          "icon": "⛓",
+          "label": "Holding Cage"
+        }
+      ],
+      "decor": [
+        {
+          "x": 340.0,
+          "y": 160.0,
+          "icon": "🔦",
+          "scale": 0.9
+        },
+        {
+          "x": 660.0,
+          "y": 300.0,
+          "icon": "🍾",
+          "scale": 1.0
+        },
+        {
+          "x": 400.0,
+          "y": 520.0,
+          "icon": "🗡",
+          "scale": 0.9
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Meet the syndicate",
+          "x": 520.0,
+          "y": 420.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_magpie",
+          "type": "NPC",
+          "icon": "🦹",
+          "label": "The Magpie",
+          "x": 500.0,
+          "y": 200.0,
+          "targetMapId": null,
+          "dialog": [
+            "Everything shiny finds its way to me eventually.",
+            "Rules? One: don't get caught. Two: see rule one.",
+            "Do a job for me and the underworld remembers."
+          ]
+        },
+        {
+          "id": "npc_lookout",
+          "type": "NPC",
+          "icon": "🥷",
+          "label": "Lookout Vex",
+          "x": 300.0,
+          "y": 320.0,
+          "targetMapId": null,
+          "dialog": [
+            "Eyes up. Guards sniffed around the alley twice today.",
+            "The tunnel to the market? Merchants pretend it isn't there."
+          ]
+        },
+        {
+          "id": "exit_shadow_alley",
+          "type": "EXIT",
+          "icon": "🪜",
+          "label": "Ladder Up",
+          "x": 500.0,
+          "y": 40.0,
+          "targetMapId": "shadow_alley",
+          "dialog": null
+        },
+        {
+          "id": "exit_merchant_quarters",
+          "type": "EXIT",
+          "icon": "🕳",
+          "label": "Smuggler's Tunnel",
+          "x": 40.0,
+          "y": 300.0,
+          "targetMapId": "merchant_quarters",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "wilderness_trail",
+      "name": "Wilderness Trail",
+      "locationNames": [
+        "Wilderness Trail",
+        "Wilderness Camp",
+        "Wilderness Archive"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#6B8F5A",
+        "groundDetail": "#5C7C4D",
+        "obstacleFill": "#4E6B42",
+        "obstacleStroke": "#33472B",
+        "accent": "#FFD700"
+      },
+      "spawn": {
+        "x": 500.0,
+        "y": 80.0
+      },
+      "obstacles": [
+        {
+          "x": 120.0,
+          "y": 100.0,
+          "width": 160.0,
+          "height": 120.0,
+          "icon": "🌲",
+          "label": null
+        },
+        {
+          "x": 700.0,
+          "y": 80.0,
+          "width": 200.0,
+          "height": 140.0,
+          "icon": "🌲",
+          "label": null
+        },
+        {
+          "x": 420.0,
+          "y": 250.0,
+          "width": 120.0,
+          "height": 90.0,
+          "icon": "🌳",
+          "label": null
+        },
+        {
+          "x": 250.0,
+          "y": 420.0,
+          "width": 100.0,
+          "height": 80.0,
+          "icon": "🪨",
+          "label": null
+        },
+        {
+          "x": 600.0,
+          "y": 420.0,
+          "width": 180.0,
+          "height": 100.0,
+          "icon": "💧",
+          "label": "Pond"
+        }
+      ],
+      "decor": [
+        {
+          "x": 340.0,
+          "y": 160.0,
+          "icon": "🦋",
+          "scale": 0.8
+        },
+        {
+          "x": 560.0,
+          "y": 140.0,
+          "icon": "🌿",
+          "scale": 1.0
+        },
+        {
+          "x": 150.0,
+          "y": 300.0,
+          "icon": "🍄",
+          "scale": 0.9
+        },
+        {
+          "x": 880.0,
+          "y": 300.0,
+          "icon": "🌾",
+          "scale": 1.0
+        },
+        {
+          "x": 450.0,
+          "y": 550.0,
+          "icon": "🐇",
+          "scale": 0.8
+        },
+        {
+          "x": 900.0,
+          "y": 520.0,
+          "icon": "🌻",
+          "scale": 1.0
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Press on",
+          "x": 480.0,
+          "y": 380.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_ranger",
+          "type": "NPC",
+          "icon": "🏹",
+          "label": "Ranger Iole",
+          "x": 350.0,
+          "y": 190.0,
+          "targetMapId": null,
+          "dialog": [
+            "The trail forks many ways. All of them are watching you.",
+            "Cottage west, ruins east, temple and retreat to the south.",
+            "Take water. The wilds don't forgive the unprepared."
+          ]
+        },
+        {
+          "id": "npc_scholar_camp",
+          "type": "NPC",
+          "icon": "🏕",
+          "label": "Wandering Scholar",
+          "x": 830.0,
+          "y": 300.0,
+          "targetMapId": null,
+          "dialog": [
+            "I'm cataloguing everything! Ferns! Rocks! Existential dread!",
+            "The old archive lies somewhere past the ruins..."
+          ]
+        },
+        {
+          "id": "exit_town_square",
+          "type": "EXIT",
+          "icon": "🏘",
+          "label": "Town Gate",
+          "x": 500.0,
+          "y": 40.0,
+          "targetMapId": "town_square",
+          "dialog": null
+        },
+        {
+          "id": "exit_mentor_cottage",
+          "type": "EXIT",
+          "icon": "🏡",
+          "label": "Mentor's Cottage",
+          "x": 40.0,
+          "y": 300.0,
+          "targetMapId": "mentor_cottage",
+          "dialog": null
+        },
+        {
+          "id": "exit_ancient_ruins",
+          "type": "EXIT",
+          "icon": "🏚",
+          "label": "Ancient Ruins",
+          "x": 960.0,
+          "y": 300.0,
+          "targetMapId": "ancient_ruins",
+          "dialog": null
+        },
+        {
+          "id": "exit_scholars_retreat",
+          "type": "EXIT",
+          "icon": "📚",
+          "label": "Scholars' Retreat",
+          "x": 250.0,
+          "y": 560.0,
+          "targetMapId": "scholars_retreat",
+          "dialog": null
+        },
+        {
+          "id": "exit_sacred_temple",
+          "type": "EXIT",
+          "icon": "⛩",
+          "label": "Sacred Temple",
+          "x": 750.0,
+          "y": 560.0,
+          "targetMapId": "sacred_temple",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "mentor_cottage",
+      "name": "Mentor's Cottage",
+      "locationNames": [
+        "Mentor's Cottage"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#75915D",
+        "groundDetail": "#657E4F",
+        "obstacleFill": "#6D5233",
+        "obstacleStroke": "#4A3721",
+        "accent": "#FFD700"
+      },
+      "spawn": {
+        "x": 880.0,
+        "y": 300.0
+      },
+      "obstacles": [
+        {
+          "x": 360.0,
+          "y": 100.0,
+          "width": 280.0,
+          "height": 180.0,
+          "icon": "🏡",
+          "label": "Cottage"
+        },
+        {
+          "x": 120.0,
+          "y": 380.0,
+          "width": 160.0,
+          "height": 80.0,
+          "icon": "🌿",
+          "label": "Herb Garden"
+        },
+        {
+          "x": 120.0,
+          "y": 480.0,
+          "width": 160.0,
+          "height": 70.0,
+          "icon": "🌿",
+          "label": null
+        },
+        {
+          "x": 620.0,
+          "y": 420.0,
+          "width": 120.0,
+          "height": 80.0,
+          "icon": "🪵",
+          "label": "Woodpile"
+        },
+        {
+          "x": 700.0,
+          "y": 140.0,
+          "width": 70.0,
+          "height": 70.0,
+          "icon": "🕳",
+          "label": "Well"
+        }
+      ],
+      "decor": [
+        {
+          "x": 320.0,
+          "y": 330.0,
+          "icon": "🌷",
+          "scale": 1.0
+        },
+        {
+          "x": 670.0,
+          "y": 340.0,
+          "icon": "🪓",
+          "scale": 0.9
+        },
+        {
+          "x": 500.0,
+          "y": 540.0,
+          "icon": "🐓",
+          "scale": 1.0
+        },
+        {
+          "x": 180.0,
+          "y": 200.0,
+          "icon": "🦉",
+          "scale": 0.9
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Seek your mentor's counsel",
+          "x": 420.0,
+          "y": 350.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_mentor",
+          "type": "NPC",
+          "icon": "🧙‍♂️",
+          "label": "Master Aldous",
+          "x": 520.0,
+          "y": 330.0,
+          "targetMapId": null,
+          "dialog": [
+            "Ah, my favorite student. Don't tell the others.",
+            "Fate is a crossroads, not a cage. You choose the road.",
+            "Wisdom weighs less than a sword and cuts deeper."
+          ]
+        },
+        {
+          "id": "npc_raven",
+          "type": "NPC",
+          "icon": "🐦‍⬛",
+          "label": "Aldous's Raven",
+          "x": 660.0,
+          "y": 250.0,
+          "targetMapId": null,
+          "dialog": [
+            "Krah! Doom! ...or breakfast. Hard to say.",
+            "Krah!"
+          ]
+        },
+        {
+          "id": "exit_wilderness_trail",
+          "type": "EXIT",
+          "icon": "🌲",
+          "label": "Wilderness Trail",
+          "x": 960.0,
+          "y": 300.0,
+          "targetMapId": "wilderness_trail",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "ancient_ruins",
+      "name": "Ancient Ruins",
+      "locationNames": [
+        "Ancient Ruins"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#8F8468",
+        "groundDetail": "#7C7259",
+        "obstacleFill": "#6B6350",
+        "obstacleStroke": "#484235",
+        "accent": "#FFD700"
+      },
+      "spawn": {
+        "x": 120.0,
+        "y": 300.0
+      },
+      "obstacles": [
+        {
+          "x": 160.0,
+          "y": 140.0,
+          "width": 70.0,
+          "height": 70.0,
+          "icon": "🏛",
+          "label": null
+        },
+        {
+          "x": 160.0,
+          "y": 300.0,
+          "width": 70.0,
+          "height": 70.0,
+          "icon": "🏛",
+          "label": null
+        },
+        {
+          "x": 560.0,
+          "y": 100.0,
+          "width": 260.0,
+          "height": 160.0,
+          "icon": "🏚",
+          "label": "Fallen Hall"
+        },
+        {
+          "x": 450.0,
+          "y": 400.0,
+          "width": 120.0,
+          "height": 80.0,
+          "icon": "🗿",
+          "label": "Weathered Altar"
+        },
+        {
+          "x": 750.0,
+          "y": 380.0,
+          "width": 140.0,
+          "height": 90.0,
+          "icon": "🪨",
+          "label": null
+        }
+      ],
+      "decor": [
+        {
+          "x": 350.0,
+          "y": 140.0,
+          "icon": "🌿",
+          "scale": 1.0
+        },
+        {
+          "x": 420.0,
+          "y": 300.0,
+          "icon": "🦎",
+          "scale": 0.8
+        },
+        {
+          "x": 650.0,
+          "y": 320.0,
+          "icon": "🕯",
+          "scale": 0.9
+        },
+        {
+          "x": 280.0,
+          "y": 480.0,
+          "icon": "⚱",
+          "scale": 0.9
+        },
+        {
+          "x": 900.0,
+          "y": 540.0,
+          "icon": "🌫",
+          "scale": 1.0
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Explore the ruins",
+          "x": 500.0,
+          "y": 300.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_field_scholar",
+          "type": "NPC",
+          "icon": "👩‍🎓",
+          "label": "Field Scholar Nym",
+          "x": 350.0,
+          "y": 240.0,
+          "targetMapId": null,
+          "dialog": [
+            "These carvings predate the town by a thousand years.",
+            "Whatever toppled this hall left claw marks. Big ones.",
+            "The cursed approach is east. I don't go east."
+          ]
+        },
+        {
+          "id": "npc_echo",
+          "type": "NPC",
+          "icon": "👻",
+          "label": "Faded Echo",
+          "x": 660.0,
+          "y": 330.0,
+          "targetMapId": null,
+          "dialog": [
+            "...turn back...",
+            "...the door remembers...",
+            "...we stayed too long..."
+          ]
+        },
+        {
+          "id": "exit_wilderness_trail",
+          "type": "EXIT",
+          "icon": "🌲",
+          "label": "Wilderness Trail",
+          "x": 40.0,
+          "y": 300.0,
+          "targetMapId": "wilderness_trail",
+          "dialog": null
+        },
+        {
+          "id": "exit_cursed_ruins",
+          "type": "EXIT",
+          "icon": "💀",
+          "label": "Cursed Approach",
+          "x": 960.0,
+          "y": 300.0,
+          "targetMapId": "cursed_ruins",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "scholars_retreat",
+      "name": "Scholars' Retreat",
+      "locationNames": [
+        "Scholars' Retreat",
+        "Quiet Reflecting Area"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#7C8C6A",
+        "groundDetail": "#6B7A5B",
+        "obstacleFill": "#7C6448",
+        "obstacleStroke": "#544330",
+        "accent": "#FFD700"
+      },
+      "spawn": {
+        "x": 500.0,
+        "y": 90.0
+      },
+      "obstacles": [
+        {
+          "x": 100.0,
+          "y": 80.0,
+          "width": 240.0,
+          "height": 160.0,
+          "icon": "📚",
+          "label": "Library"
+        },
+        {
+          "x": 660.0,
+          "y": 80.0,
+          "width": 240.0,
+          "height": 150.0,
+          "icon": "🖋",
+          "label": "Scriptorium"
+        },
+        {
+          "x": 420.0,
+          "y": 300.0,
+          "width": 160.0,
+          "height": 100.0,
+          "icon": "💧",
+          "label": "Reflecting Pool"
+        },
+        {
+          "x": 150.0,
+          "y": 420.0,
+          "width": 120.0,
+          "height": 40.0,
+          "icon": "🪑",
+          "label": null
+        },
+        {
+          "x": 730.0,
+          "y": 420.0,
+          "width": 120.0,
+          "height": 40.0,
+          "icon": "🪑",
+          "label": null
+        }
+      ],
+      "decor": [
+        {
+          "x": 500.0,
+          "y": 200.0,
+          "icon": "🍂",
+          "scale": 1.0
+        },
+        {
+          "x": 300.0,
+          "y": 350.0,
+          "icon": "🦢",
+          "scale": 0.9
+        },
+        {
+          "x": 620.0,
+          "y": 480.0,
+          "icon": "📖",
+          "scale": 1.0
+        },
+        {
+          "x": 90.0,
+          "y": 540.0,
+          "icon": "🌸",
+          "scale": 1.0
+        },
+        {
+          "x": 910.0,
+          "y": 540.0,
+          "icon": "🌸",
+          "scale": 1.0
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Sit and reflect",
+          "x": 500.0,
+          "y": 480.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_archivist",
+          "type": "NPC",
+          "icon": "👵",
+          "label": "Archivist Prynn",
+          "x": 350.0,
+          "y": 300.0,
+          "targetMapId": null,
+          "dialog": [
+            "Shhh. The pool is listening.",
+            "Knowledge kept is a candle. Knowledge shared is a dawn.",
+            "The wilderness archive? Lost. Mostly. Probably."
+          ]
+        },
+        {
+          "id": "npc_novice",
+          "type": "NPC",
+          "icon": "🧑‍🎓",
+          "label": "Novice Callo",
+          "x": 620.0,
+          "y": 380.0,
+          "targetMapId": null,
+          "dialog": [
+            "I've read the same sentence nine times...",
+            "Do you think the masters would notice if I napped?"
+          ]
+        },
+        {
+          "id": "exit_wilderness_trail",
+          "type": "EXIT",
+          "icon": "🌲",
+          "label": "Wilderness Trail",
+          "x": 500.0,
+          "y": 40.0,
+          "targetMapId": "wilderness_trail",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "sacred_temple",
+      "name": "Sacred Temple",
+      "locationNames": [
+        "Sacred Temple Approach"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#B5AE9C",
+        "groundDetail": "#A29B89",
+        "obstacleFill": "#8C7B5E",
+        "obstacleStroke": "#5F5340",
+        "accent": "#9BD1FF"
+      },
+      "spawn": {
+        "x": 160.0,
+        "y": 110.0
+      },
+      "obstacles": [
+        {
+          "x": 320.0,
+          "y": 60.0,
+          "width": 360.0,
+          "height": 110.0,
+          "icon": "⛩",
+          "label": "Sacred Temple"
+        },
+        {
+          "x": 240.0,
+          "y": 260.0,
+          "width": 60.0,
+          "height": 60.0,
+          "icon": "🔥",
+          "label": null
+        },
+        {
+          "x": 700.0,
+          "y": 260.0,
+          "width": 60.0,
+          "height": 60.0,
+          "icon": "🔥",
+          "label": null
+        },
+        {
+          "x": 460.0,
+          "y": 330.0,
+          "width": 80.0,
+          "height": 90.0,
+          "icon": "🗿",
+          "label": "Guardian Statue"
+        },
+        {
+          "x": 100.0,
+          "y": 420.0,
+          "width": 160.0,
+          "height": 90.0,
+          "icon": "🌸",
+          "label": "Gardens"
+        },
+        {
+          "x": 740.0,
+          "y": 420.0,
+          "width": 160.0,
+          "height": 90.0,
+          "icon": "🌸",
+          "label": "Gardens"
+        }
+      ],
+      "decor": [
+        {
+          "x": 500.0,
+          "y": 550.0,
+          "icon": "🕊",
+          "scale": 1.0
+        },
+        {
+          "x": 360.0,
+          "y": 240.0,
+          "icon": "🪷",
+          "scale": 0.9
+        },
+        {
+          "x": 640.0,
+          "y": 240.0,
+          "icon": "🪷",
+          "scale": 0.9
+        },
+        {
+          "x": 90.0,
+          "y": 300.0,
+          "icon": "🌤",
+          "scale": 1.2
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Approach in reverence",
+          "x": 500.0,
+          "y": 490.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_priestess",
+          "type": "NPC",
+          "icon": "🧝‍♀️",
+          "label": "Priestess Sera",
+          "x": 360.0,
+          "y": 250.0,
+          "targetMapId": null,
+          "dialog": [
+            "The temple opens to the worthy, not the hurried.",
+            "Beyond the shining door waits what you have earned.",
+            "Even the cursed may kneel here. Few do."
+          ]
+        },
+        {
+          "id": "npc_pilgrim",
+          "type": "NPC",
+          "icon": "🚶",
+          "label": "Weary Pilgrim",
+          "x": 620.0,
+          "y": 470.0,
+          "targetMapId": null,
+          "dialog": [
+            "Forty days I walked to see the door...",
+            "They say it only opens at the story's end."
+          ]
+        },
+        {
+          "id": "exit_wilderness_trail",
+          "type": "EXIT",
+          "icon": "🌲",
+          "label": "Wilderness Trail",
+          "x": 160.0,
+          "y": 40.0,
+          "targetMapId": "wilderness_trail",
+          "dialog": null
+        },
+        {
+          "id": "exit_celestial_court",
+          "type": "EXIT",
+          "icon": "🌟",
+          "label": "Celestial Door",
+          "x": 500.0,
+          "y": 220.0,
+          "targetMapId": "celestial_court",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "cursed_ruins",
+      "name": "Cursed Ruins",
+      "locationNames": [
+        "Cursed Ruin Approach"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#5F5A52",
+        "groundDetail": "#504C44",
+        "obstacleFill": "#45403A",
+        "obstacleStroke": "#2C2925",
+        "accent": "#B58CFF"
+      },
+      "spawn": {
+        "x": 120.0,
+        "y": 300.0
+      },
+      "obstacles": [
+        {
+          "x": 140.0,
+          "y": 90.0,
+          "width": 180.0,
+          "height": 170.0,
+          "icon": "🏚",
+          "label": "Shattered Spire"
+        },
+        {
+          "x": 700.0,
+          "y": 120.0,
+          "width": 160.0,
+          "height": 100.0,
+          "icon": "🦴",
+          "label": "Bone Pile"
+        },
+        {
+          "x": 420.0,
+          "y": 300.0,
+          "width": 160.0,
+          "height": 90.0,
+          "icon": "🕳",
+          "label": "Chasm"
+        },
+        {
+          "x": 150.0,
+          "y": 400.0,
+          "width": 100.0,
+          "height": 90.0,
+          "icon": "🥀",
+          "label": null
+        },
+        {
+          "x": 760.0,
+          "y": 400.0,
+          "width": 120.0,
+          "height": 100.0,
+          "icon": "🥀",
+          "label": null
+        }
+      ],
+      "decor": [
+        {
+          "x": 380.0,
+          "y": 150.0,
+          "icon": "🕸",
+          "scale": 1.0
+        },
+        {
+          "x": 600.0,
+          "y": 250.0,
+          "icon": "🌫",
+          "scale": 1.0
+        },
+        {
+          "x": 320.0,
+          "y": 520.0,
+          "icon": "🦇",
+          "scale": 0.9
+        },
+        {
+          "x": 650.0,
+          "y": 540.0,
+          "icon": "⚰",
+          "scale": 0.8
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Brave the curse",
+          "x": 500.0,
+          "y": 470.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_acolyte",
+          "type": "NPC",
+          "icon": "🧟",
+          "label": "Hollow Acolyte",
+          "x": 610.0,
+          "y": 250.0,
+          "targetMapId": null,
+          "dialog": [
+            "We opened the portal. We were so clever.",
+            "The fire below sings at night. Don't listen.",
+            "Leave. Or stay. It ends the same."
+          ]
+        },
+        {
+          "id": "npc_watcher",
+          "type": "NPC",
+          "icon": "👁",
+          "label": "Watcher in the Dust",
+          "x": 300.0,
+          "y": 330.0,
+          "targetMapId": null,
+          "dialog": [
+            "I count the stones. The stones count you.",
+            "The spire fell in a single night."
+          ]
+        },
+        {
+          "id": "exit_ancient_ruins",
+          "type": "EXIT",
+          "icon": "🏛",
+          "label": "Ancient Ruins",
+          "x": 40.0,
+          "y": 300.0,
+          "targetMapId": "ancient_ruins",
+          "dialog": null
+        },
+        {
+          "id": "exit_infernal_depths",
+          "type": "EXIT",
+          "icon": "🔥",
+          "label": "Infernal Portal",
+          "x": 640.0,
+          "y": 500.0,
+          "targetMapId": "infernal_depths",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "infernal_depths",
+      "name": "Infernal Depths",
+      "locationNames": [
+        "Infernal Portal",
+        "Abyssal Throne"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#4A3038",
+        "groundDetail": "#3E2830",
+        "obstacleFill": "#33222A",
+        "obstacleStroke": "#1F1418",
+        "accent": "#FF5533"
+      },
+      "spawn": {
+        "x": 420.0,
+        "y": 500.0
+      },
+      "obstacles": [
+        {
+          "x": 120.0,
+          "y": 120.0,
+          "width": 200.0,
+          "height": 110.0,
+          "icon": "🌋",
+          "label": "Lava"
+        },
+        {
+          "x": 700.0,
+          "y": 140.0,
+          "width": 180.0,
+          "height": 100.0,
+          "icon": "🌋",
+          "label": "Lava"
+        },
+        {
+          "x": 400.0,
+          "y": 80.0,
+          "width": 200.0,
+          "height": 120.0,
+          "icon": "👿",
+          "label": "Abyssal Throne"
+        },
+        {
+          "x": 200.0,
+          "y": 400.0,
+          "width": 120.0,
+          "height": 90.0,
+          "icon": "🖤",
+          "label": "Obsidian"
+        },
+        {
+          "x": 680.0,
+          "y": 400.0,
+          "width": 140.0,
+          "height": 90.0,
+          "icon": "🖤",
+          "label": "Obsidian"
+        }
+      ],
+      "decor": [
+        {
+          "x": 360.0,
+          "y": 300.0,
+          "icon": "🔥",
+          "scale": 0.9
+        },
+        {
+          "x": 640.0,
+          "y": 300.0,
+          "icon": "🔥",
+          "scale": 0.9
+        },
+        {
+          "x": 500.0,
+          "y": 550.0,
+          "icon": "💨",
+          "scale": 1.0
+        },
+        {
+          "x": 90.0,
+          "y": 300.0,
+          "icon": "⚡",
+          "scale": 0.9
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Face what waits below",
+          "x": 500.0,
+          "y": 320.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_imp",
+          "type": "NPC",
+          "icon": "👺",
+          "label": "Sniggering Imp",
+          "x": 310.0,
+          "y": 310.0,
+          "targetMapId": null,
+          "dialog": [
+            "Hee hee! Fresh soles on the hot floor!",
+            "The boss doesn't like visitors. The boss LOVES visitors.",
+            "Exit's behind you. It's always behind you."
+          ]
+        },
+        {
+          "id": "npc_shade",
+          "type": "NPC",
+          "icon": "💀",
+          "label": "Chained Shade",
+          "x": 640.0,
+          "y": 330.0,
+          "targetMapId": null,
+          "dialog": [
+            "I bargained once. Read the fine print.",
+            "The throne remembers every knee that bent."
+          ]
+        },
+        {
+          "id": "exit_cursed_ruins",
+          "type": "EXIT",
+          "icon": "🌀",
+          "label": "Portal Back",
+          "x": 500.0,
+          "y": 560.0,
+          "targetMapId": "cursed_ruins",
+          "dialog": null
+        }
+      ]
+    },
+    {
+      "id": "celestial_court",
+      "name": "Celestial Court",
+      "locationNames": [
+        "Celestial Door",
+        "Eternal Celestial Court",
+        "Future's Threshold"
+      ],
+      "width": 1000.0,
+      "height": 600.0,
+      "theme": {
+        "ground": "#9FA8B8",
+        "groundDetail": "#8C95A6",
+        "obstacleFill": "#7B8496",
+        "obstacleStroke": "#555D6E",
+        "accent": "#9BD1FF"
+      },
+      "spawn": {
+        "x": 420.0,
+        "y": 500.0
+      },
+      "obstacles": [
+        {
+          "x": 100.0,
+          "y": 100.0,
+          "width": 180.0,
+          "height": 100.0,
+          "icon": "☁",
+          "label": "Cloud Bank"
+        },
+        {
+          "x": 720.0,
+          "y": 100.0,
+          "width": 180.0,
+          "height": 100.0,
+          "icon": "☁",
+          "label": "Cloud Bank"
+        },
+        {
+          "x": 400.0,
+          "y": 140.0,
+          "width": 200.0,
+          "height": 120.0,
+          "icon": "👑",
+          "label": "Radiant Dais"
+        },
+        {
+          "x": 180.0,
+          "y": 400.0,
+          "width": 140.0,
+          "height": 80.0,
+          "icon": "✨",
+          "label": "Starlit Pool"
+        },
+        {
+          "x": 680.0,
+          "y": 400.0,
+          "width": 140.0,
+          "height": 80.0,
+          "icon": "✨",
+          "label": "Starlit Pool"
+        }
+      ],
+      "decor": [
+        {
+          "x": 500.0,
+          "y": 550.0,
+          "icon": "🌠",
+          "scale": 1.0
+        },
+        {
+          "x": 90.0,
+          "y": 300.0,
+          "icon": "🌙",
+          "scale": 1.1
+        },
+        {
+          "x": 910.0,
+          "y": 300.0,
+          "icon": "⭐",
+          "scale": 1.0
+        },
+        {
+          "x": 340.0,
+          "y": 320.0,
+          "icon": "🎶",
+          "scale": 0.8
+        }
+      ],
+      "entities": [
+        {
+          "id": "story",
+          "type": "STORY",
+          "icon": "❗",
+          "label": "Step toward your future",
+          "x": 500.0,
+          "y": 330.0,
+          "targetMapId": null,
+          "dialog": null
+        },
+        {
+          "id": "npc_herald",
+          "type": "NPC",
+          "icon": "👼",
+          "label": "Celestial Herald",
+          "x": 350.0,
+          "y": 300.0,
+          "targetMapId": null,
+          "dialog": [
+            "Every road you walked echoes here.",
+            "The court weighs deeds, not intentions.",
+            "Beyond the threshold, your future takes its final shape."
+          ]
+        },
+        {
+          "id": "npc_weaver",
+          "type": "NPC",
+          "icon": "🔮",
+          "label": "Weaver of Threads",
+          "x": 650.0,
+          "y": 300.0,
+          "targetMapId": null,
+          "dialog": [
+            "I wove your thread the day you woke.",
+            "Gold, steel, shadow, or wisdom — all threads shine at this height."
+          ]
+        },
+        {
+          "id": "exit_sacred_temple",
+          "type": "EXIT",
+          "icon": "🌟",
+          "label": "Door Below",
+          "x": 500.0,
+          "y": 560.0,
+          "targetMapId": "sacred_temple",
+          "dialog": null
+        }
+      ]
+    }
+  ]
+}
