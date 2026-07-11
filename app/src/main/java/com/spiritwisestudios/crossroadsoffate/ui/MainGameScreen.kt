@@ -29,7 +29,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.spiritwisestudios.crossroadsoffate.logic.TextResolver
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
 import com.spiritwisestudios.crossroadsoffate.ui.minigames.MiniGameOverlay
 import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
@@ -43,16 +42,13 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
     // Collect state values from the ViewModel
     val isMapVisible by gameViewModel.isMapVisible.collectAsState()
     val isCharacterMenuVisible by gameViewModel.isCharacterMenuVisible.collectAsState()
-    val playerInventory by gameViewModel.playerInventory.collectAsState()
-    val currentScenario by gameViewModel.currentScenario.collectAsState()
-    val playerStats by gameViewModel.playerStats.collectAsState()
-    val playerReputation by gameViewModel.playerReputation.collectAsState()
+    val scenarioDisplay by gameViewModel.scenarioDisplay.collectAsState()
     val isMiniGameActive by gameViewModel.isMiniGameActive.collectAsState()
     val lastMiniGameResult by gameViewModel.lastMiniGameResult.collectAsState()
 
     // Main container for game screen
     Box(modifier = Modifier.fillMaxSize()) {
-        currentScenario?.let { scenario ->
+        scenarioDisplay?.let { scenario ->
             //
             // Display background image
             Image(
@@ -88,14 +84,14 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = scenario.location,
+                            text = scenario.locationName,
                             fontSize = 24.sp,
                             color = Color.White,
                             textAlign = TextAlign.Center
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = TextResolver.resolve(scenario.text, playerInventory, playerStats, playerReputation),
+                            text = scenario.resolvedText,
                             fontSize = 18.sp,
                             color = Color.White,
                             textAlign = TextAlign.Center
@@ -104,14 +100,9 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                 }
             }
 
-            // Display decision buttons based on scenario decisions
-            scenario.decisions.forEach { (position, decision) ->
-                // Check if the decision has a condition and if the player has the required item
-                val conditionMet = decision.condition?.isMet(playerInventory, playerStats, playerReputation) ?: true
-                val displayText = TextResolver.resolve(
-                    if (conditionMet) decision.text else decision.fallbackText ?: decision.text,
-                    playerInventory, playerStats, playerReputation
-                )
+            // Display decision buttons (text/gating already resolved by the ViewModel)
+            scenario.decisions.forEach { decision ->
+                val position = decision.position
                 // Determine the alignment based on the position
                 val alignment = when (position) {
                     "topLeft" -> Alignment.TopStart
@@ -134,7 +125,7 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                         .widthIn(max = 150.dp)
                 ) {
                     DecisionButton(
-                        text = displayText,
+                        text = decision.text,
                         modifier = Modifier.wrapContentSize().testTag("${position}DecisionButton")
                     ) {
                         gameViewModel.playSfx("button_tap")

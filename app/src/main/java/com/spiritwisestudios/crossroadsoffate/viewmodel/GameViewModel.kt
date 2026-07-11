@@ -11,14 +11,18 @@ import com.spiritwisestudios.crossroadsoffate.logic.MiniGameManager
 import com.spiritwisestudios.crossroadsoffate.logic.QuestManager
 import com.spiritwisestudios.crossroadsoffate.logic.ReputationManager
 import com.spiritwisestudios.crossroadsoffate.logic.StatsManager
+import com.spiritwisestudios.crossroadsoffate.logic.TextResolver
 import com.spiritwisestudios.crossroadsoffate.minigames.MiniGame
 import com.spiritwisestudios.crossroadsoffate.minigames.MiniGameInput
 import com.spiritwisestudios.crossroadsoffate.minigames.MiniGameResult
 import com.spiritwisestudios.crossroadsoffate.repository.GameRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -57,6 +61,35 @@ class GameViewModel(
     val playerInventory: StateFlow<Set<String>> = inventoryManager.inventory
     val playerStats: StateFlow<Map<String, Int>> = statsManager.stats
     val playerReputation: StateFlow<Map<String, Int>> = reputationManager.reputation
+
+    /**
+     * Fully resolved presentation of the current scenario. Condition gating and
+     * dynamic-text resolution happen here so the UI layer only renders.
+     */
+    val scenarioDisplay: StateFlow<ScenarioDisplay?> = combine(
+        _currentScenario,
+        inventoryManager.inventory,
+        statsManager.stats,
+        reputationManager.reputation
+    ) { scenario, inventory, stats, reputation ->
+        scenario?.let {
+            ScenarioDisplay(
+                locationName = it.location,
+                resolvedText = TextResolver.resolve(it.text, inventory, stats, reputation),
+                backgroundImage = it.backgroundImage,
+                decisions = it.decisions.map { (position, decision) ->
+                    val conditionMet = decision.condition?.isMet(inventory, stats, reputation) ?: true
+                    DisplayDecision(
+                        position = position,
+                        text = TextResolver.resolve(
+                            if (conditionMet) decision.text else decision.fallbackText ?: decision.text,
+                            inventory, stats, reputation
+                        )
+                    )
+                }
+            )
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     // Audio state
     val musicVolume: StateFlow<Float> = audioManager.musicVolume

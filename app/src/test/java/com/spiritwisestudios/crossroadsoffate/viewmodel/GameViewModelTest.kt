@@ -2,11 +2,16 @@ package com.spiritwisestudios.crossroadsoffate.viewmodel
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import com.spiritwisestudios.crossroadsoffate.data.models.Condition
+import com.spiritwisestudios.crossroadsoffate.data.models.Decision
+import com.spiritwisestudios.crossroadsoffate.data.models.LeadsTo
 import com.spiritwisestudios.crossroadsoffate.repository.GameRepository
 import com.spiritwisestudios.crossroadsoffate.util.TestDataFactory.createTestPlayerProgress
 import com.spiritwisestudios.crossroadsoffate.util.TestDataFactory.createTestScenario
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Before
@@ -113,6 +118,36 @@ class GameViewModelTest {
         assertEquals("scenario2", gameViewModel.currentScenario.value?.id)
         assertEquals(setOf("sword", "potion"), gameViewModel.playerInventory.value)
         assertFalse("Should leave title screen after loading", gameViewModel.isOnTitleScreen.value)
+    }
+
+    @Test
+    fun scenarioDisplay_usesFallbackText_whenConditionNotMet() = runTest {
+        val gatedScenario = createTestScenario(
+            id = "scenario2",
+            location = "Gate",
+            text = "A locked door blocks the way.",
+            decisions = mapOf(
+                "bottomRight" to Decision(
+                    text = "Unlock the door",
+                    fallbackText = "The door is locked",
+                    condition = Condition(requiredItem = "key"),
+                    leadsTo = LeadsTo.Simple("scenario3")
+                )
+            )
+        )
+        whenever(repository.getPlayerProgress("default_player"))
+            .thenReturn(createTestPlayerProgress(currentScenarioId = "scenario2"))
+        whenever(repository.getScenarioById("scenario2")).thenReturn(gatedScenario)
+
+        gameViewModel.loadGame()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val display = gameViewModel.scenarioDisplay.filterNotNull().first()
+        assertEquals("Gate", display.locationName)
+        assertEquals("A locked door blocks the way.", display.resolvedText)
+        // Player has no key, so the gated decision shows its fallback label
+        assertEquals("The door is locked", display.decisions.single().text)
+        assertEquals("bottomRight", display.decisions.single().position)
     }
 
     @Test

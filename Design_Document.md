@@ -1428,3 +1428,14 @@ Panel/scrim/border/text tokens plus `Gold` and `Orange` accents replace repeated
 
 ### 29.2 Why
 The map bag had two failure modes the audit flagged: type erasure meant `getData<Int>` on a mis-stored value silently returned null, and every read supplied a plausible default — so a typo'd key produced wrong-but-running behavior instead of an error. Both are now compile errors.
+
+## 30. Scenario Presentation Moved to the ViewModel
+
+[Date of modification: 2026-07-11]
+[Description: MainGameScreen no longer evaluates decision conditions or resolves dynamic text during composition — a derived ViewModel flow does both.]
+
+### 30.1 Changes
+- New `ScenarioDisplay`/`DisplayDecision` presentation models (`viewmodel/ScenarioDisplay.kt`)
+- `GameViewModel.scenarioDisplay`: a `combine` of the current scenario with inventory/stats/reputation that resolves scenario text via `TextResolver` and applies `Condition.isMet` fallback-text gating, exposed as `StateFlow<ScenarioDisplay?>` (`stateIn`, `WhileSubscribed`)
+- `MainGameScreen` now collects only `scenarioDisplay` (plus visibility/mini-game flows) and renders — the raw inventory/stats/reputation subscriptions and the per-composition `TextResolver`/`isMet` calls are gone, honoring the "no business logic in the UI layer" convention
+- New test: `scenarioDisplay_usesFallbackText_whenConditionNotMet`
