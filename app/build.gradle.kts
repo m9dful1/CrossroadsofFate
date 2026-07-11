@@ -4,8 +4,8 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     // Needed for Room annotation processing
     id("com.google.devtools.ksp")
-    // Add the Compose Compiler plugin
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
+    // Compose Compiler plugin (version follows the Kotlin version in the catalog)
+    alias(libs.plugins.composeCompiler)
 }
 
 android {
@@ -48,13 +48,9 @@ android {
         jvmTarget = "11"
     }
 
-    // Enable Compose
+    // Enable Compose (compiler version is managed by the Compose Compiler plugin)
     buildFeatures {
         compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
     }
 
     // Exclude certain resources from packaging if needed
@@ -90,7 +86,6 @@ dependencies {
 
     // Room for database
     implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.junit.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
 
@@ -103,45 +98,26 @@ dependencies {
     // For the 'viewModel()' function in Compose:
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    // Test dependencies
+    // Unit tests (JVM / Robolectric)
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-
-    // Testing dependencies
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
-    testImplementation(libs.androidx.core.testing)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.androidx.core)
-    testImplementation(libs.androidx.runner)
     testImplementation(libs.robolectric)
-    testImplementation(libs.kotlin.test)
-    testImplementation(libs.kotlin.test.junit)
-    testImplementation(libs.mockk)
-    
-    // Room testing
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.core.testing)
     testImplementation(libs.androidx.room.testing)
-    testImplementation(libs.androidx.junit)
-    testImplementation(libs.androidx.truth)
-
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.kotlin.stdlib)
     testImplementation(libs.kotlinx.coroutines.core)
-    testImplementation(libs.kotlin.test)
-    testImplementation(libs.kotlin.test.junit)
-    
+    testImplementation(libs.kotlinx.coroutines.test)
+
     // Android instrumented tests
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.ui.test.junit4)
-    androidTestImplementation(libs.androidx.rules)
-    androidTestImplementation(libs.androidx.benchmark.junit4)
-    
-    // Debug dependencies for tests
-    debugImplementation(libs.ui.test.manifest)
+    androidTestImplementation(libs.androidx.runner)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+
+    // Debug-only tooling
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 }

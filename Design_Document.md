@@ -1397,3 +1397,21 @@ Panel/scrim/border/text tokens plus `Gold` and `Orange` accents replace repeated
 
 ### 27.3 TestDataFactory Additions
 - `createTestPlayerProgress(...)` and `createTestQuest(...)` join the existing scenario/decision factories for reuse across suites
+
+## 28. Gradle Dependency Hygiene
+
+[Date of modification: 2026-07-11]
+[Description: Removed unused/duplicated dependencies and stale build configuration. Build and all 139 unit tests verified green.]
+
+### 28.1 Removed
+- Unused test libraries: MockK (project standardized on Mockito), `androidx.benchmark:benchmark-junit4`, `androidx.test.ext:truth`, `androidx.test:rules`, Espresso (Compose tests use the compose test rule; no Espresso imports exist)
+- `androidx.test.ext:junit-ktx` from main `implementation` scope — a test artifact that was shipping in the app
+- Redundant `testImplementation(kotlin-stdlib)` and the dead `kotlinx-coroutines-flow` catalog entry (pinned to 1.6.0 against coroutines 1.8.0)
+- Duplicate declarations: `kotlinx-coroutines-test`, `kotlin-test`, `kotlin-test-junit`, `androidx.test.ext:junit`, Espresso (each declared twice)
+- Pinned `ui-test-junit4`/`ui-test-manifest` catalog aliases (1.6.1) that shadowed the BOM-managed compose test artifacts — BOM aliases kept
+
+### 28.2 Corrected
+- `androidx.test:runner` moved from unit-test scope (unused there) to `androidTestImplementation`, where the instrumentation runner actually runs
+- Misleading `androidx-core` alias (actually `androidx.test:core`, versioned via `rules`) renamed to `androidx-test-core` with its own `testCore` version
+- Room artifacts now share a single `room` version key instead of piggybacking on `roomTesting`
+- Stale `composeOptions.kotlinCompilerExtensionVersion` removed (ignored since the Compose Compiler Gradle plugin); the plugin is now a catalog alias pinned to the Kotlin version instead of an inline `"2.0.21"` literal
