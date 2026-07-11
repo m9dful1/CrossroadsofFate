@@ -16,6 +16,17 @@ import kotlinx.coroutines.flow.asStateFlow
  * Manages the player's quests, including initialization, updates, and completion logic.
  */
 class QuestManager {
+
+    companion object {
+        // Story beats that drive quest activation (see scenarios.json)
+        const val TOWN_SCENARIO_ID = "scenario6"
+        const val CROSSROADS_SCENARIO_ID = "scenario8"
+        const val GUARD_PATH_SCENARIO_ID = "scenario9"
+        const val ADVENTURER_PATH_SCENARIO_ID = "scenario10"
+        const val MERCHANT_PATH_SCENARIO_ID = "scenario11"
+        const val OUTLAW_PATH_SCENARIO_ID = "scenario12"
+    }
+
     private val _activeQuests = MutableStateFlow<List<Quest>>(emptyList())
     val activeQuests: StateFlow<List<Quest>> = _activeQuests.asStateFlow()
 
@@ -156,19 +167,26 @@ class QuestManager {
     }
 
     /**
-     * Checks all active quests to see if any of their objectives are completed by reaching
-     * the target scenario.
+     * Completes every incomplete objective on an active quest that matches [predicate].
      */
-    fun checkAndCompleteObjectives(targetScenarioId: String) {
+    private fun completeMatchingObjectives(predicate: (QuestObjective) -> Boolean) {
         val objectivesToComplete = _activeQuests.value.flatMap { quest ->
             quest.objectives
-                .filter { it.requiredScenarioId == targetScenarioId && !it.isCompleted }
+                .filter { !it.isCompleted && predicate(it) }
                 .map { quest.id to it.id }
         }
 
         for ((questId, objectiveId) in objectivesToComplete) {
             updateObjectiveStatus(questId, objectiveId)
         }
+    }
+
+    /**
+     * Checks all active quests to see if any of their objectives are completed by reaching
+     * the target scenario.
+     */
+    fun checkAndCompleteObjectives(targetScenarioId: String) {
+        completeMatchingObjectives { it.requiredScenarioId == targetScenarioId }
     }
 
     /**
@@ -216,15 +234,7 @@ class QuestManager {
      * Checks active quests for objectives requiring a specific item.
      */
     fun checkItemObjectives(itemId: String) {
-        val objectivesToComplete = _activeQuests.value.flatMap { quest ->
-            quest.objectives
-                .filter { it.requiredItemId == itemId && !it.isCompleted }
-                .map { quest.id to it.id }
-        }
-
-        for ((questId, objectiveId) in objectivesToComplete) {
-            updateObjectiveStatus(questId, objectiveId)
-        }
+        completeMatchingObjectives { it.requiredItemId == itemId }
     }
 
     /**
@@ -243,10 +253,10 @@ class QuestManager {
      */
     fun activatePathQuest(scenarioId: String) {
         val quest = when (scenarioId) {
-            "scenario9" -> guardPathQuest
-            "scenario10" -> adventurerPathQuest
-            "scenario11" -> merchantPathQuest
-            "scenario12" -> outlawPathQuest
+            GUARD_PATH_SCENARIO_ID -> guardPathQuest
+            ADVENTURER_PATH_SCENARIO_ID -> adventurerPathQuest
+            MERCHANT_PATH_SCENARIO_ID -> merchantPathQuest
+            OUTLAW_PATH_SCENARIO_ID -> outlawPathQuest
             else -> null
         }
         quest?.let { activateQuest(it) }
@@ -278,8 +288,9 @@ class QuestManager {
     /**
      * Updates the status of a specific quest objective. If the objective is completed,
      * it checks if the entire quest is now complete.
+     * Callers observe the resulting state via the flows or [getQuestState].
      */
-    fun updateObjectiveStatus(questId: String, objectiveId: String): Pair<List<Quest>, List<Quest>> {
+    fun updateObjectiveStatus(questId: String, objectiveId: String) {
         val activeQuests = _activeQuests.value.toMutableList()
         val completedQuests = _completedQuests.value.toMutableList()
 
@@ -316,7 +327,6 @@ class QuestManager {
                 _completedQuests.value = completedQuests.toList()
             }
         }
-        return Pair(_activeQuests.value, _completedQuests.value)
     }
 
     /**

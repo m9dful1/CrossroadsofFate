@@ -12,8 +12,12 @@ import timber.log.Timber
  * Manages mini-game instances, state, and coordination with the activity system.
  * Follows the same architectural patterns as InventoryManager and QuestManager.
  */
-class MiniGameManager : MiniGameListener {
+class MiniGameManager {
     
+    companion object {
+        private const val MILLIS_PER_SECOND = 1000L
+    }
+
     // Registry of available mini-games
     private val miniGameRegistry = mutableMapOf<String, MiniGame>()
     
@@ -90,8 +94,8 @@ class MiniGameManager : MiniGameListener {
             _currentGameState.value = initialState
             _isGameActive.value = true
             gameStartTime = System.currentTimeMillis()
-            
-            onGameStarted(gameId)
+
+            Timber.d("Mini-game started: %s", gameId)
             return true
         } catch (e: Exception) {
             Timber.e(e, "Error starting mini-game %s", gameId)
@@ -113,9 +117,7 @@ class MiniGameManager : MiniGameListener {
         try {
             val newState = currentGame.processInput(currentState, input)
             _currentGameState.value = newState
-            
-            onGameStateChanged(currentGame.id, newState)
-            
+
             // Check for completion
             val result = currentGame.checkCompletion(newState)
             if (result != null) {
@@ -142,24 +144,23 @@ class MiniGameManager : MiniGameListener {
      * Cancels the current mini-game
      */
     fun cancelCurrentGame() {
-        val currentGame = _currentMiniGame.value
-        if (currentGame != null) {
-            onGameCancelled(currentGame.id)
-        }
+        _currentMiniGame.value?.let { Timber.d("Mini-game cancelled: %s", it.id) }
         endCurrentGame()
     }
-    
+
     /**
      * Completes the current mini-game with a result
      */
     private fun completeGame(result: MiniGameResult) {
         val currentGame = _currentMiniGame.value ?: return
-        val timeSpent = ((System.currentTimeMillis() - gameStartTime) / 1000).toInt()
-        
+        val timeSpent = ((System.currentTimeMillis() - gameStartTime) / MILLIS_PER_SECOND).toInt()
+
         val finalResult = result.copy(timeSpent = timeSpent)
         _lastResult.value = finalResult
-        
-        onGameCompleted(currentGame.id, finalResult)
+
+        Timber.d("Mini-game completed: %s, Success: %s, Score: %d",
+            currentGame.id, finalResult.success, finalResult.score)
+        activityListener?.invoke(currentGame.id, finalResult)
         endCurrentGame()
     }
     
@@ -203,28 +204,12 @@ class MiniGameManager : MiniGameListener {
     fun clearLastResult() {
         _lastResult.value = null
     }
-    
-    // MiniGameListener implementation
-    override fun onGameStarted(gameId: String) {
-        Timber.d("Mini-game started: %s", gameId)
-    }
-    
-    override fun onGameCompleted(gameId: String, result: MiniGameResult) {
-        Timber.d("Mini-game completed: %s, Success: %s, Score: %d", gameId, result.success, result.score)
-        activityListener?.invoke(gameId, result)
-    }
-    
-    override fun onGameCancelled(gameId: String) {
-        Timber.d("Mini-game cancelled: %s", gameId)
-    }
-    
-    override fun onGameStateChanged(gameId: String, state: MiniGameState) {
-    }
 
     /**
-     * Creates a simple result for testing (placeholder functionality)
+     * Creates a synthetic success/failure result for activities that complete
+     * directly without playing a mini-game (e.g. NPC interactions, exploration).
      */
-    fun createTestResult(gameId: String, success: Boolean = true): MiniGameResult {
+    fun createDirectCompletionResult(gameId: String, success: Boolean = true): MiniGameResult {
         return MiniGameResult(
             isCompleted = true,
             success = success,
@@ -235,4 +220,4 @@ class MiniGameManager : MiniGameListener {
             message = if (success) "Well done!" else "Better luck next time!"
         )
     }
-} 
+}

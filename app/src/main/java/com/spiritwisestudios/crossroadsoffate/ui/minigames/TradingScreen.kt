@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.spiritwisestudios.crossroadsoffate.minigames.MiniGameState
+import com.spiritwisestudios.crossroadsoffate.minigames.games.TradingGame
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
 
 /**
@@ -225,15 +226,7 @@ fun TradingScreen(
                     .padding(bottom = 8.dp)
             )
 
-            val approaches = listOf(
-                "polite" to "Ask politely for a lower price",
-                "firm" to "Make a firm counteroffer",
-                "threat" to "Threaten to walk away",
-                "compliment" to "Compliment the merchant",
-                "flaws" to "Point out flaws in the item"
-            )
-
-            approaches.forEach { (key, label) ->
+            TradingGame.AVAILABLE_CHOICES.forEach { (key, label) ->
                 ApproachButton(
                     text = label,
                     onClick = { onChoice(key) }

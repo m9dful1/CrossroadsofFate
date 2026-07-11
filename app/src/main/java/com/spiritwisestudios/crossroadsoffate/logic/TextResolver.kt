@@ -48,24 +48,19 @@ object TextResolver {
         stats: Map<String, Int>,
         reputation: Map<String, Int>
     ): String {
-        var result = conditionalStatRegex.replace(text) { match ->
-            val name = match.groupValues[1]
-            val threshold = match.groupValues[2].toInt()
-            val belowText = match.groupValues[3]
-            val aboveText = match.groupValues[4]
-            val value = stats[name] ?: 0
-            if (value < threshold) belowText else aboveText
-        }
-        result = conditionalRepRegex.replace(result) { match ->
-            val name = match.groupValues[1]
-            val threshold = match.groupValues[2].toInt()
-            val belowText = match.groupValues[3]
-            val aboveText = match.groupValues[4]
-            val value = reputation[name] ?: 0
-            if (value < threshold) belowText else aboveText
-        }
-        return result
+        val statsResolved = replaceThresholdTokens(text, conditionalStatRegex, stats)
+        return replaceThresholdTokens(statsResolved, conditionalRepRegex, reputation)
     }
+
+    /** Replaces `{prefix:name:threshold:below|above}` tokens using [values]. */
+    private fun replaceThresholdTokens(text: String, regex: Regex, values: Map<String, Int>): String =
+        regex.replace(text) { match ->
+            val name = match.groupValues[1]
+            val threshold = match.groupValues[2].toInt()
+            val belowText = match.groupValues[3]
+            val aboveText = match.groupValues[4]
+            if ((values[name] ?: 0) < threshold) belowText else aboveText
+        }
 
     private val itemTokenRegex = Regex("""\{item:([^}]+)\}""")
     private val simpleStatRegex = Regex("""\{stat:([^}]+)\}""")
@@ -77,20 +72,17 @@ object TextResolver {
         stats: Map<String, Int>,
         reputation: Map<String, Int>
     ): String {
-        var result = itemTokenRegex.replace(text) { match ->
+        val itemsResolved = itemTokenRegex.replace(text) { match ->
             val itemName = match.groupValues[1]
             if (itemName in inventory) formatItemName(itemName) else ""
         }
-        result = simpleStatRegex.replace(result) { match ->
-            val name = match.groupValues[1]
-            (stats[name] ?: 0).toString()
-        }
-        result = simpleRepRegex.replace(result) { match ->
-            val name = match.groupValues[1]
-            (reputation[name] ?: 0).toString()
-        }
-        return result
+        val statsResolved = replaceValueTokens(itemsResolved, simpleStatRegex, stats)
+        return replaceValueTokens(statsResolved, simpleRepRegex, reputation)
     }
+
+    /** Replaces `{prefix:name}` tokens with the numeric value from [values] (0 if absent). */
+    private fun replaceValueTokens(text: String, regex: Regex, values: Map<String, Int>): String =
+        regex.replace(text) { match -> (values[match.groupValues[1]] ?: 0).toString() }
 
     private val unrecognizedTokenRegex = Regex("""\{[^}]*\}""")
 

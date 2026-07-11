@@ -1326,3 +1326,32 @@ The original list-based map was superseded by the interactive map (Section 18) b
 ### 24.4 ErrorLogger Threading
 - `saveErrorToFile`, `getErrorLog`, and `clearErrorLog` are now `suspend` and dispatch to `Dispatchers.IO` internally — previously `saveErrorToFile` performed synchronous file I/O on the main thread from `ErrorLoggerScreen` (ANR risk)
 - `ErrorLoggerScreen` consolidates its four copy-pasted reload blocks into one `saveAndReload` helper
+
+## 25. Logic-Layer Deduplication and Constants
+
+[Date of modification: 2026-07-11]
+[Description: Consolidated copy-paste logic, replaced magic strings with named constants, and simplified the mini-game framework contract. No behavioral changes.]
+
+### 25.1 Mini-Game Framework Template Method
+- `MiniGame.processInput` is now final: it applies the completed/inactive guard and `Cancel` handling once, then delegates to the new abstract `processGameInput` — `LockPickingGame` and `TradingGame` no longer duplicate that boilerplate
+- Removed the `MiniGameListener` self-listener indirection in `MiniGameManager` (it implemented its own listener with one empty override); logging and the activity callback are now inline
+- `MiniGameManager.createTestResult` renamed to `createDirectCompletionResult` — it was documented as test-only but is the production path for non-mini-game activities
+- `LockPickingGame` now tracks attempts solely via the typed `MiniGameState.attempts` field (previously double-tracked in a `totalAttempts` data-bag key)
+- `TradingGame.AVAILABLE_CHOICES` (companion) is the single source of truth for negotiation choices; `TradingScreen` no longer hardcodes a duplicate list
+
+### 25.2 QuestManager
+- New `completeMatchingObjectives(predicate)` consolidates the identical scenario-objective and item-objective completion loops
+- `updateObjectiveStatus` returns `Unit` — its `Pair` return value was consumed by no caller
+- Story-beat scenario IDs are now named companion constants (`TOWN_SCENARIO_ID`, `CROSSROADS_SCENARIO_ID`, and the four path scenario IDs) used by both `QuestManager` and `GameViewModel`
+
+### 25.3 GameViewModel
+- `createFreshProgress(playerId, inventory)` replaces three near-identical inline `PlayerProgress` constructions (new game, missing save fallback, debug session)
+- `applyProgressToManagers(progress)` replaces three copies of the six-manager initialization block
+- `applyActivityResult(activityId, result)` unifies `handleMiniGameResult` and `completeActivityDirectly` (direct completion now also honors `itemsLost`)
+- `DEFAULT_PLAYER_ID` / `DEBUG_PLAYER_ID` / `STARTING_SCENARIO_ID` constants replace repeated string literals; mini-game types are imported instead of fully qualified
+- `debugUnlockAllLocations` queries the repository for location IDs instead of a hardcoded twelve-entry list
+
+### 25.4 Misc
+- `TextResolver`: stat/reputation token handling shares `replaceThresholdTokens` / `replaceValueTokens` helpers instead of duplicated regex branches
+- `ActivityManager`: XP literals extracted to `SUCCESS_XP` / `FAILURE_XP`
+- `MainActivity`: repository/factory construction is `remember`ed and the activity field write moved into `SideEffect` (previously new instances per recomposition and a composition side effect)

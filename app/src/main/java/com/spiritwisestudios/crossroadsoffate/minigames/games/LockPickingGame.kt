@@ -86,7 +86,6 @@ class LockPickingGame(
                 "currentPhase" to 0,
                 "totalPhases" to lockCount,
                 "pickDurability" to MAX_PICK_USES,
-                "totalAttempts" to 0,
                 "startTime" to System.currentTimeMillis()
             )
         )
@@ -96,15 +95,11 @@ class LockPickingGame(
      * Processes high-level game events from the UI:
      * - Confirm = all phases completed, lock is open
      * - Slip = pick slipped / finger lifted — restart attempt, reduce durability
-     * - Cancel = player cancelled the game
      */
-    override fun processInput(currentState: MiniGameState, input: MiniGameInput): MiniGameState {
-        if (currentState.isCompleted || !currentState.isActive) return currentState
-
+    override fun processGameInput(currentState: MiniGameState, input: MiniGameInput): MiniGameState {
         return when (input) {
             is MiniGameInput.Confirm -> processLockOpened(currentState)
             is MiniGameInput.Slip -> processPickSlipped(currentState)
-            is MiniGameInput.Cancel -> currentState.copy(isActive = false)
             else -> currentState
         }
     }
@@ -122,7 +117,6 @@ class LockPickingGame(
 
     private fun processPickSlipped(state: MiniGameState): MiniGameState {
         val durability = state.getData<Int>("pickDurability") ?: MAX_PICK_USES
-        val totalAttempts = state.getData<Int>("totalAttempts") ?: 0
         val sweetSpotSize = state.getData<Float>("sweetSpotSize") ?: SWEET_SPOT_BASE_SIZE
         val newDurability = durability - 1
 
@@ -134,7 +128,6 @@ class LockPickingGame(
             currentData = state.currentData + mapOf(
                 "currentPhase" to 0,
                 "pickDurability" to newDurability,
-                "totalAttempts" to (totalAttempts + 1),
                 "sweetSpots" to newSweetSpots,
                 "lastResult" to "SLIP"
             )
@@ -144,7 +137,7 @@ class LockPickingGame(
     override fun checkCompletion(state: MiniGameState): MiniGameResult? {
         val currentPhase = state.getData<Int>("currentPhase") ?: 0
         val durability = state.getData<Int>("pickDurability") ?: MAX_PICK_USES
-        val totalAttempts = state.getData<Int>("totalAttempts") ?: 0
+        val totalAttempts = state.attempts
         val timeElapsed = getTimeElapsed(state)
 
         // All phases complete — success

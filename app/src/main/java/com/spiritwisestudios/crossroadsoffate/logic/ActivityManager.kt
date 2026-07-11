@@ -1,6 +1,7 @@
 package com.spiritwisestudios.crossroadsoffate.logic
 
 import com.spiritwisestudios.crossroadsoffate.data.models.*
+import com.spiritwisestudios.crossroadsoffate.minigames.MiniGameResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -10,6 +11,11 @@ import kotlinx.coroutines.flow.asStateFlow
  * Handles activity availability, completion tracking, and reward distribution.
  */
 class ActivityManager {
+
+    companion object {
+        private const val SUCCESS_XP = 10
+        private const val FAILURE_XP = 5
+    }
 
     // Private mutable state for completed activities
     private val _completedActivities = MutableStateFlow<Set<String>>(emptySet())
@@ -112,7 +118,7 @@ class ActivityManager {
      */
     fun processMiniGameResult(
         activityId: String,
-        miniGameResult: com.spiritwisestudios.crossroadsoffate.minigames.MiniGameResult
+        miniGameResult: MiniGameResult
     ): ActivityResult {
         return completeActivity(
             activityId = activityId,
@@ -120,7 +126,7 @@ class ActivityManager {
             score = miniGameResult.score,
             itemsGained = miniGameResult.rewards,
             itemsLost = miniGameResult.consequences,
-            experienceGained = if (miniGameResult.success) 10 else 5,
+            experienceGained = if (miniGameResult.success) SUCCESS_XP else FAILURE_XP,
             secretsRevealed = emptyList(), // Mini-games don't directly reveal secrets
             newLocationsUnlocked = emptyList() // Mini-games don't directly unlock locations
         )

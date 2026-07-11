@@ -15,12 +15,23 @@ abstract class MiniGame {
      * Initializes the mini-game and returns the initial state
      */
     abstract fun initialize(): MiniGameState
-    
+
     /**
-     * Processes player input and returns the updated game state
+     * Processes player input and returns the updated game state.
+     * Uniformly ignores input once the game is completed/inactive and handles
+     * [MiniGameInput.Cancel]; game-specific inputs go to [processGameInput].
      */
-    abstract fun processInput(currentState: MiniGameState, input: MiniGameInput): MiniGameState
-    
+    fun processInput(currentState: MiniGameState, input: MiniGameInput): MiniGameState {
+        if (currentState.isCompleted || !currentState.isActive) return currentState
+        if (input is MiniGameInput.Cancel) return currentState.copy(isActive = false)
+        return processGameInput(currentState, input)
+    }
+
+    /**
+     * Processes a game-specific input. Called only while the game is active.
+     */
+    protected abstract fun processGameInput(currentState: MiniGameState, input: MiniGameInput): MiniGameState
+
     /**
      * Checks if the game is completed and returns the final result
      */
@@ -75,14 +86,4 @@ sealed class MiniGameInput {
     object Confirm : MiniGameInput()
     object Cancel : MiniGameInput()
     object Slip : MiniGameInput()
-}
-
-/**
- * Interface for mini-game event listeners
- */
-interface MiniGameListener {
-    fun onGameStarted(gameId: String)
-    fun onGameCompleted(gameId: String, result: MiniGameResult)
-    fun onGameCancelled(gameId: String)
-    fun onGameStateChanged(gameId: String, state: MiniGameState)
 }

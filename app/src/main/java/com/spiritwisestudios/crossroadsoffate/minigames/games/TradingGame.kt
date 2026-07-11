@@ -54,6 +54,18 @@ class TradingGame(
         private const val MAX_ROUNDS = 6
         private const val MOOD_THRESHOLD_ANGRY = -3
         private const val STARTING_PRICE_MULTIPLIER = 1.5f
+
+        /**
+         * Negotiation choices shown to the player: input key to display label.
+         * Shared with the UI so the choice list has a single source of truth.
+         */
+        val AVAILABLE_CHOICES = listOf(
+            "polite" to "Ask politely for a lower price",
+            "firm" to "Make a firm counteroffer",
+            "threat" to "Threaten to walk away",
+            "compliment" to "Compliment the merchant",
+            "flaws" to "Point out flaws in the item"
+        )
     }
     
     override fun initialize(): MiniGameState {
@@ -77,15 +89,10 @@ class TradingGame(
         )
     }
     
-    override fun processInput(currentState: MiniGameState, input: MiniGameInput): MiniGameState {
-        if (currentState.isCompleted || !currentState.isActive) {
-            return currentState
-        }
-        
+    override fun processGameInput(currentState: MiniGameState, input: MiniGameInput): MiniGameState {
         return when (input) {
             is MiniGameInput.Choice -> processNegotiation(currentState, input.choice)
             is MiniGameInput.Confirm -> acceptDeal(currentState)
-            is MiniGameInput.Cancel -> currentState.copy(isActive = false)
             else -> currentState
         }
     }
@@ -328,19 +335,6 @@ class TradingGame(
         } else {
             emptyList()
         }
-    }
-    
-    /**
-     * Gets available negotiation choices for the current state
-     */
-    fun getAvailableChoices(): List<Pair<String, String>> {
-        return listOf(
-            "polite" to "Ask politely for a lower price",
-            "firm" to "Make a firm counteroffer",
-            "threat" to "Threaten to walk away",
-            "compliment" to "Compliment the merchant",
-            "flaws" to "Point out flaws in the item"
-        )
     }
     
     private data class NPCResponse(

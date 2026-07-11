@@ -11,6 +11,9 @@ import com.spiritwisestudios.crossroadsoffate.logic.MiniGameManager
 import com.spiritwisestudios.crossroadsoffate.logic.QuestManager
 import com.spiritwisestudios.crossroadsoffate.logic.ReputationManager
 import com.spiritwisestudios.crossroadsoffate.logic.StatsManager
+import com.spiritwisestudios.crossroadsoffate.minigames.MiniGame
+import com.spiritwisestudios.crossroadsoffate.minigames.MiniGameInput
+import com.spiritwisestudios.crossroadsoffate.minigames.MiniGameResult
 import com.spiritwisestudios.crossroadsoffate.repository.GameRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +31,13 @@ class GameViewModel(
     application: Application,
     private val repository: GameRepository,
 ) : AndroidViewModel(application) {
+
+    companion object {
+        private const val DEFAULT_PLAYER_ID = "default_player"
+        private const val DEBUG_PLAYER_ID = "debug_player"
+        private const val STARTING_SCENARIO_ID = "scenario1"
+    }
+
     // Logic managers
     private val inventoryManager = InventoryManager()
     private val questManager = QuestManager()
@@ -94,7 +104,7 @@ class GameViewModel(
             try {
                 repository.loadScenariosFromJson()
                 repository.initializeInteractiveMapLocations()
-                loadPlayerProgress("default_player")
+                loadPlayerProgress(DEFAULT_PLAYER_ID)
                 updateInteractiveMapLocations()
                 
                 // Set up mini-game activity listener
@@ -119,43 +129,56 @@ class GameViewModel(
     }
 
     /**
+     * Creates a fresh save for a new game or debug session.
+     */
+    private fun createFreshProgress(
+        playerId: String,
+        inventory: List<String> = emptyList()
+    ): PlayerProgress = PlayerProgress(
+        playerId = playerId,
+        currentScenarioId = STARTING_SCENARIO_ID,
+        playerInventory = inventory,
+        activeQuests = questManager.getStartingQuests(),
+        completedQuests = emptyList(),
+        visitedLocations = emptySet(),
+        completedActivities = emptySet(),
+        discoveredLocations = emptySet(),
+        playerStats = StatsManager.DEFAULT_STATS,
+        playerReputation = ReputationManager.DEFAULT_REPUTATION
+    )
+
+    /**
+     * Publishes a progress snapshot to the UI and re-initializes every logic manager from it.
+     */
+    private fun applyProgressToManagers(progress: PlayerProgress) {
+        _playerProgress.value = progress
+        inventoryManager.initialize(progress.playerInventory)
+        questManager.initialize(progress.activeQuests, progress.completedQuests)
+        activityManager.initialize(progress.completedActivities, progress.discoveredLocations)
+        statsManager.initialize(progress.playerStats)
+        reputationManager.initialize(progress.playerReputation)
+    }
+
+    /**
      * Starts a new game by resetting progress and loading initial scenario
      */
     fun startNewGame() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 repository.resetPlayerProgress()
-                
+
                 // Ensure scenarios are loaded after reset
                 repository.loadScenariosFromJson()
-                
-                // Create a fresh PlayerProgress state directly
-                val freshProgress = PlayerProgress(
-                    playerId = "default_player",
-                    currentScenarioId = "scenario1", // Start at scenario1
-                    playerInventory = emptyList(),
-                    activeQuests = questManager.getStartingQuests(), // Start with the main quest
-                    completedQuests = emptyList(),
-                    visitedLocations = emptySet(), // No locations visited initially
-                    completedActivities = emptySet(),
-                    discoveredLocations = emptySet(),
-                    playerStats = StatsManager.DEFAULT_STATS,
-                    playerReputation = ReputationManager.DEFAULT_REPUTATION
-                )
-                // Save the fresh state
+
+                val freshProgress = createFreshProgress(DEFAULT_PLAYER_ID)
                 repository.savePlayerProgress(freshProgress)
-                
+
                 // Load the initial scenario after saving progress
                 val initialScenario = repository.getScenarioById(freshProgress.currentScenarioId)
 
                 // Update StateFlows on the main thread
                 withContext(Dispatchers.Main) {
-                    _playerProgress.value = freshProgress
-                    inventoryManager.initialize(freshProgress.playerInventory)
-                    questManager.initialize(freshProgress.activeQuests, freshProgress.completedQuests)
-                    activityManager.initialize(freshProgress.completedActivities, freshProgress.discoveredLocations)
-                    statsManager.initialize(freshProgress.playerStats)
-                    reputationManager.initialize(freshProgress.playerReputation)
+                    applyProgressToManagers(freshProgress)
                     _currentScenario.value = initialScenario // Set initial scenario
                     _isOnTitleScreen.value = false
                     initialScenario?.let { audioManager.playMusicForLocation(it.location) }
@@ -173,7 +196,7 @@ class GameViewModel(
     fun loadGame() {
         viewModelScope.launch {
             try {
-                loadPlayerProgress("default_player")
+                loadPlayerProgress(DEFAULT_PLAYER_ID)
                 // State updates happen within loadPlayerProgress's withContext(Main)
                 // We just need to ensure the title screen flag is set correctly after loading
                 withContext(Dispatchers.Main) {
@@ -229,30 +252,14 @@ class GameViewModel(
      */
     private suspend fun loadPlayerProgress(playerId: String) {
         try {
-             val progress = repository.getPlayerProgress(playerId) ?: PlayerProgress(
-                playerId = playerId,
-                currentScenarioId = "scenario1",
-                playerInventory = emptyList(),
-                activeQuests = questManager.getStartingQuests(),
-                completedQuests = emptyList(),
-                visitedLocations = emptySet(),
-                completedActivities = emptySet(),
-                discoveredLocations = emptySet(),
-                playerStats = StatsManager.DEFAULT_STATS,
-                playerReputation = ReputationManager.DEFAULT_REPUTATION
-            )
-            
+            val progress = repository.getPlayerProgress(playerId) ?: createFreshProgress(playerId)
+
             // Load the corresponding scenario
             val scenario = repository.getScenarioById(progress.currentScenarioId)
 
             // Update StateFlows on the main thread
             withContext(Dispatchers.Main) {
-                _playerProgress.value = progress
-                inventoryManager.initialize(progress.playerInventory)
-                questManager.initialize(progress.activeQuests, progress.completedQuests)
-                activityManager.initialize(progress.completedActivities, progress.discoveredLocations)
-                statsManager.initialize(progress.playerStats)
-                reputationManager.initialize(progress.playerReputation)
+                applyProgressToManagers(progress)
                 _currentScenario.value = scenario // Set the loaded scenario
                 updateInteractiveMapLocations() // Update interactive map locations
             }
@@ -363,13 +370,13 @@ class GameViewModel(
 
                questManager.checkAndCompleteObjectives(targetScenarioId)
 
-               // Activate path quest when leaving the crossroads (scenario8)
-               if (currentScenario.id == "scenario8") {
+               // Activate path quest when leaving the crossroads
+               if (currentScenario.id == QuestManager.CROSSROADS_SCENARIO_ID) {
                    questManager.activatePathQuest(targetScenarioId)
                }
 
-               // Activate side quests when reaching the town (scenario6)
-               if (targetScenarioId == "scenario6") {
+               // Activate side quests when reaching the town
+               if (targetScenarioId == QuestManager.TOWN_SCENARIO_ID) {
                    questManager.activateSideQuests()
                }
 
@@ -581,30 +588,37 @@ class GameViewModel(
     }
 
     /**
+     * Applies a mini-game or direct-completion result to the game state:
+     * inventory and quest effects, then persist and refresh the map.
+     */
+    private suspend fun applyActivityResult(activityId: String, result: MiniGameResult) {
+        val activityResult = activityManager.processMiniGameResult(activityId, result)
+
+        activityResult.itemsGained.forEach { item ->
+            inventoryManager.addItem(item)
+            questManager.checkItemObjectives(item)
+        }
+        activityResult.itemsLost.forEach { item ->
+            inventoryManager.removeItem(item)
+        }
+
+        // Determine activity type from the location data
+        val activityType = findActivityType(activityId)
+        questManager.checkActivityObjectives(activityId, activityType)
+
+        withContext(Dispatchers.Main) {
+            saveProgress()
+            updateInteractiveMapLocations()
+        }
+    }
+
+    /**
      * Handles the result of a completed mini-game
      */
-    private fun handleMiniGameResult(gameId: String, result: com.spiritwisestudios.crossroadsoffate.minigames.MiniGameResult) {
+    private fun handleMiniGameResult(gameId: String, result: MiniGameResult) {
         viewModelScope.launch {
             try {
-                val activityResult = activityManager.processMiniGameResult(gameId, result)
-
-                activityResult.itemsGained.forEach { item ->
-                    inventoryManager.addItem(item)
-                    questManager.checkItemObjectives(item)
-                }
-
-                activityResult.itemsLost.forEach { item ->
-                    inventoryManager.removeItem(item)
-                }
-
-                // Determine activity type from the location data
-                val activityType = findActivityType(gameId)
-                questManager.checkActivityObjectives(gameId, activityType)
-
-                withContext(Dispatchers.Main) {
-                    saveProgress()
-                    updateInteractiveMapLocations()
-                }
+                applyActivityResult(gameId, result)
             } catch (e: Exception) {
                 Timber.e(e, "Error handling mini-game result")
             }
@@ -617,21 +631,8 @@ class GameViewModel(
     private fun completeActivityDirectly(activityId: String, locationId: String) {
         viewModelScope.launch {
             try {
-                val testResult = miniGameManager.createTestResult(activityId, success = true)
-                val activityResult = activityManager.processMiniGameResult(activityId, testResult)
-
-                activityResult.itemsGained.forEach { item ->
-                    inventoryManager.addItem(item)
-                    questManager.checkItemObjectives(item)
-                }
-
-                val activityType = findActivityType(activityId)
-                questManager.checkActivityObjectives(activityId, activityType)
-
-                withContext(Dispatchers.Main) {
-                    saveProgress()
-                    updateInteractiveMapLocations()
-                }
+                val result = miniGameManager.createDirectCompletionResult(activityId, success = true)
+                applyActivityResult(activityId, result)
             } catch (e: Exception) {
                 Timber.e(e, "Error completing activity directly")
             }
@@ -648,7 +649,7 @@ class GameViewModel(
     /**
      * Processes input for the current mini-game
      */
-    fun processMiniGameInput(input: com.spiritwisestudios.crossroadsoffate.minigames.MiniGameInput): Boolean {
+    fun processMiniGameInput(input: MiniGameInput): Boolean {
         return miniGameManager.processInput(input)
     }
 
@@ -662,7 +663,7 @@ class GameViewModel(
     /**
      * Gets all available mini-games
      */
-    fun getAvailableMiniGames(): List<com.spiritwisestudios.crossroadsoffate.minigames.MiniGame> {
+    fun getAvailableMiniGames(): List<MiniGame> {
         return miniGameManager.getAllMiniGames()
     }
 
@@ -732,27 +733,10 @@ class GameViewModel(
     fun debugStartSession() {
         if (_isDebugSession) return
         _isDebugSession = true
-        val debugProgress = PlayerProgress(
-            playerId = "debug_player",
-            currentScenarioId = "scenario1",
-            playerInventory = listOf("torch"),
-            activeQuests = questManager.getStartingQuests(),
-            completedQuests = emptyList(),
-            visitedLocations = emptySet(),
-            completedActivities = emptySet(),
-            discoveredLocations = emptySet(),
-            playerStats = StatsManager.DEFAULT_STATS,
-            playerReputation = ReputationManager.DEFAULT_REPUTATION
-        )
-        _playerProgress.value = debugProgress
-        inventoryManager.initialize(debugProgress.playerInventory)
-        questManager.initialize(debugProgress.activeQuests, debugProgress.completedQuests)
-        activityManager.initialize(debugProgress.completedActivities, debugProgress.discoveredLocations)
-        statsManager.initialize(debugProgress.playerStats)
-        reputationManager.initialize(debugProgress.playerReputation)
+        applyProgressToManagers(createFreshProgress(DEBUG_PLAYER_ID, inventory = listOf("torch")))
         _isOnTitleScreen.value = false
         viewModelScope.launch {
-            _currentScenario.value = repository.getScenarioById("scenario1")
+            _currentScenario.value = repository.getScenarioById(STARTING_SCENARIO_ID)
             updateInteractiveMapLocations()
         }
     }
@@ -764,7 +748,7 @@ class GameViewModel(
         hideMap()
         hideCharacterMenu()
         cancelCurrentMiniGame()
-        viewModelScope.launch { loadPlayerProgress("default_player") }
+        viewModelScope.launch { loadPlayerProgress(DEFAULT_PLAYER_ID) }
         audioManager.playMusic("menu")
     }
 
@@ -779,10 +763,10 @@ class GameViewModel(
         when (id) {
             "main" -> questManager.initialize(questManager.getStartingQuests(), emptyList())
             "side_all" -> questManager.activateSideQuests()
-            "path_guard" -> questManager.activatePathQuest("scenario9")
-            "path_merchant" -> questManager.activatePathQuest("scenario11")
-            "path_adventurer" -> questManager.activatePathQuest("scenario10")
-            "path_outlaw" -> questManager.activatePathQuest("scenario12")
+            "path_guard" -> questManager.activatePathQuest(QuestManager.GUARD_PATH_SCENARIO_ID)
+            "path_merchant" -> questManager.activatePathQuest(QuestManager.MERCHANT_PATH_SCENARIO_ID)
+            "path_adventurer" -> questManager.activatePathQuest(QuestManager.ADVENTURER_PATH_SCENARIO_ID)
+            "path_outlaw" -> questManager.activatePathQuest(QuestManager.OUTLAW_PATH_SCENARIO_ID)
         }
     }
 
@@ -811,10 +795,7 @@ class GameViewModel(
     fun debugUnlockAllLocations() {
         ensureDebugSession()
         viewModelScope.launch {
-            listOf("town_square", "merchant_quarters", "guard_training_grounds", "ancient_ruins",
-                "council_chamber", "wilderness_trail", "mentor_cottage", "shadow_alley",
-                "criminal_hideout", "scholars_retreat", "sacred_temple", "cursed_ruins")
-                .forEach { activityManager.unlockLocation(it) }
+            repository.getAllInteractiveMapLocations().forEach { activityManager.unlockLocation(it.id) }
             updateInteractiveMapLocations()
         }
     }

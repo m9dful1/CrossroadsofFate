@@ -3,12 +3,14 @@ package com.spiritwisestudios.crossroadsoffate
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.spiritwisestudios.crossroadsoffate.data.GameDatabase
 import com.spiritwisestudios.crossroadsoffate.repository.GameRepository
 import com.spiritwisestudios.crossroadsoffate.ui.DebugMenuScreen
@@ -33,10 +35,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             CrossroadsOfFateTheme {
-                val repository = GameRepository(GameDatabase.getDatabase(application), application)
-                val viewModelFactory = GameViewModelFactory(application, repository)
-                val viewModel: GameViewModel = androidx.lifecycle.viewmodel.compose.viewModel(factory = viewModelFactory)
-                gameViewModel = viewModel
+                val viewModelFactory = remember {
+                    GameViewModelFactory(application, GameRepository(GameDatabase.getDatabase(application), application))
+                }
+                val viewModel: GameViewModel = viewModel(factory = viewModelFactory)
+                SideEffect { gameViewModel = viewModel }
                 val isOnTitleScreen by viewModel.isOnTitleScreen.collectAsState()
 
                 var showErrorLogger by remember { mutableStateOf(false) }
