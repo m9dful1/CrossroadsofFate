@@ -139,4 +139,33 @@ class GameRepositoryTest {
         // Assert
         assertNull(result)
     }
-} 
+
+    @Test
+    fun initializeInteractiveMapLocations_seedsFromAsset() = runBlocking {
+        repository.initializeInteractiveMapLocations()
+
+        val locations = repository.getAllInteractiveMapLocations()
+        assertEquals(12, locations.size)
+        val ids = locations.map { it.id }.toSet()
+        assertEquals(
+            setOf(
+                "town_square", "merchant_quarters", "council_chamber", "guard_training_grounds",
+                "wilderness_trail", "mentor_cottage", "shadow_alley", "criminal_hideout",
+                "ancient_ruins", "scholars_retreat", "sacred_temple", "cursed_ruins"
+            ),
+            ids
+        )
+        // Activities deserialize with their typed fields intact
+        val townSquare = locations.first { it.id == "town_square" }
+        assertEquals("scenario6", townSquare.scenarioId)
+        assertNotNull(townSquare.availableActivities.firstOrNull { it.id == "town_square_trading" })
+    }
+
+    @Test
+    fun initializeInteractiveMapLocations_isIdempotent() = runBlocking {
+        repository.initializeInteractiveMapLocations()
+        repository.initializeInteractiveMapLocations()
+
+        assertEquals(12, repository.getAllInteractiveMapLocations().size)
+    }
+}

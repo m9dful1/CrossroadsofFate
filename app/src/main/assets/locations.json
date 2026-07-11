@@ -1,0 +1,559 @@
+{
+  "locations": [
+    {
+      "id": "town_square",
+      "name": "Town Square",
+      "description": "A bustling marketplace full of traders and goods.",
+      "scenarioId": "scenario6",
+      "isVisited": false,
+      "availableActivities": [
+        {
+          "id": "town_square_trading",
+          "type": "TRADING",
+          "name": "Trade with Merchants",
+          "description": "Negotiate with local merchants for better prices.",
+          "rewards": [
+            "coins",
+            "information"
+          ],
+          "requiredItems": [],
+          "difficulty": 2,
+          "estimatedDuration": 10,
+          "isRepeatable": true
+        },
+        {
+          "id": "town_square_gossip",
+          "type": "NPC_INTERACTION",
+          "name": "Gather Gossip",
+          "description": "Listen to local rumors and news.",
+          "rewards": [
+            "rumors"
+          ],
+          "requiredItems": [],
+          "difficulty": 1,
+          "estimatedDuration": 5,
+          "isRepeatable": true
+        }
+      ],
+      "requiredItems": [],
+      "timeToReach": 0,
+      "discoveryConditions": [],
+      "connections": [
+        "merchant_quarters",
+        "guard_training_grounds",
+        "council_chamber",
+        "mentor_cottage",
+        "shadow_alley"
+      ],
+      "coordinateX": 0.5,
+      "coordinateY": 0.5
+    },
+    {
+      "id": "merchant_quarters",
+      "name": "Merchant Quarters",
+      "description": "Where the wealthy traders conduct their business.",
+      "scenarioId": "scenario11",
+      "isVisited": false,
+      "availableActivities": [
+        {
+          "id": "merchant_negotiation",
+          "type": "MINIGAME",
+          "name": "High-Stakes Negotiation",
+          "description": "Engage in complex trade negotiations.",
+          "rewards": [
+            "rare_item",
+            "merchant_favor"
+          ],
+          "requiredItems": [
+            "merchant_seal"
+          ],
+          "difficulty": 4,
+          "estimatedDuration": 15,
+          "isRepeatable": false
+        }
+      ],
+      "requiredItems": [],
+      "timeToReach": 0,
+      "discoveryConditions": [],
+      "connections": [
+        "town_square",
+        "council_chamber",
+        "criminal_hideout"
+      ],
+      "coordinateX": 0.3,
+      "coordinateY": 0.4
+    },
+    {
+      "id": "council_chamber",
+      "name": "Council Chamber",
+      "description": "The seat of political power where the town\u0027s future is decided.",
+      "scenarioId": "scenario35",
+      "isVisited": false,
+      "availableActivities": [
+        {
+          "id": "council_discourse",
+          "type": "NPC_INTERACTION",
+          "name": "Political Discourse",
+          "description": "Engage with council members about the town\u0027s affairs.",
+          "rewards": [
+            "political_insight"
+          ],
+          "requiredItems": [],
+          "difficulty": 3,
+          "estimatedDuration": 15,
+          "isRepeatable": false
+        },
+        {
+          "id": "council_trade",
+          "type": "TRADING",
+          "name": "Council Trade",
+          "description": "Negotiate trade agreements with political allies.",
+          "rewards": [
+            "council_favor"
+          ],
+          "requiredItems": [],
+          "difficulty": 4,
+          "estimatedDuration": 10,
+          "isRepeatable": true
+        }
+      ],
+      "requiredItems": [],
+      "timeToReach": 0,
+      "discoveryConditions": [
+        "Town Hall"
+      ],
+      "connections": [
+        "town_square",
+        "merchant_quarters"
+      ],
+      "coordinateX": 0.5,
+      "coordinateY": 0.3
+    },
+    {
+      "id": "guard_training_grounds",
+      "name": "Guard Training Grounds",
+      "description": "Where the town guard practices their skills.",
+      "scenarioId": "scenario9",
+      "isVisited": false,
+      "availableActivities": [
+        {
+          "id": "combat_training",
+          "type": "COMBAT",
+          "name": "Combat Training",
+          "description": "Test your skills against the town guard.",
+          "rewards": [
+            "combat_skill",
+            "guard_respect"
+          ],
+          "requiredItems": [],
+          "difficulty": 3,
+          "estimatedDuration": 12,
+          "isRepeatable": false
+        },
+        {
+          "id": "guard_investigation",
+          "type": "INVESTIGATION",
+          "name": "Investigate Disturbances",
+          "description": "Help the guards solve local mysteries.",
+          "rewards": [
+            "clues",
+            "guard_badge"
+          ],
+          "requiredItems": [],
+          "difficulty": 3,
+          "estimatedDuration": 20,
+          "isRepeatable": false
+        }
+      ],
+      "requiredItems": [],
+      "timeToReach": 0,
+      "discoveryConditions": [],
+      "connections": [
+        "town_square",
+        "wilderness_trail"
+      ],
+      "coordinateX": 0.7,
+      "coordinateY": 0.3
+    },
+    {
+      "id": "wilderness_trail",
+      "name": "Wilderness Trail",
+      "description": "A winding path through untamed wilderness connecting the town to distant places.",
+      "scenarioId": "scenario10",
+      "isVisited": false,
+      "availableActivities": [
+        {
+          "id": "trail_exploration",
+          "type": "EXPLORATION",
+          "name": "Trail Exploration",
+          "description": "Scout the wilderness paths for hidden secrets.",
+          "rewards": [
+            "herbs",
+            "ancient_map"
+          ],
+          "requiredItems": [],
+          "difficulty": 2,
+          "estimatedDuration": 15,
+          "isRepeatable": false
+        },
+        {
+          "id": "wilderness_combat",
+          "type": "COMBAT",
+          "name": "Wilderness Dangers",
+          "description": "Fight off wild creatures lurking along the trail.",
+          "rewards": [
+            "beast_hide"
+          ],
+          "requiredItems": [],
+          "difficulty": 3,
+          "estimatedDuration": 10,
+          "isRepeatable": true
+        }
+      ],
+      "requiredItems": [],
+      "timeToReach": 0,
+      "discoveryConditions": [],
+      "connections": [
+        "guard_training_grounds",
+        "ancient_ruins",
+        "scholars_retreat",
+        "cursed_ruins"
+      ],
+      "coordinateX": 0.8,
+      "coordinateY": 0.5
+    },
+    {
+      "id": "mentor_cottage",
+      "name": "Mentor\u0027s Cottage",
+      "description": "A peaceful dwelling where a wise mentor offers guidance and knowledge.",
+      "scenarioId": "scenario30",
+      "isVisited": false,
+      "availableActivities": [
+        {
+          "id": "mentor_wisdom",
+          "type": "NPC_INTERACTION",
+          "name": "Mentor\u0027s Wisdom",
+          "description": "Seek counsel from the wise mentor about your journey.",
+          "rewards": [
+            "mentor_advice",
+            "scholar_recommendation"
+          ],
+          "requiredItems": [],
+          "difficulty": 1,
+          "estimatedDuration": 10,
+          "isRepeatable": false
+        },
+        {
+          "id": "mentor_crafting",
+          "type": "CRAFTING",
+          "name": "Mentor\u0027s Workshop",
+          "description": "Learn to craft useful items under the mentor\u0027s guidance.",
+          "rewards": [
+            "crafted_charm"
+          ],
+          "requiredItems": [],
+          "difficulty": 2,
+          "estimatedDuration": 15,
+          "isRepeatable": false
+        }
+      ],
+      "requiredItems": [],
+      "timeToReach": 0,
+      "discoveryConditions": [],
+      "connections": [
+        "town_square",
+        "scholars_retreat"
+      ],
+      "coordinateX": 0.3,
+      "coordinateY": 0.7
+    },
+    {
+      "id": "shadow_alley",
+      "name": "Shadowed Alley",
+      "description": "A dark, narrow alley where the underworld conducts its business.",
+      "scenarioId": "scenario12",
+      "isVisited": false,
+      "availableActivities": [
+        {
+          "id": "shadow_investigation",
+          "type": "INVESTIGATION",
+          "name": "Shadow Investigation",
+          "description": "Investigate the shady dealings in the alley.",
+          "rewards": [
+            "underworld_intel"
+          ],
+          "requiredItems": [],
+          "difficulty": 3,
+          "estimatedDuration": 15,
+          "isRepeatable": false
+        },
+        {
+          "id": "underworld_contacts",
+          "type": "NPC_INTERACTION",
+          "name": "Underworld Contacts",
+          "description": "Make connections with the underworld figures.",
+          "rewards": [
+            "underworld_favor"
+          ],
+          "requiredItems": [],
+          "difficulty": 2,
+          "estimatedDuration": 10,
+          "isRepeatable": true
+        }
+      ],
+      "requiredItems": [],
+      "timeToReach": 0,
+      "discoveryConditions": [
+        "Shadowed Alley"
+      ],
+      "connections": [
+        "town_square",
+        "criminal_hideout",
+        "cursed_ruins"
+      ],
+      "coordinateX": 0.15,
+      "coordinateY": 0.5
+    },
+    {
+      "id": "criminal_hideout",
+      "name": "Criminal Hideout",
+      "description": "A concealed den of thieves and smugglers hidden beneath the city.",
+      "scenarioId": "scenario16",
+      "isVisited": false,
+      "availableActivities": [
+        {
+          "id": "hideout_lockpicking",
+          "type": "MINIGAME",
+          "name": "Lock Picking Challenge",
+          "description": "Pick locks to access hidden stashes and secret rooms.",
+          "rewards": [
+            "stolen_goods",
+            "lockpick_set"
+          ],
+          "requiredItems": [],
+          "difficulty": 4,
+          "estimatedDuration": 10,
+          "isRepeatable": false
+        },
+        {
+          "id": "hideout_intel",
+          "type": "INVESTIGATION",
+          "name": "Hideout Intel",
+          "description": "Gather intelligence from the criminal underground.",
+          "rewards": [
+            "criminal_ledger",
+            "infernal_mark"
+          ],
+          "requiredItems": [],
+          "difficulty": 3,
+          "estimatedDuration": 15,
+          "isRepeatable": false
+        }
+      ],
+      "requiredItems": [],
+      "timeToReach": 0,
+      "discoveryConditions": [
+        "Shadowed Alley"
+      ],
+      "connections": [
+        "shadow_alley",
+        "merchant_quarters"
+      ],
+      "coordinateX": 0.1,
+      "coordinateY": 0.3
+    },
+    {
+      "id": "ancient_ruins",
+      "name": "Ancient Ruins",
+      "description": "Mysterious ruins from a forgotten civilization.",
+      "scenarioId": "scenario14",
+      "isVisited": false,
+      "availableActivities": [
+        {
+          "id": "ruins_exploration",
+          "type": "EXPLORATION",
+          "name": "Explore the Ruins",
+          "description": "Search for ancient artifacts and secrets.",
+          "rewards": [
+            "ancient_artifact",
+            "knowledge"
+          ],
+          "requiredItems": [
+            "torch"
+          ],
+          "difficulty": 4,
+          "estimatedDuration": 25,
+          "isRepeatable": false
+        },
+        {
+          "id": "rune_puzzle",
+          "type": "PUZZLE",
+          "name": "Decipher Ancient Runes",
+          "description": "Solve the puzzle of the ancient script.",
+          "rewards": [
+            "ancient_knowledge",
+            "magical_essence",
+            "holy_key"
+          ],
+          "requiredItems": [],
+          "difficulty": 5,
+          "estimatedDuration": 30,
+          "isRepeatable": false
+        }
+      ],
+      "requiredItems": [],
+      "timeToReach": 0,
+      "discoveryConditions": [
+        "ancient_map"
+      ],
+      "connections": [
+        "wilderness_trail",
+        "sacred_temple"
+      ],
+      "coordinateX": 0.9,
+      "coordinateY": 0.75
+    },
+    {
+      "id": "scholars_retreat",
+      "name": "Scholar\u0027s Retreat",
+      "description": "A secluded haven of knowledge where scholars study ancient mysteries.",
+      "scenarioId": "scenario37",
+      "isVisited": false,
+      "availableActivities": [
+        {
+          "id": "ancient_translations",
+          "type": "PUZZLE",
+          "name": "Ancient Translations",
+          "description": "Help decipher ancient texts and uncover lost knowledge.",
+          "rewards": [
+            "translated_scroll",
+            "scholar_recommendation"
+          ],
+          "requiredItems": [],
+          "difficulty": 4,
+          "estimatedDuration": 20,
+          "isRepeatable": false
+        },
+        {
+          "id": "library_archives",
+          "type": "EXPLORATION",
+          "name": "Library Archives",
+          "description": "Explore the vast library\u0027s dusty shelves for hidden tomes.",
+          "rewards": [
+            "rare_book",
+            "ancient_knowledge"
+          ],
+          "requiredItems": [],
+          "difficulty": 2,
+          "estimatedDuration": 15,
+          "isRepeatable": false
+        }
+      ],
+      "requiredItems": [],
+      "timeToReach": 0,
+      "discoveryConditions": [
+        "scholar_recommendation"
+      ],
+      "connections": [
+        "wilderness_trail",
+        "mentor_cottage"
+      ],
+      "coordinateX": 0.6,
+      "coordinateY": 0.8
+    },
+    {
+      "id": "sacred_temple",
+      "name": "Sacred Temple",
+      "description": "An ancient temple radiating divine energy, sealed behind sacred wards.",
+      "scenarioId": "scenario41",
+      "isVisited": false,
+      "availableActivities": [
+        {
+          "id": "temple_mysteries",
+          "type": "PUZZLE",
+          "name": "Temple Mysteries",
+          "description": "Solve the sacred puzzles guarding the temple\u0027s inner sanctum.",
+          "rewards": [
+            "celestial_artifact",
+            "divine_blessing"
+          ],
+          "requiredItems": [],
+          "difficulty": 5,
+          "estimatedDuration": 25,
+          "isRepeatable": false
+        },
+        {
+          "id": "sacred_archives",
+          "type": "EXPLORATION",
+          "name": "Sacred Archives",
+          "description": "Explore the temple\u0027s sacred archives for divine knowledge.",
+          "rewards": [
+            "sacred_text"
+          ],
+          "requiredItems": [],
+          "difficulty": 3,
+          "estimatedDuration": 15,
+          "isRepeatable": false
+        }
+      ],
+      "requiredItems": [],
+      "timeToReach": 0,
+      "discoveryConditions": [
+        "holy_key"
+      ],
+      "connections": [
+        "ancient_ruins"
+      ],
+      "coordinateX": 0.85,
+      "coordinateY": 0.9
+    },
+    {
+      "id": "cursed_ruins",
+      "name": "Cursed Ruins",
+      "description": "Crumbling ruins tainted by dark magic, filled with dangerous creatures.",
+      "scenarioId": "scenario43",
+      "isVisited": false,
+      "availableActivities": [
+        {
+          "id": "cursed_guardians",
+          "type": "COMBAT",
+          "name": "Cursed Guardians",
+          "description": "Battle the cursed beings that guard the ruins\u0027 dark secrets.",
+          "rewards": [
+            "cursed_relic",
+            "dark_essence"
+          ],
+          "requiredItems": [],
+          "difficulty": 5,
+          "estimatedDuration": 15,
+          "isRepeatable": false
+        },
+        {
+          "id": "dark_secrets",
+          "type": "INVESTIGATION",
+          "name": "Dark Secrets",
+          "description": "Investigate the ruins\u0027 dark history and uncover forbidden knowledge.",
+          "rewards": [
+            "forbidden_tome",
+            "shadow_crystal"
+          ],
+          "requiredItems": [],
+          "difficulty": 4,
+          "estimatedDuration": 20,
+          "isRepeatable": false
+        }
+      ],
+      "requiredItems": [],
+      "timeToReach": 0,
+      "discoveryConditions": [
+        "infernal_mark"
+      ],
+      "connections": [
+        "wilderness_trail",
+        "shadow_alley"
+      ],
+      "coordinateX": 0.15,
+      "coordinateY": 0.8
+    }
+  ]
+}
