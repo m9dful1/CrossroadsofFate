@@ -22,3 +22,6 @@ local.properties
 .cursor/
 .kotlin/
 .agentbus/
+
+# Map editor local backup
+tools/map-editor/maps.json.bak

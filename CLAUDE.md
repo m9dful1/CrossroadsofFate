@@ -40,6 +40,7 @@ MVVM with a coordinator pattern. The key layers:
   - `ReputationManager` — faction reputation (guard, merchant, scholar, underworld)
   - `ActivityManager` — location-based activity completion and location unlocks (owns completion state — `LocationActivity` models are stateless)
   - `MiniGameManager` — mini-game registry and active-game state
+  - `ExplorationManager` — free-roam exploration between story beats: current map, avatar position, tap-to-move with grid A* pathfinding (internal `NavGrid`), story/NPC/exit interactions; movement advances via `update(deltaMillis)` called from the UI frame loop (no internal clock, fully unit-testable)
   - `GameAudioManager` — music/SFX playback; volume and mute settings persisted in SharedPreferences; per-location music via `getMusicTrackForLocation()`
   - `TextResolver` — stateless object that resolves dynamic placeholder tokens in scenario text against inventory/stats/reputation
 - **ViewModel**: `GameViewModel` is a coordinator — it delegates to managers, aggregates state into `PlayerProgress`, and persists via repository. It does NOT contain business logic directly.
@@ -54,6 +55,7 @@ MVVM with a coordinator pattern. The key layers:
 ## Key Conventions
 
 - **Scenarios** are defined in `app/src/main/assets/scenarios.json` and loaded into Room at app init. `docs/scenario-authoring-guide.md` is the authoritative reference for the JSON format: decision conditions (item/stat/reputation-gated), `statsGranted`, `reputationChanges`, and dynamic text tokens
+- **Exploration maps** live in `app/src/main/assets/maps.json` (parsed into `ExplorationMapSet` at init — not a Room table). Each map's `locationNames` must cover the scenario `location` strings it represents; `ExplorationMapCatalogTest` enforces full coverage, one STORY entity per map, reciprocal exits, and reachability of every entity from spawn. Edit maps with the browser tool: `python3 tools/map-editor/serve.py` → http://127.0.0.1:8765 (writes the asset directly; its live validation mirrors the tests). After each decision the game enters exploration (`isExploring` on `GameViewModel`); the player walks to the story marker to continue
 - **Background images** are resolved dynamically by name via `painterForName()` in `UiUtils.kt` — no hardcoded `when` blocks for drawable mapping
 - **Type converters**: All consolidated in a single `Converters` class in `data/models/TypeConverters.kt` using `@ProvidedTypeConverter`. Registered via `.addTypeConverter(Converters())` at database level only — do not add `@TypeConverters` on individual entities
 - **Database** uses `fallbackToDestructiveMigration()` — no migration files; just bump the version in `GameDatabase` when the schema changes

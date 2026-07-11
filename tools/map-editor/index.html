@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Crossroads of Fate — Map Editor</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header id="toolbar">
+  <strong id="logo">🗺 Map Editor</strong>
+  <select id="mapSelect" title="Current map"></select>
+  <button id="addMapBtn" title="Add a new map">＋ Map</button>
+  <button id="dupMapBtn" title="Duplicate current map">⧉</button>
+  <button id="delMapBtn" title="Delete current map">🗑</button>
+  <span class="sep"></span>
+  <div id="tools">
+    <button data-tool="select" class="tool active" title="Select / move (V)">▢ Select</button>
+    <button data-tool="obstacle" class="tool" title="Drag to draw an obstacle (O)">⬛ Obstacle</button>
+    <button data-tool="entity" class="tool" title="Click to place an entity (E)">◉ Entity</button>
+    <button data-tool="decor" class="tool" title="Click to place decor (D)">✿ Decor</button>
+    <button data-tool="spawn" class="tool" title="Click to move the spawn point (S)">✚ Spawn</button>
+  </div>
+  <label id="snapLabel"><input type="checkbox" id="snapChk" checked> snap 5</label>
+  <span class="sep"></span>
+  <button id="undoBtn" title="Undo (Ctrl+Z)">↩ Undo</button>
+  <button id="saveBtn" title="Save to app/src/main/assets/maps.json (Ctrl+S)">💾 Save</button>
+  <span id="status"></span>
+</header>
+
+<main>
+  <div id="canvasWrap"><canvas id="canvas"></canvas></div>
+
+  <aside id="panel">
+    <section id="mapProps">
+      <h2>Map</h2>
+      <div class="form" id="mapForm"></div>
+    </section>
+    <section id="selProps">
+      <h2>Selection</h2>
+      <div class="form" id="selForm"><p class="hint">Nothing selected. Click an item on the canvas, or pick a tool and place something.</p></div>
+    </section>
+    <section id="palette">
+      <h2>Icon palette</h2>
+      <div id="paletteGrid"></div>
+    </section>
+    <section id="validation">
+      <h2>Validation</h2>
+      <ul id="problems"></ul>
+    </section>
+  </aside>
+</main>
+
+<footer id="help">
+  Tap tools: <b>V</b> select · <b>O</b> obstacle · <b>E</b> entity · <b>D</b> decor · <b>S</b> spawn ·
+  <b>Del</b> remove selection · <b>arrows</b> nudge · <b>Ctrl+Z</b> undo · <b>Ctrl+S</b> save
+</footer>
+
+<script src="editor.js"></script>
+</body>
+</html>
