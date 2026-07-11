@@ -1,12 +1,9 @@
 package com.spiritwisestudios.crossroadsoffate.ui.minigames
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -17,7 +14,9 @@ import com.spiritwisestudios.crossroadsoffate.minigames.MiniGameInput
 import com.spiritwisestudios.crossroadsoffate.minigames.MiniGameResult
 import com.spiritwisestudios.crossroadsoffate.minigames.games.LockPickingGame
 import com.spiritwisestudios.crossroadsoffate.minigames.games.TradingGame
-import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
+import com.spiritwisestudios.crossroadsoffate.ui.components.ResultDialog
+import com.spiritwisestudios.crossroadsoffate.ui.components.RewardList
+import com.spiritwisestudios.crossroadsoffate.ui.theme.GameColors
 import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
 import kotlinx.coroutines.android.awaitFrame
 
@@ -93,130 +92,76 @@ fun MiniGameResultScreen(
     gameName: String,
     onDismiss: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.9f)),
-        contentAlignment = Alignment.Center
+    val accentColor = if (result.success) Color.Green else Color.Red
+    ResultDialog(
+        accentColor = accentColor,
+        onDismiss = onDismiss
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp)
-                .background(
-                    color = Color.DarkGray.copy(alpha = 0.8f),
-                    shape = MaterialTheme.shapes.large
-                )
-                .border(
-                    width = 2.dp,
-                    color = if (result.success) Color.Green else Color.Red,
-                    shape = MaterialTheme.shapes.large
-                )
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Header
+        // Header
+        Text(
+            text = if (result.success) "Success!" else "Failed",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = accentColor,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = gameName,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.White,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Message
+        if (result.message.isNotEmpty()) {
             Text(
-                text = if (result.success) "Success!" else "Failed",
-                fontSize = 28.sp,
+                text = result.message,
+                fontSize = 16.sp,
+                color = Color.White.copy(alpha = 0.9f),
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        // Score
+        if (result.score > 0) {
+            Text(
+                text = "Score: ${result.score}",
+                fontSize = 18.sp,
+                color = Color.Cyan,
                 fontWeight = FontWeight.Bold,
-                color = if (result.success) Color.Green else Color.Red,
                 textAlign = TextAlign.Center
             )
-
             Spacer(modifier = Modifier.height(8.dp))
+        }
 
+        // Time spent
+        if (result.timeSpent > 0) {
             Text(
-                text = gameName,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.White,
+                text = "Time: ${result.timeSpent}s",
+                fontSize = 14.sp,
+                color = GameColors.TextSecondary,
                 textAlign = TextAlign.Center
             )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
-            Spacer(modifier = Modifier.height(16.dp))
+        // Rewards
+        if (result.rewards.isNotEmpty()) {
+            RewardList(label = "Rewards:", labelColor = Color.Green, items = result.rewards)
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
-            // Message
-            if (result.message.isNotEmpty()) {
-                Text(
-                    text = result.message,
-                    fontSize = 16.sp,
-                    color = Color.White.copy(alpha = 0.9f),
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            // Score
-            if (result.score > 0) {
-                Text(
-                    text = "Score: ${result.score}",
-                    fontSize = 18.sp,
-                    color = Color.Cyan,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            // Time spent
-            if (result.timeSpent > 0) {
-                Text(
-                    text = "Time: ${result.timeSpent}s",
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.7f),
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            // Rewards
-            if (result.rewards.isNotEmpty()) {
-                Text(
-                    text = "Rewards:",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Green
-                )
-                result.rewards.forEach { reward ->
-                    Text(
-                        text = "  + $reward",
-                        fontSize = 14.sp,
-                        color = Color.White,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            // Consequences
-            if (result.consequences.isNotEmpty()) {
-                Text(
-                    text = "Consequences:",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Yellow
-                )
-                result.consequences.forEach { consequence ->
-                    Text(
-                        text = "  - $consequence",
-                        fontSize = 14.sp,
-                        color = Color.White,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Dismiss button
-            DecisionButton(
-                text = "Continue",
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                onDismiss()
-            }
+        // Consequences
+        if (result.consequences.isNotEmpty()) {
+            RewardList(label = "Consequences:", labelColor = Color.Yellow, items = result.consequences, prefix = "-")
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }

@@ -1355,3 +1355,27 @@ The original list-based map was superseded by the interactive map (Section 18) b
 - `TextResolver`: stat/reputation token handling shares `replaceThresholdTokens` / `replaceValueTokens` helpers instead of duplicated regex branches
 - `ActivityManager`: XP literals extracted to `SUCCESS_XP` / `FAILURE_XP`
 - `MainActivity`: repository/factory construction is `remember`ed and the activity field write moved into `SideEffect` (previously new instances per recomposition and a composition side effect)
+
+## 26. Shared UI Components and Color Tokens
+
+[Date of modification: 2026-07-11]
+[Description: Extracted the UI patterns duplicated across screens into shared components and introduced shared color tokens. Visuals are unchanged; one layout bug fixed.]
+
+### 26.1 New Shared Components (`ui/components/`)
+- `GameCard` — the translucent rounded panel (background + 1dp border + padded column) previously copy-pasted across CharacterMenuScreen, DebugMenuScreen, and InteractiveMapScreen; parameterized background/border/padding cover the map-card variants
+- `GameTopBar` — the TopAppBar-with-Back-button header previously duplicated in CharacterMenuScreen and twice in InteractiveMapScreen
+- `VolumeSlider` — the labeled white-styled slider previously duplicated verbatim in the character menu and debug menu audio sections
+- `ResultDialog` + `RewardList` — the full-screen scrim/bordered-panel/dismiss modal previously duplicated in `MiniGameResultScreen` and `QuestRewardPopup`
+
+### 26.2 Color Tokens (`ui/theme/GameColors.kt`)
+Panel/scrim/border/text tokens plus `Gold` and `Orange` accents replace repeated `Color.DarkGray.copy(alpha=…)` literals and the duplicated `0xFFFFD700`/`0xFFFF8C00` hexes.
+
+### 26.3 Screen Fixes
+- `CharacterMenuScreen`: the top bar was inside the `verticalScroll` column and scrolled off-screen with its Back button — now fixed above the scroll region; state collection standardized on `by collectAsState()` and the nested `collectAsState` call inside the sections list hoisted
+- `InteractiveMapScreen`: `getAvailableActivitiesForLocation`/`getLocationCompletionRate` were invoked as plain calls on every recomposition and never updated when inventory changed — now computed via `remember` keyed on the observed `playerInventory`/`completedActivities` flows and passed down as parameters (`LocationCard` no longer takes the ViewModel)
+- `MainGameScreen`: emoji-only map/character buttons now expose `contentDescription` semantics for screen readers
+- `ErrorLoggerScreen`: deprecated `Divider` replaced with `HorizontalDivider`
+
+### 26.4 Known Deferred Items
+- `LockPickingScreen` still owns lock-picking rules (strain, phase advancement) in the UI layer; moving them into `LockPickingGame` is a larger behavioral refactor deliberately not bundled here
+- Full `MaterialTheme.colorScheme` adoption (screens currently hardcode a dark palette while the theme is light) is deferred; `GameColors` is the incremental step

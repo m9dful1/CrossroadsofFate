@@ -1,20 +1,23 @@
 package com.spiritwisestudios.crossroadsoffate.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.spiritwisestudios.crossroadsoffate.data.models.QuestType
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
+import com.spiritwisestudios.crossroadsoffate.ui.components.GameCard
+import com.spiritwisestudios.crossroadsoffate.ui.components.GameTopBar
+import com.spiritwisestudios.crossroadsoffate.ui.components.VolumeSlider
+import com.spiritwisestudios.crossroadsoffate.ui.theme.GameColors
 import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
 
 /**
@@ -23,117 +26,93 @@ import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
  * @param onBack Callback function to handle back navigation
  * @param gameViewModel ViewModel that holds the game state and logic
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CharacterMenuScreen(
     onBack: () -> Unit,
     gameViewModel: GameViewModel
 ) {
     // Collect current state values from the ViewModel
-    val playerInventory = gameViewModel.playerInventory.collectAsState().value
-    val activeQuests = gameViewModel.activeQuests.collectAsState().value
-    val completedQuests = gameViewModel.completedQuests.collectAsState().value
-    val playerStats = gameViewModel.playerStats.collectAsState().value
-    val playerReputation = gameViewModel.playerReputation.collectAsState().value
-    val musicVolume = gameViewModel.musicVolume.collectAsState().value
-    val sfxVolume = gameViewModel.sfxVolume.collectAsState().value
-    val isMuted = gameViewModel.isMuted.collectAsState().value
+    val playerInventory by gameViewModel.playerInventory.collectAsState()
+    val activeQuests by gameViewModel.activeQuests.collectAsState()
+    val completedQuests by gameViewModel.completedQuests.collectAsState()
+    val playerStats by gameViewModel.playerStats.collectAsState()
+    val playerReputation by gameViewModel.playerReputation.collectAsState()
+    val musicVolume by gameViewModel.musicVolume.collectAsState()
+    val sfxVolume by gameViewModel.sfxVolume.collectAsState()
+    val isMuted by gameViewModel.isMuted.collectAsState()
+    val currentScenario by gameViewModel.currentScenario.collectAsState()
 
     // Main container with semi-transparent black background
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.9f))
+            .background(GameColors.OverlayScrim)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            // Top app bar with back button and title
-            TopAppBar(
-                title = { Text("  Character Menu", color = Color.White) },
-                navigationIcon = {
-                    DecisionButton(
-                        text = "Back",
-                        modifier = Modifier.width(80.dp)
-                    ) { onBack() }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.DarkGray.copy(alpha = 0.7f)
-                )
-            )
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Fixed header — stays visible while the sections below scroll
+            GameTopBar(title = "Character Menu", onBack = onBack)
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Return to title button
-            DecisionButton(
-                text = "Return to Title",
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
-                gameViewModel.returnToTitle()
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Character information sections
-            listOf(
-                // Stats section showing current location and character stats
-                "Stats" to listOf(
-                    "Current Location: ${gameViewModel.currentScenario.collectAsState().value?.location ?: "Unknown"}",
-                    ""
-                ) + playerStats.entries.sortedBy { it.key }.map { (stat, value) ->
-                    "${stat.replaceFirstChar { it.uppercase() }}: $value"
-                },
-                // Reputation section showing faction standings
-                "Reputation" to playerReputation.entries.sortedBy { it.key }.map { (faction, value) ->
-                    "${faction.replaceFirstChar { it.uppercase() }}: $value"
-                },
-                // Inventory section showing all items
-                "Inventory" to playerInventory.toList(),
-                // Active quests section with objectives and completion status
-                "Active Quests" to if (activeQuests.isEmpty()) {
-                    listOf("No active quests")
-                } else {
-                    activeQuests.flatMap { quest ->
-                        val typeLabel = when (quest.questType) {
-                            QuestType.MAIN -> "[Main]"
-                            QuestType.PATH -> "[Path]"
-                            QuestType.SIDE -> "[Side]"
-                        }
-                        listOf("$typeLabel ${quest.title}:") + quest.objectives.map { objective ->
-                            val progress = if (objective.requiredActivityCount != null) {
-                                " (${objective.currentCount}/${objective.requiredActivityCount})"
-                            } else ""
-                            ". ${objective.description}$progress ${if (objective.isCompleted) "✓" else ""}"
-                        }
-                    }
-                },
-                // Completed quests section
-                "Completed Quests" to if (completedQuests.isEmpty()) {
-                    listOf("No completed quests")
-                } else {
-                    completedQuests.map { it.title }
-                }
-            ).forEach { (title, items) ->
-                // Individual section container
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                        .background(
-                            Color.DarkGray.copy(alpha = 0.7f),
-                            MaterialTheme.shapes.medium
-                        )
-                        .border(
-                            1.dp,
-                            Color.White.copy(alpha = 0.7f),
-                            MaterialTheme.shapes.medium
-                        )
-                        .padding(16.dp)
+                // Return to title button
+                DecisionButton(
+                    text = "Return to Title",
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column {
+                    gameViewModel.returnToTitle()
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Character information sections
+                listOf(
+                    // Stats section showing current location and character stats
+                    "Stats" to listOf(
+                        "Current Location: ${currentScenario?.location ?: "Unknown"}",
+                        ""
+                    ) + playerStats.entries.sortedBy { it.key }.map { (stat, value) ->
+                        "${stat.replaceFirstChar { it.uppercase() }}: $value"
+                    },
+                    // Reputation section showing faction standings
+                    "Reputation" to playerReputation.entries.sortedBy { it.key }.map { (faction, value) ->
+                        "${faction.replaceFirstChar { it.uppercase() }}: $value"
+                    },
+                    // Inventory section showing all items
+                    "Inventory" to playerInventory.toList(),
+                    // Active quests section with objectives and completion status
+                    "Active Quests" to if (activeQuests.isEmpty()) {
+                        listOf("No active quests")
+                    } else {
+                        activeQuests.flatMap { quest ->
+                            val typeLabel = when (quest.questType) {
+                                QuestType.MAIN -> "[Main]"
+                                QuestType.PATH -> "[Path]"
+                                QuestType.SIDE -> "[Side]"
+                            }
+                            listOf("$typeLabel ${quest.title}:") + quest.objectives.map { objective ->
+                                val progress = if (objective.requiredActivityCount != null) {
+                                    " (${objective.currentCount}/${objective.requiredActivityCount})"
+                                } else ""
+                                ". ${objective.description}$progress ${if (objective.isCompleted) "✓" else ""}"
+                            }
+                        }
+                    },
+                    // Completed quests section
+                    "Completed Quests" to if (completedQuests.isEmpty()) {
+                        listOf("No completed quests")
+                    } else {
+                        completedQuests.map { it.title }
+                    }
+                ).forEach { (title, items) ->
+                    GameCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                    ) {
                         // Section title
                         Text(
                             text = title,
@@ -145,7 +124,7 @@ fun CharacterMenuScreen(
                         if (items.isEmpty() && title == "Inventory") {
                             Text(
                                 text = "No items in inventory",
-                                color = Color.White.copy(alpha = 0.7f),
+                                color = GameColors.TextSecondary,
                                 fontSize = 16.sp,
                                 modifier = Modifier.padding(vertical = 4.dp)
                             )
@@ -162,25 +141,13 @@ fun CharacterMenuScreen(
                         }
                     }
                 }
-            }
 
-            // Audio Settings section
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .background(
-                        Color.DarkGray.copy(alpha = 0.7f),
-                        MaterialTheme.shapes.medium
-                    )
-                    .border(
-                        1.dp,
-                        Color.White.copy(alpha = 0.7f),
-                        MaterialTheme.shapes.medium
-                    )
-                    .padding(16.dp)
-            ) {
-                Column {
+                // Audio Settings section
+                GameCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
                     Text(
                         text = "Audio Settings",
                         color = Color.White,
@@ -188,51 +155,16 @@ fun CharacterMenuScreen(
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    // Music volume slider
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "Music",
-                            color = Color.White,
-                            fontSize = 16.sp,
-                            modifier = Modifier.width(60.dp)
-                        )
-                        Slider(
-                            value = musicVolume,
-                            onValueChange = { gameViewModel.setMusicVolume(it) },
-                            modifier = Modifier.weight(1f),
-                            colors = SliderDefaults.colors(
-                                thumbColor = Color.White,
-                                activeTrackColor = Color.White.copy(alpha = 0.8f),
-                                inactiveTrackColor = Color.White.copy(alpha = 0.3f)
-                            )
-                        )
-                    }
-
-                    // SFX volume slider
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "SFX",
-                            color = Color.White,
-                            fontSize = 16.sp,
-                            modifier = Modifier.width(60.dp)
-                        )
-                        Slider(
-                            value = sfxVolume,
-                            onValueChange = { gameViewModel.setSfxVolume(it) },
-                            modifier = Modifier.weight(1f),
-                            colors = SliderDefaults.colors(
-                                thumbColor = Color.White,
-                                activeTrackColor = Color.White.copy(alpha = 0.8f),
-                                inactiveTrackColor = Color.White.copy(alpha = 0.3f)
-                            )
-                        )
-                    }
+                    VolumeSlider(
+                        label = "Music",
+                        value = musicVolume,
+                        onValueChange = { gameViewModel.setMusicVolume(it) }
+                    )
+                    VolumeSlider(
+                        label = "SFX",
+                        value = sfxVolume,
+                        onValueChange = { gameViewModel.setSfxVolume(it) }
+                    )
 
                     Spacer(modifier = Modifier.height(8.dp))
 

@@ -1,15 +1,11 @@
 package com.spiritwisestudios.crossroadsoffate.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +19,9 @@ import com.spiritwisestudios.crossroadsoffate.data.models.ActivityType
 import com.spiritwisestudios.crossroadsoffate.data.models.InteractiveMapLocation
 import com.spiritwisestudios.crossroadsoffate.data.models.LocationActivity
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
+import com.spiritwisestudios.crossroadsoffate.ui.components.GameCard
+import com.spiritwisestudios.crossroadsoffate.ui.components.GameTopBar
+import com.spiritwisestudios.crossroadsoffate.ui.theme.GameColors
 import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
 
 /**
@@ -30,7 +29,6 @@ import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
  * @param gameViewModel The game view model containing interactive map data
  * @param onBack Callback when back button is pressed
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InteractiveMapScreen(
     gameViewModel: GameViewModel,
@@ -48,35 +46,30 @@ fun InteractiveMapScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.9f))
+            .background(GameColors.OverlayScrim)
     ) {
-        if (selectedLocation != null) {
+        val currentSelection = selectedLocation
+        if (currentSelection != null) {
+            // Recomputes when inventory or completion state changes so the
+            // activity list stays in sync with the observed flows
+            val detailActivities = remember(currentSelection, playerInventory, completedActivities) {
+                gameViewModel.getAvailableActivitiesForLocation(currentSelection.id)
+            }
             // Show location detail view
             LocationDetailView(
-                location = selectedLocation!!,
+                location = currentSelection,
+                availableActivities = detailActivities,
                 gameViewModel = gameViewModel,
                 onBack = { selectedLocation = null },
                 onStartActivity = { activityId ->
-                    gameViewModel.startActivity(selectedLocation!!.id, activityId)
+                    gameViewModel.startActivity(currentSelection.id, activityId)
                     selectedLocation = null // Close detail view after starting activity
                 }
             )
         } else {
             // Show main map view
             Column(modifier = Modifier.fillMaxSize()) {
-                // Top app bar with title and back button
-                TopAppBar(
-                    title = { Text("  Interactive Map", color = Color.White) },
-                    navigationIcon = {
-                        DecisionButton(
-                            text = "Back",
-                            modifier = Modifier.width(80.dp)
-                        ) { onBack() }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.DarkGray.copy(alpha = 0.7f)
-                    )
-                )
+                GameTopBar(title = "Interactive Map", onBack = onBack)
 
                 // Header text
                 Text(
@@ -90,9 +83,17 @@ fun InteractiveMapScreen(
                 // Scrollable list of interactive locations
                 LazyColumn(modifier = Modifier.padding(horizontal = 16.dp)) {
                     items(interactiveLocations) { location ->
+                        // Keyed on the observed flows so badges update reactively
+                        val availableActivities = remember(location, playerInventory, completedActivities) {
+                            gameViewModel.getAvailableActivitiesForLocation(location.id)
+                        }
+                        val completionRate = remember(location, completedActivities) {
+                            gameViewModel.getLocationCompletionRate(location.id)
+                        }
                         LocationCard(
                             location = location,
-                            gameViewModel = gameViewModel,
+                            availableActivities = availableActivities,
+                            completionRate = completionRate,
                             onClick = { selectedLocation = location }
                         )
                     }
@@ -108,28 +109,18 @@ fun InteractiveMapScreen(
 @Composable
 fun LocationCard(
     location: InteractiveMapLocation,
-    gameViewModel: GameViewModel,
+    availableActivities: List<LocationActivity>,
+    completionRate: Float,
     onClick: () -> Unit
 ) {
-    val availableActivities = gameViewModel.getAvailableActivitiesForLocation(location.id)
-    val completionRate = gameViewModel.getLocationCompletionRate(location.id)
-    
-    Box(
+    GameCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .background(
-                color = Color.DarkGray.copy(alpha = 0.6f),
-                shape = androidx.compose.material3.MaterialTheme.shapes.medium
-            )
-            .border(
-                width = 1.dp,
-                color = if (availableActivities.isNotEmpty()) Color.Yellow.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.3f),
-                shape = androidx.compose.material3.MaterialTheme.shapes.medium
-            )
-            .padding(12.dp)
+            .padding(vertical = 4.dp),
+        backgroundColor = GameColors.PanelBackgroundLight,
+        borderColor = if (availableActivities.isNotEmpty()) Color.Yellow.copy(alpha = 0.7f) else GameColors.BorderFaint,
+        contentPadding = 12.dp
     ) {
-        Column {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -182,7 +173,7 @@ fun LocationCard(
                                 .background(
                                     when {
                                         completionRate >= 1.0f -> Color.Green
-                                        completionRate > 0f -> Color(0xFFFF8C00) // Orange
+                                        completionRate > 0f -> GameColors.Orange
                                         else -> Color.Red.copy(alpha = 0.6f)
                                     }
                                 ),
@@ -212,54 +203,37 @@ fun LocationCard(
             ) {
                 onClick()
             }
-        }
     }
 }
 
 /**
  * Detailed view of a location showing all available activities
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocationDetailView(
     location: InteractiveMapLocation,
+    availableActivities: List<LocationActivity>,
     gameViewModel: GameViewModel,
     onBack: () -> Unit,
     onStartActivity: (String) -> Unit
 ) {
-    val availableActivities = gameViewModel.getAvailableActivitiesForLocation(location.id)
-    
     Column(modifier = Modifier.fillMaxSize()) {
-        // Top app bar
-        TopAppBar(
-            title = { Text(location.name, color = Color.White) },
-            navigationIcon = {
-                DecisionButton(
-                    text = "Back",
-                    modifier = Modifier.width(80.dp)
-                ) { onBack() }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = Color.DarkGray.copy(alpha = 0.7f)
-            )
-        )
-        
+        GameTopBar(title = location.name, onBack = onBack)
+
         // Location description
-        Box(
+        GameCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-                .background(
-                    color = Color.DarkGray.copy(alpha = 0.6f),
-                    shape = androidx.compose.material3.MaterialTheme.shapes.medium
-                )
-                .padding(16.dp)
+                .padding(16.dp),
+            backgroundColor = GameColors.PanelBackgroundLight,
+            borderColor = GameColors.BorderFaint
         ) {
             Text(
                 text = location.description,
                 color = Color.White,
                 fontSize = 16.sp,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
         }
         
@@ -318,22 +292,14 @@ fun ActivityCard(
     activity: LocationActivity,
     onStartActivity: () -> Unit
 ) {
-    Box(
+    GameCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .background(
-                color = getActivityTypeColor(activity.type).copy(alpha = 0.3f),
-                shape = androidx.compose.material3.MaterialTheme.shapes.medium
-            )
-            .border(
-                width = 1.dp,
-                color = getActivityTypeColor(activity.type),
-                shape = androidx.compose.material3.MaterialTheme.shapes.medium
-            )
-            .padding(12.dp)
+            .padding(vertical = 4.dp),
+        backgroundColor = getActivityTypeColor(activity.type).copy(alpha = 0.3f),
+        borderColor = getActivityTypeColor(activity.type),
+        contentPadding = 12.dp
     ) {
-        Column {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -397,7 +363,6 @@ fun ActivityCard(
             ) {
                 onStartActivity()
             }
-        }
     }
 }
 
@@ -412,7 +377,7 @@ fun getActivityTypeColor(type: ActivityType): Color {
         ActivityType.EXPLORATION -> Color.Yellow
         ActivityType.TRADING -> Color.Blue
         ActivityType.INVESTIGATION -> Color.Red
-        ActivityType.CRAFTING -> Color(0xFFFF8C00) // Orange
+        ActivityType.CRAFTING -> GameColors.Orange
         ActivityType.COMBAT -> Color(0xFF8B0000) // Dark Red
     }
 }

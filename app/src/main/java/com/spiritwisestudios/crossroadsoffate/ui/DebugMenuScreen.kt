@@ -2,7 +2,6 @@ package com.spiritwisestudios.crossroadsoffate.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -17,7 +16,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
+import com.spiritwisestudios.crossroadsoffate.ui.components.GameCard
+import com.spiritwisestudios.crossroadsoffate.ui.components.VolumeSlider
 import com.spiritwisestudios.crossroadsoffate.ui.minigames.MiniGameOverlay
+import com.spiritwisestudios.crossroadsoffate.ui.theme.GameColors
 import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
 
 @Composable
@@ -351,38 +353,8 @@ fun DebugMenuScreen(
 
             // Audio
             DebugSection(title = "Audio") {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Music", color = Color.White, fontSize = 14.sp, modifier = Modifier.width(50.dp))
-                    Slider(
-                        value = musicVolume,
-                        onValueChange = { gameViewModel.setMusicVolume(it) },
-                        modifier = Modifier.weight(1f),
-                        colors = SliderDefaults.colors(
-                            thumbColor = Color.White,
-                            activeTrackColor = Color.White.copy(alpha = 0.8f),
-                            inactiveTrackColor = Color.White.copy(alpha = 0.3f)
-                        )
-                    )
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("SFX", color = Color.White, fontSize = 14.sp, modifier = Modifier.width(50.dp))
-                    Slider(
-                        value = sfxVolume,
-                        onValueChange = { gameViewModel.setSfxVolume(it) },
-                        modifier = Modifier.weight(1f),
-                        colors = SliderDefaults.colors(
-                            thumbColor = Color.White,
-                            activeTrackColor = Color.White.copy(alpha = 0.8f),
-                            inactiveTrackColor = Color.White.copy(alpha = 0.3f)
-                        )
-                    )
-                }
+                VolumeSlider(label = "Music", value = musicVolume, onValueChange = { gameViewModel.setMusicVolume(it) }, labelWidth = 50.dp)
+                VolumeSlider(label = "SFX", value = sfxVolume, onValueChange = { gameViewModel.setSfxVolume(it) }, labelWidth = 50.dp)
                 DecisionButton(
                     text = if (isMuted) "Unmute" else "Mute",
                     modifier = Modifier.fillMaxWidth()
@@ -423,16 +395,13 @@ fun DebugMenuScreen(
 
 @Composable
 private fun DebugCard(content: @Composable ColumnScope.() -> Unit) {
-    Box(
+    GameCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .background(Color.DarkGray.copy(alpha = 0.7f), MaterialTheme.shapes.medium)
-            .border(1.dp, Color.White.copy(alpha = 0.7f), MaterialTheme.shapes.medium)
-            .padding(12.dp)
-    ) {
-        Column(content = content)
-    }
+            .padding(vertical = 4.dp),
+        contentPadding = 12.dp,
+        content = content
+    )
 }
 
 @Composable
@@ -441,14 +410,12 @@ private fun DebugSection(
     content: @Composable ColumnScope.() -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    Box(
+    GameCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .background(Color.DarkGray.copy(alpha = 0.7f), MaterialTheme.shapes.medium)
-            .border(1.dp, Color.White.copy(alpha = 0.7f), MaterialTheme.shapes.medium)
+            .padding(vertical = 4.dp),
+        contentPadding = 0.dp
     ) {
-        Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -469,6 +436,5 @@ private fun DebugSection(
                     content()
                 }
             }
-        }
     }
 }
