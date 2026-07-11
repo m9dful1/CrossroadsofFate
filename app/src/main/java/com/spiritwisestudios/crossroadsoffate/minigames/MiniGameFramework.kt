@@ -44,25 +44,24 @@ abstract class MiniGame {
 }
 
 /**
+ * Marker interface for a mini-game's typed state payload.
+ * Each game defines its own data class (e.g. LockPickingData, TradingData),
+ * giving compile-time checked access instead of a string-keyed map.
+ */
+interface MiniGameData
+
+/**
  * Represents the current state of a mini-game
  */
 data class MiniGameState(
     val isActive: Boolean = true,
     val isCompleted: Boolean = false,
     val timeRemaining: Int? = null, // seconds
-    val currentData: Map<String, Any> = emptyMap(),
+    val data: MiniGameData? = null,
     val score: Int = 0,
     val attempts: Int = 0,
     val maxAttempts: Int? = null
-) {
-    /**
-     * Gets a data value with type casting
-     */
-    @Suppress("UNCHECKED_CAST")
-    fun <T> getData(key: String): T? {
-        return currentData[key] as? T
-    }
-}
+)
 
 /**
  * Represents the final result of a completed mini-game

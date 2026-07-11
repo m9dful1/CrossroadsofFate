@@ -1,7 +1,26 @@
 package com.spiritwisestudios.crossroadsoffate.minigames.games
 
 import com.spiritwisestudios.crossroadsoffate.minigames.*
-import kotlin.random.Random
+
+/**
+ * Typed state payload for [TradingGame].
+ */
+data class TradingData(
+    val currentPrice: Int,
+    val originalPrice: Int,
+    val targetPrice: Int,
+    val itemValue: Int,
+    val npcMood: TradingGame.NPCMood = TradingGame.NPCMood.NEUTRAL,
+    val moodScore: Int = 0,
+    val round: Int = 1,
+    val negotiationHistory: List<String> = emptyList(),
+    val dealClosed: Boolean = false,
+    val walkAway: Boolean = false,
+    val finalPrice: Int? = null,
+    val savings: Int? = null,
+    val lastResponse: String? = null,
+    val finalMessage: String? = null
+) : MiniGameData
 
 /**
  * Trading negotiation mini-game where players negotiate with NPCs for better deals.
@@ -68,23 +87,20 @@ class TradingGame(
         )
     }
     
+    private fun MiniGameState.tradingData(): TradingData? = data as? TradingData
+
     override fun initialize(): MiniGameState {
         val startingPrice = (itemValue * STARTING_PRICE_MULTIPLIER).toInt()
         val targetPrice = (itemValue * 0.8f).toInt() // Player target for good deal
-        
+
         return MiniGameState(
             isActive = true,
             maxAttempts = MAX_ROUNDS,
-            currentData = mapOf<String, Any>(
-                "currentPrice" to startingPrice,
-                "originalPrice" to startingPrice,
-                "targetPrice" to targetPrice,
-                "itemValue" to itemValue,
-                "npcMood" to NPCMood.NEUTRAL,
-                "moodScore" to 0,
-                "round" to 1,
-                "negotiationHistory" to listOf<String>(),
-                "dealClosed" to false
+            data = TradingData(
+                currentPrice = startingPrice,
+                originalPrice = startingPrice,
+                targetPrice = targetPrice,
+                itemValue = itemValue
             )
         )
     }
@@ -98,8 +114,8 @@ class TradingGame(
     }
     
     private fun processNegotiation(state: MiniGameState, choice: String): MiniGameState {
-        val currentRound = state.getData<Int>("round") ?: 1
-        if (currentRound > MAX_ROUNDS) {
+        val tradingData = state.tradingData() ?: return state
+        if (tradingData.round > MAX_ROUNDS) {
             return state.copy(isCompleted = true)
         }
 
@@ -111,77 +127,63 @@ class TradingGame(
             "flaws" -> NegotiationApproach.POINT_OUT_FLAWS
             else -> return state
         }
-        
-        val currentPrice = state.getData<Int>("currentPrice") ?: return state
-        val moodScore = state.getData<Int>("moodScore") ?: 0
-        val round = state.getData<Int>("round") ?: 1
-        val history = state.getData<List<String>>("negotiationHistory") ?: emptyList()
-        
+
         // Calculate NPC response based on personality and approach
-        val response = calculateNPCResponse(approach, moodScore, round)
-        val newMoodScore = moodScore + response.moodChange
-        val newPrice = maxOf(itemValue / 2, currentPrice + response.priceChange)
-        val newMood = calculateMood(newMoodScore)
-        
-        // Add to history
-        val newHistory = history + formatNegotiationRound(approach, response, newPrice)
-        
+        val response = calculateNPCResponse(approach, tradingData.moodScore, tradingData.round)
+        val newMoodScore = tradingData.moodScore + response.moodChange
+        val newPrice = maxOf(itemValue / 2, tradingData.currentPrice + response.priceChange)
+
         // Check if NPC walks away
         if (newMoodScore <= MOOD_THRESHOLD_ANGRY) {
             return state.copy(
                 isCompleted = true,
-                currentData = state.currentData + mapOf<String, Any>(
-                    "dealClosed" to false,
-                    "walkAway" to true,
-                    "finalMessage" to "The merchant storms off, refusing to deal with you!"
+                data = tradingData.copy(
+                    dealClosed = false,
+                    walkAway = true,
+                    finalMessage = "The merchant storms off, refusing to deal with you!"
                 )
             )
         }
-        
+
         return state.copy(
             attempts = state.attempts + 1,
-            currentData = state.currentData + mapOf<String, Any>(
-                "currentPrice" to newPrice,
-                "moodScore" to newMoodScore,
-                "npcMood" to newMood,
-                "round" to round + 1,
-                "lastApproach" to approach,
-                "negotiationHistory" to newHistory,
-                "lastResponse" to response.message
+            data = tradingData.copy(
+                currentPrice = newPrice,
+                moodScore = newMoodScore,
+                npcMood = calculateMood(newMoodScore),
+                round = tradingData.round + 1,
+                negotiationHistory = tradingData.negotiationHistory +
+                    formatNegotiationRound(approach, response, newPrice),
+                lastResponse = response.message
             )
         )
     }
-    
+
     private fun acceptDeal(state: MiniGameState): MiniGameState {
-        val currentPrice = state.getData<Int>("currentPrice") ?: return state
-        val originalPrice = state.getData<Int>("originalPrice") ?: return state
-        
+        val tradingData = state.tradingData() ?: return state
+
         return state.copy(
             isCompleted = true,
-            currentData = state.currentData + mapOf<String, Any>(
-                "dealClosed" to true,
-                "finalPrice" to currentPrice,
-                "savings" to (originalPrice - currentPrice)
+            data = tradingData.copy(
+                dealClosed = true,
+                finalPrice = tradingData.currentPrice,
+                savings = tradingData.originalPrice - tradingData.currentPrice
             )
         )
     }
-    
+
     override fun checkCompletion(state: MiniGameState): MiniGameResult? {
-        val dealClosed = state.getData<Boolean>("dealClosed") ?: false
-        val walkAway = state.getData<Boolean>("walkAway") ?: false
-        val round = state.getData<Int>("round") ?: 1
-        
+        val tradingData = state.tradingData() ?: return null
+
         // Deal completed successfully
-        if (dealClosed && !walkAway) {
-            val finalPrice = state.getData<Int>("finalPrice") ?: return null
-            val originalPrice = state.getData<Int>("originalPrice") ?: return null
-            val targetPrice = state.getData<Int>("targetPrice") ?: return null
-            val savings = originalPrice - finalPrice
-            val savingsPercent = (savings.toFloat() / originalPrice) * 100
-            
-            val success = finalPrice <= targetPrice
-            val score = calculateFinalScore(savings, originalPrice, state.attempts)
-            
+        if (tradingData.dealClosed && !tradingData.walkAway) {
+            val finalPrice = tradingData.finalPrice ?: return null
+            val savings = tradingData.originalPrice - finalPrice
+            val savingsPercent = (savings.toFloat() / tradingData.originalPrice) * 100
+
+            val success = finalPrice <= tradingData.targetPrice
+            val score = calculateFinalScore(savings, tradingData.originalPrice, state.attempts)
+
             return MiniGameResult(
                 isCompleted = true,
                 success = success,
@@ -196,21 +198,21 @@ class TradingGame(
                 }
             )
         }
-        
+
         // NPC walked away
-        if (walkAway) {
+        if (tradingData.walkAway) {
             return MiniGameResult(
                 isCompleted = true,
                 success = false,
                 score = 0,
                 finalProgress = 0f,
                 consequences = listOf("reputation_loss"),
-                message = state.getData<String>("finalMessage") ?: "Negotiation failed!"
+                message = tradingData.finalMessage ?: "Negotiation failed!"
             )
         }
-        
+
         // Reached maximum rounds without closing
-        if (round > MAX_ROUNDS) {
+        if (tradingData.round > MAX_ROUNDS) {
             return MiniGameResult(
                 isCompleted = true,
                 success = false,
@@ -219,12 +221,12 @@ class TradingGame(
                 message = "The merchant grows impatient and ends the negotiation."
             )
         }
-        
+
         return null
     }
-    
+
     override fun getProgress(state: MiniGameState): Float {
-        val round = state.getData<Int>("round") ?: 1
+        val round = state.tradingData()?.round ?: 1
         return (round - 1).toFloat() / MAX_ROUNDS
     }
     

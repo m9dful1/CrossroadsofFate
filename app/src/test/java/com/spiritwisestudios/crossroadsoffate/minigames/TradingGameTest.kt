@@ -1,5 +1,6 @@
 package com.spiritwisestudios.crossroadsoffate.minigames
 
+import com.spiritwisestudios.crossroadsoffate.minigames.games.TradingData
 import com.spiritwisestudios.crossroadsoffate.minigames.games.TradingGame
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -15,11 +16,12 @@ class TradingGameTest {
         val game = TradingGame(itemValue = 100, npcPersonality = TradingGame.NPCPersonality.BALANCED)
         val state = game.initialize()
 
-        assertEquals(150, state.getData<Int>("currentPrice"))
-        assertEquals(150, state.getData<Int>("originalPrice"))
-        assertEquals(80, state.getData<Int>("targetPrice"))
-        assertEquals(1, state.getData<Int>("round"))
-        assertFalse(state.getData<Boolean>("dealClosed") ?: true)
+        val data = state.data as TradingData
+        assertEquals(150, data.currentPrice)
+        assertEquals(150, data.originalPrice)
+        assertEquals(80, data.targetPrice)
+        assertEquals(1, data.round)
+        assertFalse(data.dealClosed)
     }
 
     @Test
@@ -34,9 +36,10 @@ class TradingGameTest {
         val game = TradingGame(itemValue = 100, npcPersonality = TradingGame.NPCPersonality.FRIENDLY)
         val state = game.processInput(game.initialize(), MiniGameInput.Choice("polite"))
 
-        assertEquals(135, state.getData<Int>("currentPrice")) // 150 - 15
-        assertEquals(1, state.getData<Int>("moodScore"))
-        assertEquals(2, state.getData<Int>("round"))
+        val data = state.data as TradingData
+        assertEquals(135, data.currentPrice) // 150 - 15
+        assertEquals(1, data.moodScore)
+        assertEquals(2, data.round)
         assertEquals(1, state.attempts)
         assertNull(game.checkCompletion(state))
     }
@@ -56,7 +59,7 @@ class TradingGameTest {
         state = game.processInput(state, MiniGameInput.Choice("threat"))
         state = game.processInput(state, MiniGameInput.Choice("threat"))
 
-        assertTrue(state.getData<Boolean>("walkAway") ?: false)
+        assertTrue((state.data as TradingData).walkAway)
         val result = game.checkCompletion(state)
         assertNotNull(result)
         assertFalse(result!!.success)
@@ -68,7 +71,7 @@ class TradingGameTest {
         val game = TradingGame(itemValue = 100, npcPersonality = TradingGame.NPCPersonality.BALANCED)
         val state = game.processInput(game.initialize(), MiniGameInput.Confirm)
 
-        assertTrue(state.getData<Boolean>("dealClosed") ?: false)
+        assertTrue((state.data as TradingData).dealClosed)
         val result = game.checkCompletion(state)
         assertNotNull(result)
         // Paid the full 150 against a target of 80 — deal closed but not a success
@@ -82,7 +85,7 @@ class TradingGameTest {
         var state = game.initialize()
         // Four polite rounds against a friendly merchant: 150 -> 135 -> 120 -> 98 -> 76
         repeat(4) { state = game.processInput(state, MiniGameInput.Choice("polite")) }
-        assertEquals(76, state.getData<Int>("currentPrice"))
+        assertEquals(76, (state.data as TradingData).currentPrice)
 
         state = game.processInput(state, MiniGameInput.Confirm)
         val result = game.checkCompletion(state)

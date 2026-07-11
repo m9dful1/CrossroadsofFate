@@ -4,6 +4,20 @@ import com.spiritwisestudios.crossroadsoffate.minigames.*
 import kotlin.random.Random
 
 /**
+ * Typed state payload for [LockPickingGame].
+ */
+data class LockPickingData(
+    val sweetSpots: List<Float>,
+    val checkpoints: List<Float>,
+    val sweetSpotSize: Float,
+    val currentPhase: Int,
+    val totalPhases: Int,
+    val pickDurability: Int,
+    val startTimeMillis: Long,
+    val lastResult: String? = null
+) : MiniGameData
+
+/**
  * Lock-picking mini-game with Fallout-style mechanics and multi-phase difficulty.
  *
  * **Easy (1 lock):** Find sweet spot on top arch, hold it, swipe bottom arch to end.
@@ -67,26 +81,25 @@ class LockPickingGame(
         private const val SWEET_SPOT_MIN_SIZE = 0.08f
     }
 
+    private fun MiniGameState.lockData(): LockPickingData? = data as? LockPickingData
+
     override fun initialize(): MiniGameState {
         val sweetSpotSize = (SWEET_SPOT_BASE_SIZE - SWEET_SPOT_SHRINK_PER_LOCK * (lockCount - 1))
             .coerceAtLeast(SWEET_SPOT_MIN_SIZE)
 
-        // Generate all sweet spot positions upfront
-        val sweetSpots = (0 until lockCount).map { generateSweetSpotCenter(sweetSpotSize) }
-        // Bottom arch checkpoints: for N phases, checkpoints are at 1/N, 2/N, ... N/N
-        val checkpoints = (1..lockCount).map { it.toFloat() / lockCount }
-
         return MiniGameState(
             isActive = true,
             timeRemaining = timeLimit,
-            currentData = mapOf(
-                "sweetSpots" to sweetSpots,
-                "checkpoints" to checkpoints,
-                "sweetSpotSize" to sweetSpotSize,
-                "currentPhase" to 0,
-                "totalPhases" to lockCount,
-                "pickDurability" to MAX_PICK_USES,
-                "startTime" to System.currentTimeMillis()
+            data = LockPickingData(
+                // Generate all sweet spot positions upfront
+                sweetSpots = (0 until lockCount).map { generateSweetSpotCenter(sweetSpotSize) },
+                // Bottom arch checkpoints: for N phases, checkpoints are at 1/N, 2/N, ... N/N
+                checkpoints = (1..lockCount).map { it.toFloat() / lockCount },
+                sweetSpotSize = sweetSpotSize,
+                currentPhase = 0,
+                totalPhases = lockCount,
+                pickDurability = MAX_PICK_USES,
+                startTimeMillis = System.currentTimeMillis()
             )
         )
     }
@@ -105,40 +118,38 @@ class LockPickingGame(
     }
 
     private fun processLockOpened(state: MiniGameState): MiniGameState {
+        val lockData = state.lockData() ?: return state
         // Lock fully opened — checkCompletion will detect this
         return state.copy(
             score = state.score + 100 * difficulty,
-            currentData = state.currentData + mapOf(
-                "currentPhase" to lockCount,
-                "lastResult" to "SUCCESS"
+            data = lockData.copy(
+                currentPhase = lockCount,
+                lastResult = "SUCCESS"
             )
         )
     }
 
     private fun processPickSlipped(state: MiniGameState): MiniGameState {
-        val durability = state.getData<Int>("pickDurability") ?: MAX_PICK_USES
-        val sweetSpotSize = state.getData<Float>("sweetSpotSize") ?: SWEET_SPOT_BASE_SIZE
-        val newDurability = durability - 1
-
-        // Generate fresh sweet spots for the restart
-        val newSweetSpots = (0 until lockCount).map { generateSweetSpotCenter(sweetSpotSize) }
+        val lockData = state.lockData() ?: return state
 
         return state.copy(
             attempts = state.attempts + 1,
-            currentData = state.currentData + mapOf(
-                "currentPhase" to 0,
-                "pickDurability" to newDurability,
-                "sweetSpots" to newSweetSpots,
-                "lastResult" to "SLIP"
+            data = lockData.copy(
+                currentPhase = 0,
+                pickDurability = lockData.pickDurability - 1,
+                // Generate fresh sweet spots for the restart
+                sweetSpots = (0 until lockCount).map { generateSweetSpotCenter(lockData.sweetSpotSize) },
+                lastResult = "SLIP"
             )
         )
     }
 
     override fun checkCompletion(state: MiniGameState): MiniGameResult? {
-        val currentPhase = state.getData<Int>("currentPhase") ?: 0
-        val durability = state.getData<Int>("pickDurability") ?: MAX_PICK_USES
+        val lockData = state.lockData() ?: return null
+        val currentPhase = lockData.currentPhase
+        val durability = lockData.pickDurability
         val totalAttempts = state.attempts
-        val timeElapsed = getTimeElapsed(state)
+        val timeElapsed = getTimeElapsed(lockData)
 
         // All phases complete — success
         if (currentPhase >= lockCount) {
@@ -183,7 +194,7 @@ class LockPickingGame(
     }
 
     override fun getProgress(state: MiniGameState): Float {
-        val currentPhase = state.getData<Int>("currentPhase") ?: 0
+        val currentPhase = state.lockData()?.currentPhase ?: 0
         return currentPhase.toFloat() / lockCount
     }
 
@@ -192,9 +203,8 @@ class LockPickingGame(
         return Random.nextFloat() * (1f - 2 * margin) + margin
     }
 
-    private fun getTimeElapsed(state: MiniGameState): Int {
-        val startTime = state.getData<Long>("startTime") ?: System.currentTimeMillis()
-        return ((System.currentTimeMillis() - startTime) / 1000).toInt()
+    private fun getTimeElapsed(lockData: LockPickingData): Int {
+        return ((System.currentTimeMillis() - lockData.startTimeMillis) / 1000).toInt()
     }
 
     private fun getBonusPoints(timeElapsed: Int, totalAttempts: Int): Int {

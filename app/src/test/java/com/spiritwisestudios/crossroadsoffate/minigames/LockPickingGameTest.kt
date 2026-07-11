@@ -1,5 +1,6 @@
 package com.spiritwisestudios.crossroadsoffate.minigames
 
+import com.spiritwisestudios.crossroadsoffate.minigames.games.LockPickingData
 import com.spiritwisestudios.crossroadsoffate.minigames.games.LockPickingGame
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -20,11 +21,12 @@ class LockPickingGameTest {
 
         assertTrue(state.isActive)
         assertEquals(75, state.timeRemaining)
-        assertEquals(0, state.getData<Int>("currentPhase"))
-        assertEquals(2, state.getData<Int>("totalPhases"))
-        assertEquals(LockPickingGame.MAX_PICK_USES, state.getData<Int>("pickDurability"))
-        assertEquals(2, state.getData<List<Float>>("sweetSpots")?.size)
-        assertEquals(listOf(0.5f, 1.0f), state.getData<List<Float>>("checkpoints"))
+        val data = state.data as LockPickingData
+        assertEquals(0, data.currentPhase)
+        assertEquals(2, data.totalPhases)
+        assertEquals(LockPickingGame.MAX_PICK_USES, data.pickDurability)
+        assertEquals(2, data.sweetSpots.size)
+        assertEquals(listOf(0.5f, 1.0f), data.checkpoints)
     }
 
     @Test
@@ -32,10 +34,11 @@ class LockPickingGameTest {
         val game = LockPickingGame(lockCount = 1, timeLimit = 45)
         val slipped = game.processInput(game.initialize(), MiniGameInput.Slip)
 
+        val data = slipped.data as LockPickingData
         assertEquals(1, slipped.attempts)
-        assertEquals(LockPickingGame.MAX_PICK_USES - 1, slipped.getData<Int>("pickDurability"))
-        assertEquals(0, slipped.getData<Int>("currentPhase"))
-        assertEquals("SLIP", slipped.getData<String>("lastResult"))
+        assertEquals(LockPickingGame.MAX_PICK_USES - 1, data.pickDurability)
+        assertEquals(0, data.currentPhase)
+        assertEquals("SLIP", data.lastResult)
         // No completion yet — durability remains
         assertNull(game.checkCompletion(slipped))
     }

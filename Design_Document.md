@@ -1415,3 +1415,16 @@ Panel/scrim/border/text tokens plus `Gold` and `Orange` accents replace repeated
 - Misleading `androidx-core` alias (actually `androidx.test:core`, versioned via `rules`) renamed to `androidx-test-core` with its own `testCore` version
 - Room artifacts now share a single `room` version key instead of piggybacking on `roomTesting`
 - Stale `composeOptions.kotlinCompilerExtensionVersion` removed (ignored since the Compose Compiler Gradle plugin); the plugin is now a catalog alias pinned to the Kotlin version instead of an inline `"2.0.21"` literal
+
+## 29. Typed Mini-Game State
+
+[Date of modification: 2026-07-11]
+[Description: Replaced the untyped MiniGameState.currentData Map<String, Any> with per-game typed payloads. Behavior unchanged; failure mode changed from silent defaults to compile-time checking.]
+
+### 29.1 Design
+- `MiniGameData` marker interface in `MiniGameFramework.kt`; `MiniGameState.data: MiniGameData?` replaces `currentData` and the type-erased `getData<T>(key)` accessor
+- `LockPickingData` (sweet spots, checkpoints, phase, durability, start time) lives beside `LockPickingGame`; `TradingData` (prices, mood, round, history, deal flags) beside `TradingGame`
+- Games copy their typed payload immutably; screens cast once (`gameState.data as? LockPickingData ?: return`) instead of nine string-keyed reads with hand-written defaults
+
+### 29.2 Why
+The map bag had two failure modes the audit flagged: type erasure meant `getData<Int>` on a mis-stored value silently returned null, and every read supplied a plausible default — so a typo'd key produced wrong-but-running behavior instead of an error. Both are now compile errors.

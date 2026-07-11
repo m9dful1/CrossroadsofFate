@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.spiritwisestudios.crossroadsoffate.minigames.MiniGameState
+import com.spiritwisestudios.crossroadsoffate.minigames.games.TradingData
 import com.spiritwisestudios.crossroadsoffate.minigames.games.TradingGame
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
 
@@ -31,11 +32,12 @@ fun TradingScreen(
     onAcceptDeal: () -> Unit,
     onCancel: () -> Unit
 ) {
-    val currentPrice = gameState.getData<Int>("currentPrice") ?: 0
-    val originalPrice = gameState.getData<Int>("originalPrice") ?: 0
-    val round = gameState.getData<Int>("round") ?: 1
-    val moodScore = gameState.getData<Int>("moodScore") ?: 0
-    val lastResponse = gameState.getData<String>("lastResponse")
+    val tradingData = gameState.data as? TradingData ?: return
+    val currentPrice = tradingData.currentPrice
+    val originalPrice = tradingData.originalPrice
+    val round = tradingData.round
+    val moodScore = tradingData.moodScore
+    val lastResponse = tradingData.lastResponse
     val maxRounds = gameState.maxAttempts ?: 6
 
     val savings = originalPrice - currentPrice

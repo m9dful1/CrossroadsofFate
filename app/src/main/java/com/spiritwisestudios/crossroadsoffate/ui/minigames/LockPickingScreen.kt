@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.spiritwisestudios.crossroadsoffate.minigames.MiniGameState
+import com.spiritwisestudios.crossroadsoffate.minigames.games.LockPickingData
 import com.spiritwisestudios.crossroadsoffate.minigames.games.LockPickingGame
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
 import kotlinx.coroutines.delay
@@ -106,16 +107,15 @@ fun LockPickingScreen(
     onCancel: () -> Unit
 ) {
     // --- Game state from LockPickingGame ---
-    @Suppress("UNCHECKED_CAST")
-    val sweetSpots = gameState.getData<List<Float>>("sweetSpots") ?: listOf(0.5f)
-    @Suppress("UNCHECKED_CAST")
-    val checkpoints = gameState.getData<List<Float>>("checkpoints") ?: listOf(1f)
-    val sweetSpotSize = gameState.getData<Float>("sweetSpotSize") ?: 0.15f
-    val totalPhases = gameState.getData<Int>("totalPhases") ?: 1
-    val pickDurability = gameState.getData<Int>("pickDurability") ?: LockPickingGame.MAX_PICK_USES
-    val startTime = gameState.getData<Long>("startTime") ?: System.currentTimeMillis()
+    val lockData = gameState.data as? LockPickingData ?: return
+    val sweetSpots = lockData.sweetSpots
+    val checkpoints = lockData.checkpoints
+    val sweetSpotSize = lockData.sweetSpotSize
+    val totalPhases = lockData.totalPhases
+    val pickDurability = lockData.pickDurability
+    val startTime = lockData.startTimeMillis
     val timeLimit = gameState.timeRemaining ?: 60
-    val lastResult = gameState.getData<String>("lastResult")
+    val lastResult = lockData.lastResult
 
     // --- Local interaction state ---
     // Current phase within this attempt (0-indexed, advances locally until all done)
