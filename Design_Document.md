@@ -1268,3 +1268,40 @@ All debug methods are thin wrappers in `GameViewModel` that delegate to existing
 
 ### 22.6 UI Entry Point
 A subtle, low-contrast "Debug Menu" text link at the bottom of the title screen (`TitleScreen.kt`), rendered at 12sp with 40% white alpha to remain unobtrusive.
+## 23. Codebase Audit — Dead Code Removal
+
+[Date of modification: 2026-07-11]
+[Description: Removed dead code identified by a full-codebase audit. No behavioral changes — every removed symbol had zero production call sites.]
+
+### 23.1 Removed Legacy Map System
+The original list-based map was superseded by the interactive map (Section 18) but never deleted:
+- `ui/MapScreen.kt` — never rendered (`MainGameScreen` uses `InteractiveMapScreen`)
+- `data/models/MapLocation.kt` — model used only by the legacy path
+- `GameViewModel`: `availableLocations` flow, `updateAvailableLocations()`, `travelToLocation()`, `loadScenarioById()`, and the `navigateToTitleScreen()` alias (callers now use `returnToTitle()`)
+- `GameRepository.getVisitedLocations()` — only consumed by the legacy path
+
+### 23.2 Removed Unused UI
+- `ui/ActivityResultScreen.kt` — duplicated `MiniGameResultScreen` and was never composed
+- `DebugMenuScreen.DebugSection`: unused `initiallyExpanded` parameter
+- `MainGameScreen`: unused `playerProgress` subscription (avoided needless recomposition), unused imports, commented-out modifier
+
+### 23.3 Trimmed Mini-Game Framework
+- `MiniGameInput`: removed unused `Swipe`, `TextInput`, `NumberInput`, `Skip` variants and the `SwipeDirection` enum — the real input surface is `Choice`, `Confirm`, `Cancel`, `Slip`
+- Removed `MiniGameCategory` enum and its only consumer `MiniGameManager.getMiniGamesByCategory()` (matching logic never matched registered game IDs)
+- Removed `MiniGameManager.getRecommendedMiniGames()` and `getMiniGame()`
+- `MiniGameState`: removed vestigial `progress` field (progress is computed by `MiniGame.getProgress()`) and unused `updateData()`
+
+### 23.4 Pruned Data Layer
+- `InteractiveMapLocationDao` reduced to its used surface: `getAllLocations`, `getLocationById`, `insertLocations`, `updateVisitStatus`, `updateLocationActivities`. Removed nine unused queries including the broken `getLocationsWithIncompleteActivities` (matched a JSON field that does not exist on `LocationActivity`)
+- `ScenarioDao.getScenarioCount()` removed
+- `GameDatabase.clearDatabase()` removed (player reset goes through `GameRepository.resetPlayerProgress()`)
+
+### 23.5 Pruned Logic and Util Layers
+- `ActivityManager`: removed `getRecentActivityResults()`, `isLocationDiscovered()`, `updateActivityCompletion()`, `reset()`
+- `StatsManager.meetsRequirement()` / `ReputationManager.meetsRequirement()` removed (`Condition.isMet` owns threshold checks)
+- `GameAudioManager.getCurrentTrackName()` removed
+- `ErrorLogger`: removed unused `logWarning()` / `logDebug()`
+
+### 23.6 Test Suite Adjustments
+- Deleted scaffold tests `ExampleUnitTest` and `ExampleInstrumentedTest`
+- Removed tests covering deleted API (`travelToLocation`, `meetsRequirement`, `getCurrentTrackName`) and dead mock setup in `MainGameScreenTest`

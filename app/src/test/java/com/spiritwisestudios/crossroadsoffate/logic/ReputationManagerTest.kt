@@ -1,8 +1,6 @@
 package com.spiritwisestudios.crossroadsoffate.logic
 
 import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -61,22 +59,6 @@ class ReputationManagerTest {
     fun getReputation_returnsZeroForUnknownFaction() {
         reputationManager.initialize(emptyMap())
         assertEquals(0, reputationManager.getReputation("nonexistent"))
-    }
-
-    @Test
-    fun meetsRequirement_returnsCorrectBoolean() {
-        reputationManager.initialize(mapOf("guard" to 5))
-        assertTrue(reputationManager.meetsRequirement("guard", 3))
-        assertTrue(reputationManager.meetsRequirement("guard", 5))
-        assertFalse(reputationManager.meetsRequirement("guard", 6))
-        assertFalse(reputationManager.meetsRequirement("nonexistent", 1))
-    }
-
-    @Test
-    fun meetsRequirement_worksWithNegativeThreshold() {
-        reputationManager.initialize(mapOf("underworld" to -1))
-        assertTrue(reputationManager.meetsRequirement("underworld", -2))
-        assertFalse(reputationManager.meetsRequirement("underworld", 0))
     }
 
     @Test

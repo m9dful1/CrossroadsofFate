@@ -38,20 +38,12 @@ abstract class MiniGame {
 data class MiniGameState(
     val isActive: Boolean = true,
     val isCompleted: Boolean = false,
-    val progress: Float = 0f,
     val timeRemaining: Int? = null, // seconds
     val currentData: Map<String, Any> = emptyMap(),
     val score: Int = 0,
     val attempts: Int = 0,
     val maxAttempts: Int? = null
 ) {
-    /**
-     * Updates a specific data value in the state
-     */
-    fun updateData(key: String, value: Any): MiniGameState {
-        return copy(currentData = currentData + (key to value))
-    }
-    
     /**
      * Gets a data value with type casting
      */
@@ -79,21 +71,10 @@ data class MiniGameResult(
  * Sealed class representing different types of player input
  */
 sealed class MiniGameInput {
-    data class Swipe(val direction: SwipeDirection) : MiniGameInput()
-    data class TextInput(val text: String) : MiniGameInput()
-    data class NumberInput(val number: Int) : MiniGameInput()
     data class Choice(val choice: String) : MiniGameInput()
     object Confirm : MiniGameInput()
     object Cancel : MiniGameInput()
     object Slip : MiniGameInput()
-    object Skip : MiniGameInput()
-}
-
-/**
- * Enumeration of swipe directions
- */
-enum class SwipeDirection {
-    UP, DOWN, LEFT, RIGHT
 }
 
 /**
@@ -105,14 +86,3 @@ interface MiniGameListener {
     fun onGameCancelled(gameId: String)
     fun onGameStateChanged(gameId: String, state: MiniGameState)
 }
-
-/**
- * Enumeration of mini-game categories
- */
-enum class MiniGameCategory {
-    SKILL,      // Timing, reflexes, precision
-    PUZZLE,     // Logic, problem-solving
-    SOCIAL,     // Negotiation, dialogue
-    CHANCE,     // Luck-based with some skill
-    EXPLORATION // Discovery, investigation
-} 

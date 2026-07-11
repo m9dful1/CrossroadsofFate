@@ -72,12 +72,6 @@ class GameRepository(private val database: GameDatabase, private val context: Co
         }
     }
 
-    suspend fun getVisitedLocations(playerId: String): Set<String> {
-        return withContext(Dispatchers.IO) {
-            getPlayerProgress(playerId)?.visitedLocations ?: emptySet()
-        }
-    }
-
     // --- Interactive Map Location Methods ---
 
     suspend fun initializeInteractiveMapLocations() {

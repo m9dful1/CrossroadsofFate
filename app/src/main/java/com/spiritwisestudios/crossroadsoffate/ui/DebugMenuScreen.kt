@@ -438,10 +438,9 @@ private fun DebugCard(content: @Composable ColumnScope.() -> Unit) {
 @Composable
 private fun DebugSection(
     title: String,
-    initiallyExpanded: Boolean = false,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    var expanded by remember { mutableStateOf(initiallyExpanded) }
+    var expanded by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxWidth()

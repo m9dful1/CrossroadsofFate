@@ -154,45 +154,6 @@ class ActivityManager {
     }
 
     /**
-     * Gets recent activity results (for UI display)
-     */
-    fun getRecentActivityResults(limit: Int = 10): List<ActivityResult> {
-        return _activityResults.value.takeLast(limit)
-    }
-
-    /**
-     * Checks if a location should be visible on the map based on discovery conditions
-     */
-    fun isLocationDiscovered(
-        location: InteractiveMapLocation,
-        playerInventory: Set<String>,
-        visitedLocations: Set<String>
-    ): Boolean {
-        return location.canBeDiscovered(playerInventory, visitedLocations) ||
-               _unlockedLocations.value.contains(location.id)
-    }
-
-    /**
-     * Updates an activity's completion status (for loading saved games)
-     */
-    fun updateActivityCompletion(activityId: String, isCompleted: Boolean) {
-        if (isCompleted) {
-            _completedActivities.value = _completedActivities.value + activityId
-        } else {
-            _completedActivities.value = _completedActivities.value - activityId
-        }
-    }
-
-    /**
-     * Resets all activity progress (for new games)
-     */
-    fun reset() {
-        _completedActivities.value = emptySet()
-        _activityResults.value = emptyList()
-        _unlockedLocations.value = emptySet()
-    }
-
-    /**
      * Gets activities filtered by type
      */
     fun getActivitiesByType(

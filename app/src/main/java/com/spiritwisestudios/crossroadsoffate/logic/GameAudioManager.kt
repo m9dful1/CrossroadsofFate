@@ -228,7 +228,4 @@ class GameAudioManager(private val context: Context) {
         soundPool = null
         loadedSounds.clear()
     }
-
-    /** Returns the current music track name, or null if nothing is playing. */
-    fun getCurrentTrackName(): String? = currentTrackName
 }

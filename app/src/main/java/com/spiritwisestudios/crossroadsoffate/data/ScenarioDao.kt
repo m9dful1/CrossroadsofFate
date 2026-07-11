@@ -23,14 +23,6 @@ interface ScenarioDao {
     suspend fun getScenarioById(id: String): ScenarioEntity?
 
     /**
-     * Gets the total number of scenarios stored in the database.
-     *
-     * @return The count of scenarios in the database
-     */
-    @Query("SELECT COUNT(*) FROM scenarios")
-    suspend fun getScenarioCount(): Int
-
-    /**
      * Inserts or updates a list of scenarios in the database.
      * If a scenario with the same ID exists, it will be replaced.
      *

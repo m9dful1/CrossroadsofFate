@@ -1,8 +1,6 @@
 package com.spiritwisestudios.crossroadsoffate.logic
 
 import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
@@ -54,15 +52,6 @@ class StatsManagerTest {
     fun getStat_returnsZeroForUnknownStat() {
         statsManager.initialize(emptyMap())
         assertEquals(0, statsManager.getStat("nonexistent"))
-    }
-
-    @Test
-    fun meetsRequirement_returnsCorrectBoolean() {
-        statsManager.initialize(mapOf("strength" to 5))
-        assertTrue(statsManager.meetsRequirement("strength", 3))
-        assertTrue(statsManager.meetsRequirement("strength", 5))
-        assertFalse(statsManager.meetsRequirement("strength", 6))
-        assertFalse(statsManager.meetsRequirement("nonexistent", 1))
     }
 
     @Test

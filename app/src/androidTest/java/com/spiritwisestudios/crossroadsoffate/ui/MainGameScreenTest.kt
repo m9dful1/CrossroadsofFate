@@ -6,37 +6,18 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.lifecycle.ViewModelProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.spiritwisestudios.crossroadsoffate.MainActivity
-import com.spiritwisestudios.crossroadsoffate.viewmodel.GameViewModel
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-
-//import org.mockito.Mockito.*
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 class MainGameScreenTest {
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
-
-    private lateinit var mockViewModel: GameViewModel
-
-    @Before
-    fun setupViewModelMock() {
-        // This setup would ideally involve injecting a mock ViewModel
-        // For now, we'll get the real ViewModel and perform assertions on the UI
-        val activity = composeTestRule.activity
-        val viewModel = ViewModelProvider(activity)[GameViewModel::class.java]
-
-        // In a real test scenario with proper DI, we would use:
-        // mockViewModel = mock(GameViewModel::class.java)
-        // and inject it into our composable
-    }
 
     @Test
     fun titleScreen_displaysGameTitle() {

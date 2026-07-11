@@ -30,7 +30,5 @@ class StatsManager {
 
     fun getStat(stat: String): Int = _stats.value[stat] ?: 0
 
-    fun meetsRequirement(stat: String, minValue: Int): Boolean = getStat(stat) >= minValue
-
     fun getStatsMap(): Map<String, Int> = _stats.value
 }

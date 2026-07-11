@@ -17,23 +17,16 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.spiritwisestudios.crossroadsoffate.R
-import com.spiritwisestudios.crossroadsoffate.data.models.ScenarioEntity
 import com.spiritwisestudios.crossroadsoffate.logic.TextResolver
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
 import com.spiritwisestudios.crossroadsoffate.ui.minigames.MiniGameOverlay
@@ -50,7 +43,6 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
     val isCharacterMenuVisible by gameViewModel.isCharacterMenuVisible.collectAsState()
     val playerInventory by gameViewModel.playerInventory.collectAsState()
     val currentScenario by gameViewModel.currentScenario.collectAsState()
-    val playerProgress by gameViewModel.playerProgress.collectAsState()
     val playerStats by gameViewModel.playerStats.collectAsState()
     val playerReputation by gameViewModel.playerReputation.collectAsState()
     val isMiniGameActive by gameViewModel.isMiniGameActive.collectAsState()
@@ -78,7 +70,6 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                     // Apply layout modifiers in specific order for proper layering
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
-                        //.fillMaxWidth()
                         .background(
                             color = Color.DarkGray.copy(alpha = 0.7f),
                             shape = MaterialTheme.shapes.medium
@@ -173,7 +164,8 @@ fun MainGameScreen(gameViewModel: GameViewModel) {
                         text = "🗺",
                         modifier = Modifier.width(37.dp)
                     ) {
-                        gameViewModel.showMap()                    }
+                        gameViewModel.showMap()
+                    }
                 }
 
                 // Character Menu Button

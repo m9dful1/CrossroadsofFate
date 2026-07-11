@@ -5,7 +5,6 @@ import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import com.spiritwisestudios.crossroadsoffate.data.models.*
 import com.spiritwisestudios.crossroadsoffate.repository.GameRepository
-import com.spiritwisestudios.crossroadsoffate.data.models.MapLocation
 import com.spiritwisestudios.crossroadsoffate.util.TestDataFactory.createTestScenario
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -62,7 +61,6 @@ class GameViewModelTest {
             whenever(repository.getPlayerProgress(any())).thenReturn(defaultProgress)
             whenever(repository.savePlayerProgress(any())).thenReturn(Unit)
             whenever(repository.getScenarioById("scenario1")).thenReturn(defaultScenario)
-            whenever(repository.getVisitedLocations(any())).thenReturn(emptySet())
         }
 
         // Create viewModel with application context and mock repository
@@ -72,7 +70,6 @@ class GameViewModelTest {
         // Initialize state flows via reflection for the fields that still exist
         ReflectionHelpers.setField(gameViewModel, "_playerProgress", MutableStateFlow<PlayerProgress?>(defaultProgress))
         ReflectionHelpers.setField(gameViewModel, "_currentScenario", MutableStateFlow<ScenarioEntity?>(defaultScenario))
-        ReflectionHelpers.setField(gameViewModel, "_availableLocations", MutableStateFlow<List<MapLocation>>(emptyList()))
         ReflectionHelpers.setField(gameViewModel, "_isOnTitleScreen", MutableStateFlow<Boolean>(true))
         
         // Initialize the managers with default state
@@ -99,7 +96,6 @@ class GameViewModelTest {
         // Arrange
         val initialScenario = createTestScenario(id = "scenario1")
         whenever(repository.getScenarioById("scenario1")).thenReturn(initialScenario)
-        whenever(repository.getVisitedLocations("default_player")).thenReturn(emptySet())
         whenever(repository.resetPlayerProgress()).thenReturn(Unit)
         
         // Act - just verify the method can be called without throwing exceptions
@@ -182,25 +178,4 @@ class GameViewModelTest {
         assertFalse("Character menu should be hidden after hideCharacterMenu()", gameViewModel.isCharacterMenuVisible.value)
     }
     
-    @Test
-    fun travelToLocation_updatesScenarioAndHidesMap() = runTest {
-        // Arrange
-        val targetLocation = MapLocation("Forest", "A dense forest area", "scenario_forest", true)
-        val forestScenario = createTestScenario(id = "scenario_forest", location = "Forest")
-        
-        whenever(repository.getScenarioById("scenario_forest")).thenReturn(forestScenario)
-        
-        // Show map first
-        gameViewModel.showMap()
-        assertTrue("Map should be visible before travel", gameViewModel.isMapVisible.value)
-        
-        // Act
-        gameViewModel.travelToLocation(targetLocation)
-        testDispatcher.scheduler.advanceUntilIdle()
-        shadowOf(Looper.getMainLooper()).idle()
-        
-        // Assert
-        verify(repository, atLeastOnce()).getScenarioById("scenario_forest")
-        assertFalse("Map should be hidden after travel", gameViewModel.isMapVisible.value)
-    }
-} 
+}

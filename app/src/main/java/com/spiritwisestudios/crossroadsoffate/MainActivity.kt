@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
                             onBackClick = {
                                 showErrorLogger = false
                                 if (!isOnTitleScreen) {
-                                    viewModel.navigateToTitleScreen()
+                                    viewModel.returnToTitle()
                                 }
                             }
                         )

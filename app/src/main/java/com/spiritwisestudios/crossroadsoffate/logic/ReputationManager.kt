@@ -30,7 +30,5 @@ class ReputationManager {
 
     fun getReputation(faction: String): Int = _reputation.value[faction] ?: 0
 
-    fun meetsRequirement(faction: String, minValue: Int): Boolean = getReputation(faction) >= minValue
-
     fun getReputationMap(): Map<String, Int> = _reputation.value
 }

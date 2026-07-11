@@ -4,8 +4,6 @@ import android.content.Context
 import androidx.room.*
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.spiritwisestudios.crossroadsoffate.data.models.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 /**
  * Room database class for the game.
@@ -66,25 +64,5 @@ abstract class GameDatabase : RoomDatabase() {
             }
         })
         .build()
-
-        /**
-         * Clears all data from the database and deletes the database file.
-         * Used for resetting game state or handling critical errors.
-         *
-         * @param context Application context
-         * @throws IllegalStateException if database clearing fails
-         */
-        suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
-            try {
-                INSTANCE?.apply {
-                    clearAllTables()  // Clear all database tables
-                    close()          // Close database connection
-                }
-                context.deleteDatabase("game_database") // Delete database file
-                INSTANCE = null      // Clear singleton instance
-            } catch (e: Exception) {
-                throw IllegalStateException("Failed to clear database: ${e.message}")
-            }
-        }
     }
 }

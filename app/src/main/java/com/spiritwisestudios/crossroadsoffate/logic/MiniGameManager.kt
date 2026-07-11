@@ -67,13 +67,6 @@ class MiniGameManager : MiniGameListener {
     }
     
     /**
-     * Gets a mini-game by ID
-     */
-    fun getMiniGame(gameId: String): MiniGame? {
-        return miniGameRegistry[gameId]
-    }
-    
-    /**
      * Gets all available mini-games
      */
     fun getAllMiniGames(): List<MiniGame> {
@@ -227,31 +220,7 @@ class MiniGameManager : MiniGameListener {
     
     override fun onGameStateChanged(gameId: String, state: MiniGameState) {
     }
-    
-    /**
-     * Gets mini-games by category
-     */
-    fun getMiniGamesByCategory(category: MiniGameCategory): List<MiniGame> {
-        return miniGameRegistry.values.filter { game ->
-            when (category) {
-                MiniGameCategory.SKILL -> game.id.contains("timing") || game.id.contains("reflex")
-                MiniGameCategory.PUZZLE -> game.id.contains("puzzle") || game.id.contains("logic")
-                MiniGameCategory.SOCIAL -> game.id.contains("trading") || game.id.contains("negotiation")
-                MiniGameCategory.CHANCE -> game.id.contains("chance") || game.id.contains("luck")
-                MiniGameCategory.EXPLORATION -> game.id.contains("exploration") || game.id.contains("investigation")
-            }
-        }
-    }
-    
-    /**
-     * Gets recommended mini-games based on player progress
-     */
-    fun getRecommendedMiniGames(playerLevel: Int, completedGames: Set<String>): List<MiniGame> {
-        return miniGameRegistry.values.filter { game ->
-            game.id !in completedGames && game.difficulty <= (playerLevel + 1)
-        }.sortedBy { it.difficulty }
-    }
-    
+
     /**
      * Creates a simple result for testing (placeholder functionality)
      */

@@ -64,9 +64,6 @@ class GameViewModel(
     val activeQuests: StateFlow<List<Quest>> = questManager.activeQuests
     val completedQuests: StateFlow<List<Quest>> = questManager.completedQuests
 
-    private val _availableLocations = MutableStateFlow<List<MapLocation>>(emptyList())
-    val availableLocations: StateFlow<List<MapLocation>> = _availableLocations
-
     // Interactive map location state flows
     private val _interactiveMapLocations = MutableStateFlow<List<InteractiveMapLocation>>(emptyList())
     val interactiveMapLocations: StateFlow<List<InteractiveMapLocation>> = _interactiveMapLocations
@@ -98,7 +95,6 @@ class GameViewModel(
                 repository.loadScenariosFromJson()
                 repository.initializeInteractiveMapLocations()
                 loadPlayerProgress("default_player")
-                updateAvailableLocations()
                 updateInteractiveMapLocations()
                 
                 // Set up mini-game activity listener
@@ -163,7 +159,6 @@ class GameViewModel(
                     _currentScenario.value = initialScenario // Set initial scenario
                     _isOnTitleScreen.value = false
                     initialScenario?.let { audioManager.playMusicForLocation(it.location) }
-                    updateAvailableLocations() // Update locations based on fresh state
                     updateInteractiveMapLocations() // Update interactive map locations
                 }
             } catch (e: Exception) {
@@ -198,14 +193,6 @@ class GameViewModel(
         _isOnTitleScreen.value = true
         hideCharacterMenu()
         audioManager.playMusic("menu")
-    }
-
-    /**
-     * Navigates to the title screen.
-     * Convenience method with same functionality as returnToTitle.
-     */
-    fun navigateToTitleScreen() {
-        returnToTitle()
     }
 
     /**
@@ -267,7 +254,6 @@ class GameViewModel(
                 statsManager.initialize(progress.playerStats)
                 reputationManager.initialize(progress.playerReputation)
                 _currentScenario.value = scenario // Set the loaded scenario
-                updateAvailableLocations() // Update locations after loading progress
                 updateInteractiveMapLocations() // Update interactive map locations
             }
         } catch (e: Exception) {
@@ -281,82 +267,6 @@ class GameViewModel(
                  questManager.initialize(emptyList(), emptyList())
                  statsManager.initialize(emptyMap())
                  reputationManager.initialize(emptyMap())
-             }
-        }
-    }
-
-    /**
-     * Loads a specific scenario by ID
-     */
-    fun loadScenarioById(id: String, onScenarioLoaded: (ScenarioEntity?) -> Unit) {
-        viewModelScope.launch {
-            var scenario: ScenarioEntity? = null
-            try {
-                scenario = repository.getScenarioById(id)
-            } catch (e: Exception) {
-                 Timber.e(e, "Error loading scenario %s", id)
-            } finally {
-                 // Switch to main thread to invoke callback safely
-                 withContext(Dispatchers.Main) {
-                      onScenarioLoaded(scenario)
-                 }
-            }
-        }
-    }
-
-    /**
-     * Updates available locations for the map
-     */
-     // Make suspend function to ensure repository call completes
-    private suspend fun updateAvailableLocations() {
-         try {
-            val visitedLocations = repository.getVisitedLocations("default_player")
-            val locations = mutableListOf<MapLocation>()
-
-            // Example location - add more as needed
-            locations.add(MapLocation(
-                name = "Town Square",
-                description = "The bustling heart of the town",
-                scenarioId = "scenario6",
-                isVisited = "Town Square" in visitedLocations
-            ))
-             // Add other potential locations based on game logic/discovery
-
-            // Update StateFlow on main thread
-            withContext(Dispatchers.Main) {
-                _availableLocations.value = locations
-            }
-        } catch (e: Exception) {
-             Timber.e(e, "Error updating available locations")
-        }
-    }
-
-    /**
-     * Handles travel to a specific location
-     */
-    fun travelToLocation(location: MapLocation) {
-        viewModelScope.launch {
-             try {
-                val scenario = repository.getScenarioById(location.scenarioId)
-                 if (scenario != null) {
-                    questManager.checkAndCompleteObjectives(scenario.id)
-                    val (updatedActive, updatedCompleted) = questManager.getQuestState()
-
-                    withContext(Dispatchers.Main) {
-                        _currentScenario.value = scenario
-                        _playerProgress.value = _playerProgress.value?.copy(
-                            currentScenarioId = location.scenarioId,
-                            activeQuests = updatedActive,
-                            completedQuests = updatedCompleted
-                        )
-                        hideMap()
-                        saveProgress() // Save after traveling
-                    }
-                 } else {
-                      Timber.e("Scenario %s not found for travel", location.scenarioId)
-                 }
-             } catch (e: Exception) {
-                  Timber.e(e, "Error traveling to %s", location.name)
              }
         }
     }

@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -150,16 +149,4 @@ class GameAudioManagerTest {
         assertTrue(newManager.isMuted.value)
     }
 
-    // --- Track state tests ---
-
-    @Test
-    fun getCurrentTrackName_initiallyNull() {
-        assertNull(audioManager.getCurrentTrackName())
-    }
-
-    @Test
-    fun release_clearsTrackState() {
-        audioManager.release()
-        assertNull(audioManager.getCurrentTrackName())
-    }
 }

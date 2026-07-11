@@ -44,22 +44,6 @@ object ErrorLogger {
     }
     
     /**
-     * Log a warning message
-     * @param message The warning message
-     */
-    fun logWarning(message: String) {
-        Timber.w(message)
-    }
-    
-    /**
-     * Log debug information
-     * @param message The debug message
-     */
-    fun logDebug(message: String) {
-        Timber.d(message)
-    }
-    
-    /**
      * Log information message
      * @param message The info message
      */
