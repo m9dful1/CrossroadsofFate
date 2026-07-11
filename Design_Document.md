@@ -1305,3 +1305,24 @@ The original list-based map was superseded by the interactive map (Section 18) b
 ### 23.6 Test Suite Adjustments
 - Deleted scaffold tests `ExampleUnitTest` and `ExampleInstrumentedTest`
 - Removed tests covering deleted API (`travelToLocation`, `meetsRequirement`, `getCurrentTrackName`) and dead mock setup in `MainGameScreenTest`
+
+## 24. Data-Layer Error Handling and Threading Hardening
+
+[Date of modification: 2026-07-11]
+[Description: Uniform error-handling policy across the persistence layer, a single shared Gson configuration, and ErrorLogger owning its own IO dispatching.]
+
+### 24.1 Shared Gson Configuration
+- New `data/models/GameJson.kt` exposes the single Gson instance (LeadsTo deserializer + `serializeNulls()`)
+- Previously `GameRepository` and `Converters` each built their own Gson with divergent settings while both serializing the same `availableActivities` column; both now use `GameJson.gson`
+
+### 24.2 GameRepository Helpers
+- `dbRead(operation, default, block)` — IO dispatch, logs failures via Timber, returns a safe default
+- `dbWrite(operation, block)` — IO dispatch, logs failures, rethrows so callers can react
+- All repository methods now route through these helpers, closing three gaps: `loadScenariosFromJson` (previously uncaught JSON/asset/DB failures), `savePlayerProgress` (previously unguarded), and `getPlayerProgress` (previously swallowed exceptions silently)
+
+### 24.3 Type Converter Policy
+- All `toX` deserializers in `Converters` now share one `safeFromJson` helper: corrupt persisted JSON is logged via Timber and mapped to a safe default (empty map/list/set) instead of half the converters crashing and the other half failing silently
+
+### 24.4 ErrorLogger Threading
+- `saveErrorToFile`, `getErrorLog`, and `clearErrorLog` are now `suspend` and dispatch to `Dispatchers.IO` internally — previously `saveErrorToFile` performed synchronous file I/O on the main thread from `ErrorLoggerScreen` (ANR risk)
+- `ErrorLoggerScreen` consolidates its four copy-pasted reload blocks into one `saveAndReload` helper

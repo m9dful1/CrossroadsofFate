@@ -32,9 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.spiritwisestudios.crossroadsoffate.util.ErrorLogger
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.IOException
 import kotlin.random.Random
 
@@ -49,12 +47,19 @@ fun ErrorLoggerScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var logContent by remember { mutableStateOf<String?>(null) }
-    
+
+    // Saves an entry and refreshes the on-screen log (ErrorLogger owns its IO dispatching)
+    fun saveAndReload(message: String, throwable: Throwable? = null, toast: String) {
+        coroutineScope.launch {
+            ErrorLogger.saveErrorToFile(context, message, throwable)
+            logContent = ErrorLogger.getErrorLog(context)
+        }
+        Toast.makeText(context, toast, Toast.LENGTH_SHORT).show()
+    }
+
     // Load logs when screen is first composed
     LaunchedEffect(Unit) {
-        logContent = withContext(Dispatchers.IO) {
-            ErrorLogger.getErrorLog(context)
-        }
+        logContent = ErrorLogger.getErrorLog(context)
     }
     
     Column(
@@ -75,24 +80,15 @@ fun ErrorLoggerScreen(
         // Error generation buttons
         Button(
             onClick = {
-                // Log a simple error
                 val errorMessage = "User initiated simple error log test"
                 ErrorLogger.logError(errorMessage)
-                ErrorLogger.saveErrorToFile(context, errorMessage)
-                Toast.makeText(context, "Error logged", Toast.LENGTH_SHORT).show()
-                
-                // Reload logs after adding a new entry
-                coroutineScope.launch {
-                    logContent = withContext(Dispatchers.IO) {
-                        ErrorLogger.getErrorLog(context)
-                    }
-                }
+                saveAndReload(errorMessage, toast = "Error logged")
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Log Simple Error")
         }
-        
+
         // ArithmeticException button
         Button(
             onClick = {
@@ -110,38 +106,21 @@ fun ErrorLoggerScreen(
                 divideByZeroResult?.let { e ->
                     val errorMessage = "Division by zero error occurred"
                     ErrorLogger.logException(e, errorMessage)
-                    ErrorLogger.saveErrorToFile(context, errorMessage, e)
-                    Toast.makeText(context, "Exception logged", Toast.LENGTH_SHORT).show()
-                    
-                    // Reload logs after adding a new entry
-                    coroutineScope.launch {
-                        logContent = withContext(Dispatchers.IO) {
-                            ErrorLogger.getErrorLog(context)
-                        }
-                    }
+                    saveAndReload(errorMessage, e, toast = "Exception logged")
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Simulate ArithmeticException")
         }
-        
+
         // IOException button
         Button(
             onClick = {
-                // Create an IOException outside of the composable lambda
                 val exception = IOException("Simulated file not found exception")
                 val errorMessage = "File operation failed"
                 ErrorLogger.logException(exception, errorMessage)
-                ErrorLogger.saveErrorToFile(context, errorMessage, exception)
-                Toast.makeText(context, "IO Exception logged", Toast.LENGTH_SHORT).show()
-                
-                // Reload logs after adding a new entry
-                coroutineScope.launch {
-                    logContent = withContext(Dispatchers.IO) {
-                        ErrorLogger.getErrorLog(context)
-                    }
-                }
+                saveAndReload(errorMessage, exception, toast = "IO Exception logged")
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -185,9 +164,7 @@ fun ErrorLoggerScreen(
             OutlinedButton(
                 onClick = {
                     coroutineScope.launch {
-                        withContext(Dispatchers.IO) {
-                            ErrorLogger.clearErrorLog(context)
-                        }
+                        ErrorLogger.clearErrorLog(context)
                         logContent = null
                     }
                     Toast.makeText(context, "Logs cleared", Toast.LENGTH_SHORT).show()

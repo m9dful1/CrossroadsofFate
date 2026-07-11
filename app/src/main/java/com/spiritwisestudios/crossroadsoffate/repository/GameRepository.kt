@@ -1,7 +1,6 @@
 package com.spiritwisestudios.crossroadsoffate.repository
 
 import android.content.Context
-import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.spiritwisestudios.crossroadsoffate.data.GameDatabase
 import com.spiritwisestudios.crossroadsoffate.data.models.*
@@ -15,26 +14,47 @@ import java.io.InputStreamReader
  */
 class GameRepository(private val database: GameDatabase, private val context: Context) {
 
-    private val gson = GsonBuilder()
-        .registerTypeAdapter(LeadsTo::class.java, LeadsToDeserializer())
-        .create()
+    private val gson = GameJson.gson
 
     data class ScenariosWrapper(
         val scenarios: List<ScenarioEntity>
     )
 
-    suspend fun getPlayerProgress(playerId: String): PlayerProgress? {
-        return withContext(Dispatchers.IO) {
+    /**
+     * Runs a read on the IO dispatcher; failures are logged and mapped to [default]
+     * so callers always get a usable value.
+     */
+    private suspend fun <T> dbRead(operation: String, default: T, block: suspend () -> T): T =
+        withContext(Dispatchers.IO) {
             try {
-                database.playerProgressDao().getPlayerProgress(playerId)
+                block()
             } catch (e: Exception) {
-                null
+                Timber.e(e, "Error %s", operation)
+                default
             }
         }
-    }
+
+    /**
+     * Runs a write on the IO dispatcher; failures are logged and rethrown so
+     * callers can react to a failed persist.
+     */
+    private suspend fun <T> dbWrite(operation: String, block: suspend () -> T): T =
+        withContext(Dispatchers.IO) {
+            try {
+                block()
+            } catch (e: Exception) {
+                Timber.e(e, "Error %s", operation)
+                throw e
+            }
+        }
+
+    suspend fun getPlayerProgress(playerId: String): PlayerProgress? =
+        dbRead("getting player progress $playerId", null) {
+            database.playerProgressDao().getPlayerProgress(playerId)
+        }
 
     suspend fun loadScenariosFromJson() {
-        withContext(Dispatchers.IO) {
+        dbWrite("loading scenarios.json") {
             context.assets.open("scenarios.json").use { inputStream ->
                 val reader = InputStreamReader(inputStream)
                 val type = object : TypeToken<ScenariosWrapper>() {}.type
@@ -44,47 +64,31 @@ class GameRepository(private val database: GameDatabase, private val context: Co
         }
     }
 
-    suspend fun getScenarioById(id: String): ScenarioEntity? {
-        return withContext(Dispatchers.IO) {
-            try {
-                database.scenarioDao().getScenarioById(id)
-            } catch (e: Exception) {
-                Timber.e(e, "Error getting scenario %s", id)
-                null
-            }
+    suspend fun getScenarioById(id: String): ScenarioEntity? =
+        dbRead("getting scenario $id", null) {
+            database.scenarioDao().getScenarioById(id)
         }
-    }
 
     suspend fun savePlayerProgress(progress: PlayerProgress) {
-        withContext(Dispatchers.IO) {
+        dbWrite("saving player progress") {
             database.playerProgressDao().insertOrUpdate(progress)
         }
     }
 
     suspend fun resetPlayerProgress() {
-        withContext(Dispatchers.IO) {
-            try {
-                database.playerProgressDao().deleteAll()
-            } catch (e: Exception) {
-                Timber.e(e, "Error resetting player progress")
-                throw e
-            }
+        dbWrite("resetting player progress") {
+            database.playerProgressDao().deleteAll()
         }
     }
 
     // --- Interactive Map Location Methods ---
 
     suspend fun initializeInteractiveMapLocations() {
-        withContext(Dispatchers.IO) {
-            try {
-                val existingLocations = database.interactiveMapLocationDao().getAllLocations()
-                if (existingLocations.isEmpty()) {
-                    val defaultLocations = createDefaultInteractiveLocations()
-                    database.interactiveMapLocationDao().insertLocations(defaultLocations)
-                }
-            } catch (e: Exception) {
-                Timber.e(e, "Error initializing interactive map locations")
-                throw e
+        dbWrite("initializing interactive map locations") {
+            val existingLocations = database.interactiveMapLocationDao().getAllLocations()
+            if (existingLocations.isEmpty()) {
+                val defaultLocations = createDefaultInteractiveLocations()
+                database.interactiveMapLocationDao().insertLocations(defaultLocations)
             }
         }
     }
@@ -466,59 +470,31 @@ class GameRepository(private val database: GameDatabase, private val context: Co
         )
     }
 
-    suspend fun getAllScenarioIds(): List<String> {
-        return withContext(Dispatchers.IO) {
-            try {
-                database.scenarioDao().getAllScenarioIds()
-            } catch (e: Exception) {
-                Timber.e(e, "Error getting scenario IDs")
-                emptyList()
-            }
+    suspend fun getAllScenarioIds(): List<String> =
+        dbRead("getting scenario IDs", emptyList()) {
+            database.scenarioDao().getAllScenarioIds()
         }
-    }
 
-    suspend fun getAllInteractiveMapLocations(): List<InteractiveMapLocation> {
-        return withContext(Dispatchers.IO) {
-            try {
-                database.interactiveMapLocationDao().getAllLocations()
-            } catch (e: Exception) {
-                Timber.e(e, "Error getting interactive map locations")
-                emptyList()
-            }
+    suspend fun getAllInteractiveMapLocations(): List<InteractiveMapLocation> =
+        dbRead("getting interactive map locations", emptyList()) {
+            database.interactiveMapLocationDao().getAllLocations()
         }
-    }
 
-    suspend fun getInteractiveMapLocationById(locationId: String): InteractiveMapLocation? {
-        return withContext(Dispatchers.IO) {
-            try {
-                database.interactiveMapLocationDao().getLocationById(locationId)
-            } catch (e: Exception) {
-                Timber.e(e, "Error getting interactive map location %s", locationId)
-                null
-            }
+    suspend fun getInteractiveMapLocationById(locationId: String): InteractiveMapLocation? =
+        dbRead("getting interactive map location $locationId", null) {
+            database.interactiveMapLocationDao().getLocationById(locationId)
         }
-    }
 
     suspend fun updateLocationVisitStatus(locationId: String, isVisited: Boolean) {
-        withContext(Dispatchers.IO) {
-            try {
-                database.interactiveMapLocationDao().updateVisitStatus(locationId, isVisited)
-            } catch (e: Exception) {
-                Timber.e(e, "Error updating location visit status")
-                throw e
-            }
+        dbWrite("updating location visit status") {
+            database.interactiveMapLocationDao().updateVisitStatus(locationId, isVisited)
         }
     }
 
     suspend fun updateLocationActivities(locationId: String, activities: List<LocationActivity>) {
-        withContext(Dispatchers.IO) {
-            try {
-                val activitiesJson = gson.toJson(activities)
-                database.interactiveMapLocationDao().updateLocationActivities(locationId, activitiesJson)
-            } catch (e: Exception) {
-                Timber.e(e, "Error updating location activities")
-                throw e
-            }
+        dbWrite("updating location activities") {
+            val activitiesJson = gson.toJson(activities)
+            database.interactiveMapLocationDao().updateLocationActivities(locationId, activitiesJson)
         }
     }
 
@@ -526,19 +502,12 @@ class GameRepository(private val database: GameDatabase, private val context: Co
         playerInventory: Set<String>,
         visitedLocations: Set<String>,
         unlockedLocations: Set<String>
-    ): List<InteractiveMapLocation> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val allLocations = database.interactiveMapLocationDao().getAllLocations()
-                allLocations.filter { location ->
-                    location.canBeDiscovered(playerInventory, visitedLocations) ||
-                    unlockedLocations.contains(location.id) ||
-                    location.isVisited
-                }
-            } catch (e: Exception) {
-                Timber.e(e, "Error getting discovered locations")
-                emptyList()
+    ): List<InteractiveMapLocation> =
+        dbRead("getting discovered locations", emptyList()) {
+            database.interactiveMapLocationDao().getAllLocations().filter { location ->
+                location.canBeDiscovered(playerInventory, visitedLocations) ||
+                unlockedLocations.contains(location.id) ||
+                location.isVisited
             }
         }
-    }
 }

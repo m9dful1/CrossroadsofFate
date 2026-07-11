@@ -1,6 +1,8 @@
 package com.spiritwisestudios.crossroadsoffate.util
 
 import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import java.io.FileWriter
@@ -54,12 +56,13 @@ object ErrorLogger {
     /**
      * Save error to a file in the app's private storage.
      * Useful for collecting logs that can be sent later or viewed in-app.
-     * 
+     * File I/O runs on Dispatchers.IO so callers may invoke this from any dispatcher.
+     *
      * @param context Application context
      * @param error The error message to save
      * @param throwable Optional exception to include in the log
      */
-    fun saveErrorToFile(context: Context, error: String, throwable: Throwable? = null) {
+    suspend fun saveErrorToFile(context: Context, error: String, throwable: Throwable? = null): Unit = withContext(Dispatchers.IO) {
         try {
             val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())
             val errorMessage = StringBuilder()
@@ -99,24 +102,24 @@ object ErrorLogger {
     }
     
     /**
-     * Get the entire error log content
+     * Get the entire error log content. Reads on Dispatchers.IO.
      * @param context Application context
      * @return The content of the error log or null if not found
      */
-    fun getErrorLog(context: Context): String? {
+    suspend fun getErrorLog(context: Context): String? = withContext(Dispatchers.IO) {
         val logFile = File(context.filesDir, LOG_FILE_NAME)
-        return if (logFile.exists()) {
+        if (logFile.exists()) {
             logFile.readText()
         } else {
             null
         }
     }
-    
+
     /**
-     * Clear the error log file
+     * Clear the error log file. Deletes on Dispatchers.IO.
      * @param context Application context
      */
-    fun clearErrorLog(context: Context) {
+    suspend fun clearErrorLog(context: Context): Unit = withContext(Dispatchers.IO) {
         val logFile = File(context.filesDir, LOG_FILE_NAME)
         if (logFile.exists()) {
             logFile.delete()
