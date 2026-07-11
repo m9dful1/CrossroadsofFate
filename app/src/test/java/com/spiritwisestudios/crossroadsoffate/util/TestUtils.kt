@@ -5,6 +5,10 @@ import androidx.room.Room
 import com.spiritwisestudios.crossroadsoffate.data.GameDatabase
 import com.spiritwisestudios.crossroadsoffate.data.models.Decision
 import com.spiritwisestudios.crossroadsoffate.data.models.LeadsTo
+import com.spiritwisestudios.crossroadsoffate.data.models.PlayerProgress
+import com.spiritwisestudios.crossroadsoffate.data.models.Quest
+import com.spiritwisestudios.crossroadsoffate.data.models.QuestObjective
+import com.spiritwisestudios.crossroadsoffate.data.models.QuestType
 import com.spiritwisestudios.crossroadsoffate.data.models.ScenarioEntity
 import com.spiritwisestudios.crossroadsoffate.data.models.Condition
 import com.spiritwisestudios.crossroadsoffate.data.models.Converters
@@ -105,6 +109,49 @@ object TestDataFactory {
         )
     }
     
+    /**
+     * Creates a test player progress snapshot with optional parameters
+     */
+    fun createTestPlayerProgress(
+        playerId: String = "test_player",
+        currentScenarioId: String = "scenario1",
+        playerInventory: List<String> = emptyList(),
+        activeQuests: List<Quest> = emptyList(),
+        completedQuests: List<Quest> = emptyList(),
+        visitedLocations: Set<String> = emptySet()
+    ): PlayerProgress {
+        return PlayerProgress(
+            playerId = playerId,
+            currentScenarioId = currentScenarioId,
+            playerInventory = playerInventory,
+            activeQuests = activeQuests,
+            completedQuests = completedQuests,
+            visitedLocations = visitedLocations
+        )
+    }
+
+    /**
+     * Creates a test quest with a single scenario-gated objective by default
+     */
+    fun createTestQuest(
+        id: String = "test_quest",
+        title: String = "Test Quest",
+        objectives: List<QuestObjective> = listOf(
+            QuestObjective(id = "obj1", description = "Test objective", requiredScenarioId = "scenario2")
+        ),
+        rewards: List<String> = emptyList(),
+        questType: QuestType = QuestType.SIDE
+    ): Quest {
+        return Quest(
+            id = id,
+            title = title,
+            description = "Quest for testing",
+            objectives = objectives,
+            rewards = rewards,
+            questType = questType
+        )
+    }
+
     /**
      * Creates a test decision with conditional branching
      */

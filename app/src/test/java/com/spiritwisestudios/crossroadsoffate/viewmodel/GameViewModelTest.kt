@@ -1,14 +1,12 @@
 package com.spiritwisestudios.crossroadsoffate.viewmodel
 
 import android.app.Application
-import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
-import com.spiritwisestudios.crossroadsoffate.data.models.*
 import com.spiritwisestudios.crossroadsoffate.repository.GameRepository
+import com.spiritwisestudios.crossroadsoffate.util.TestDataFactory.createTestPlayerProgress
 import com.spiritwisestudios.crossroadsoffate.util.TestDataFactory.createTestScenario
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Before
@@ -18,9 +16,7 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.*
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
-import org.robolectric.util.ReflectionHelpers
 import junit.framework.TestCase.*
 
 @ExperimentalCoroutinesApi
@@ -34,15 +30,7 @@ class GameViewModelTest {
     private lateinit var gameViewModel: GameViewModel
     private lateinit var testDispatcher: TestDispatcher
 
-    private val defaultProgress = PlayerProgress(
-        playerId = "test_player",
-        currentScenarioId = "scenario1",
-        playerInventory = emptyList(),
-        activeQuests = emptyList(),
-        completedQuests = emptyList(),
-        visitedLocations = emptySet()
-    )
-
+    private val defaultProgress = createTestPlayerProgress()
     private val defaultScenario = createTestScenario(
         id = "scenario1",
         location = "Test Location",
@@ -58,124 +46,118 @@ class GameViewModelTest {
         // Set up default repository behavior
         runTest {
             whenever(repository.loadScenariosFromJson()).thenReturn(Unit)
+            whenever(repository.initializeInteractiveMapLocations()).thenReturn(Unit)
             whenever(repository.getPlayerProgress(any())).thenReturn(defaultProgress)
             whenever(repository.savePlayerProgress(any())).thenReturn(Unit)
             whenever(repository.getScenarioById("scenario1")).thenReturn(defaultScenario)
+            whenever(repository.getDiscoveredLocations(any(), any(), any())).thenReturn(emptyList())
         }
 
-        // Create viewModel with application context and mock repository
+        // Create viewModel with application context and mock repository,
+        // then drain its init coroutine so state is seeded through the real path
         val application = ApplicationProvider.getApplicationContext<Application>()
         gameViewModel = GameViewModel(application, repository)
-
-        // Initialize state flows via reflection for the fields that still exist
-        ReflectionHelpers.setField(gameViewModel, "_playerProgress", MutableStateFlow<PlayerProgress?>(defaultProgress))
-        ReflectionHelpers.setField(gameViewModel, "_currentScenario", MutableStateFlow<ScenarioEntity?>(defaultScenario))
-        ReflectionHelpers.setField(gameViewModel, "_isOnTitleScreen", MutableStateFlow<Boolean>(true))
-        
-        // Initialize the managers with default state
-        val inventoryManager = ReflectionHelpers.getField<Any>(gameViewModel, "inventoryManager")
-        val questManager = ReflectionHelpers.getField<Any>(gameViewModel, "questManager")
-        
-        // Initialize inventory manager with empty inventory
-        ReflectionHelpers.callInstanceMethod<Unit>(inventoryManager, "initialize", 
-            ReflectionHelpers.ClassParameter.from(List::class.java, emptyList<String>()))
-        
-        // Initialize quest manager with empty quests
-        ReflectionHelpers.callInstanceMethod<Unit>(questManager, "initialize", 
-            ReflectionHelpers.ClassParameter.from(List::class.java, emptyList<Quest>()),
-            ReflectionHelpers.ClassParameter.from(List::class.java, emptyList<Quest>()))
+        testDispatcher.scheduler.advanceUntilIdle()
     }
-    
+
     @After
     fun cleanup() {
         Dispatchers.resetMain()
     }
-    
+
     @Test
-    fun startNewGame_resetsProgress_andLoadsInitialScenario() = runTest {
-        // Arrange
-        val initialScenario = createTestScenario(id = "scenario1")
-        whenever(repository.getScenarioById("scenario1")).thenReturn(initialScenario)
-        whenever(repository.resetPlayerProgress()).thenReturn(Unit)
-        
-        // Act - just verify the method can be called without throwing exceptions
-        gameViewModel.startNewGame()
-        testDispatcher.scheduler.advanceUntilIdle()
-        shadowOf(Looper.getMainLooper()).idle()
-        
-        // Assert - basic test that method completed
-        assertTrue("Test completed successfully", true)
+    fun init_loadsProgressAndScenarioFromRepository() {
+        assertEquals(defaultProgress, gameViewModel.playerProgress.value)
+        assertEquals("scenario1", gameViewModel.currentScenario.value?.id)
+        assertTrue("Should start on title screen", gameViewModel.isOnTitleScreen.value)
     }
-    
+
+    @Test
+    fun startNewGame_persistsFreshProgress_andLeavesTitleScreen() = runTest {
+        whenever(repository.resetPlayerProgress()).thenReturn(Unit)
+
+        gameViewModel.startNewGame()
+
+        // startNewGame runs on Dispatchers.IO — wait for the persisted write,
+        // then flush its main-dispatcher state updates
+        verify(repository, timeout(5000)).resetPlayerProgress()
+        verify(repository, timeout(5000)).savePlayerProgress(argThat { currentScenarioId == "scenario1" })
+        val deadline = System.currentTimeMillis() + 5000
+        while (gameViewModel.isOnTitleScreen.value && System.currentTimeMillis() < deadline) {
+            testDispatcher.scheduler.advanceUntilIdle()
+            Thread.sleep(20)
+        }
+
+        assertFalse("Should leave title screen after starting a new game", gameViewModel.isOnTitleScreen.value)
+        assertEquals("scenario1", gameViewModel.currentScenario.value?.id)
+        assertEquals(emptyList<String>(), gameViewModel.playerProgress.value?.playerInventory)
+    }
+
     @Test
     fun loadGame_loadsProgressAndUpdatesScreenState() = runTest {
-        // Arrange
-        val savedProgress = PlayerProgress(
+        val savedProgress = createTestPlayerProgress(
             playerId = "default_player",
             currentScenarioId = "scenario2",
             playerInventory = listOf("sword", "potion"),
-            activeQuests = emptyList(),
-            completedQuests = emptyList(),
             visitedLocations = setOf("Town", "Forest")
         )
         val savedScenario = createTestScenario(id = "scenario2", location = "Forest")
-        
+
         whenever(repository.getPlayerProgress("default_player")).thenReturn(savedProgress)
         whenever(repository.getScenarioById("scenario2")).thenReturn(savedScenario)
-        
-        // Act - just verify the method can be called without throwing exceptions
+
         gameViewModel.loadGame()
         testDispatcher.scheduler.advanceUntilIdle()
-        shadowOf(Looper.getMainLooper()).idle()
-        
-        // Assert - basic test that method completed
-        assertTrue("Test completed successfully", true)
+
+        assertEquals(savedProgress, gameViewModel.playerProgress.value)
+        assertEquals("scenario2", gameViewModel.currentScenario.value?.id)
+        assertEquals(setOf("sword", "potion"), gameViewModel.playerInventory.value)
+        assertFalse("Should leave title screen after loading", gameViewModel.isOnTitleScreen.value)
     }
-    
+
     @Test
     fun returnToTitle_updatesScreenState() {
         // Act
         gameViewModel.returnToTitle()
-        
+
         // Assert
         assertTrue("Should be on title screen", gameViewModel.isOnTitleScreen.value)
         assertFalse("Character menu should be hidden", gameViewModel.isCharacterMenuVisible.value)
     }
-    
+
     @Test
     fun showHideMap_togglesMapVisibility() {
         // Initially map should be hidden
         assertFalse("Map should initially be hidden", gameViewModel.isMapVisible.value)
-        
+
         // Act - show map
         gameViewModel.showMap()
-        
+
         // Assert
         assertTrue("Map should be visible after showMap()", gameViewModel.isMapVisible.value)
-        
+
         // Act - hide map
         gameViewModel.hideMap()
-        
+
         // Assert
         assertFalse("Map should be hidden after hideMap()", gameViewModel.isMapVisible.value)
     }
-    
+
     @Test
     fun showHideCharacterMenu_togglesCharacterMenuVisibility() {
         // Initially character menu should be hidden
         assertFalse("Character menu should initially be hidden", gameViewModel.isCharacterMenuVisible.value)
-        
+
         // Act - show character menu
         gameViewModel.showCharacterMenu()
-        
+
         // Assert
         assertTrue("Character menu should be visible after showCharacterMenu()", gameViewModel.isCharacterMenuVisible.value)
-        
+
         // Act - hide character menu
         gameViewModel.hideCharacterMenu()
-        
+
         // Assert
         assertFalse("Character menu should be hidden after hideCharacterMenu()", gameViewModel.isCharacterMenuVisible.value)
     }
-    
 }

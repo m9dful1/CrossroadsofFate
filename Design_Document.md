@@ -1379,3 +1379,21 @@ Panel/scrim/border/text tokens plus `Gold` and `Orange` accents replace repeated
 ### 26.4 Known Deferred Items
 - `LockPickingScreen` still owns lock-picking rules (strain, phase advancement) in the UI layer; moving them into `LockPickingGame` is a larger behavioral refactor deliberately not bundled here
 - Full `MaterialTheme.colorScheme` adoption (screens currently hardcode a dark palette while the theme is light) is deferred; `GameColors` is the incremental step
+
+## 27. Mini-Game Subsystem Test Coverage
+
+[Date of modification: 2026-07-11]
+[Description: Closed the test-coverage hole around the mini-game subsystem and replaced vacuous ViewModel tests with behavioral assertions. Unit test count: 139, all passing.]
+
+### 27.1 New Test Suites
+- `ActivityManagerTest` — availability filtering (completed/repeatable/required items), completion + location unlocks, mini-game result mapping (XP, items gained/lost), completion rates, type filtering
+- `MiniGameManagerTest` — registry contents, start/cancel lifecycle, input-driven completion with activity-listener notification, direct-completion result factory
+- `LockPickingGameTest` — initialization invariants, slip durability/attempt tracking, pick-break failure, perfect/one-slip success paths, cancel, post-completion input immunity
+- `TradingGameTest` — price/target initialization, deterministic personality responses, walk-away threshold, full-price vs skillful-negotiation outcomes, max-round impatience
+
+### 27.2 GameViewModelTest Rework
+- Removed all `ReflectionHelpers` private-field manipulation — state is now seeded through the real init path (mocked repository + drained test dispatcher), so renames can no longer silently break setup
+- `startNewGame`/`loadGame` tests previously ended in `assertTrue(true)`; they now assert persisted progress, scenario transitions, inventory state, and title-screen visibility
+
+### 27.3 TestDataFactory Additions
+- `createTestPlayerProgress(...)` and `createTestQuest(...)` join the existing scenario/decision factories for reuse across suites
