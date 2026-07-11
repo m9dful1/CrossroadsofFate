@@ -1450,3 +1450,20 @@ The map bag had two failure modes the audit flagged: type erasure meant `getData
 - `GameRepository.initializeInteractiveMapLocations()` loads the asset through the shared `GameJson` Gson via a `LocationsWrapper`, exactly like `loadScenariosFromJson()`; the hardcoded builder function is deleted
 - Content edits to map locations/activities are now JSON-only, no recompilation of repository code
 - New tests: `initializeInteractiveMapLocations_seedsFromAsset` (12 locations, ids, nested activity fields) and `initializeInteractiveMapLocations_isIdempotent`
+
+## 32. Lock-Picking Rule Extraction and UI Polish
+
+[Date of modification: 2026-07-11]
+[Description: Pure lock-picking decision rules moved from the composable into LockPickingGame; several small UI/config corrections.]
+
+### 32.1 Lock-Picking Rules (now unit-tested)
+- `LockPickingGame.isAngleInSweetSpot(angle, center, size)` — replaces the screen-private duplicate
+- `LockPickingGame.strainBreakThreshold(pickDurability)` — the durability-scaled break point previously computed inline in the composable
+- `LockPickingGame.nextWrenchStrain(current, fingerRaw, progress, touching)` — one strain tick (quadratic bend accumulation with feedback, or recovery), previously the body of a UI polling loop
+- `CHECKPOINT_TOLERANCE` promoted to a `LockPickingGame` constant shared by game and screen
+- `LockPickingScreen` retains only gesture tracking, haptics, drawing, and per-tick delegation; five new unit tests cover the extracted rules
+
+### 32.2 UI/Config Fixes
+- `ErrorLoggerScreen` is now reachable only through the Debug Menu (the Title Screen button is removed) and its contradictory layout — a `weight(1f)` card inside a `verticalScroll` column — is fixed by letting the log card own the scrolling
+- `CrossroadsOfFateTheme` defaults to the dark color scheme; the game paints a dark UI and Material-styled surfaces (Error Logger) now match instead of rendering light
+- `GameAudioManager` KDoc no longer claims a crossfade the code does not perform

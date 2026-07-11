@@ -24,7 +24,8 @@ private val DarkColors = darkColorScheme(
 
 @Composable
 fun CrossroadsOfFateTheme(
-    darkTheme: Boolean = false,
+    // The game's UI is uniformly dark; Material-styled screens should match
+    darkTheme: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColors else LightColors

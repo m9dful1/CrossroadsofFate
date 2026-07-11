@@ -87,9 +87,6 @@ class MainActivity : ComponentActivity() {
                                     ErrorLogger.logException(e, "Failed to load game")
                                 }
                             },
-                            onShowErrorLogger = {
-                                showErrorLogger = true
-                            },
                             onShowDebugMenu = {
                                 showDebugMenu = true
                             }

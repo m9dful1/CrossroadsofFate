@@ -62,11 +62,13 @@ fun ErrorLoggerScreen(
         logContent = ErrorLogger.getErrorLog(context)
     }
     
+    // The log card takes the remaining height and scrolls internally,
+    // so the outer column must not scroll (weight inside a scrollable column
+    // has no bounded space to fill).
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

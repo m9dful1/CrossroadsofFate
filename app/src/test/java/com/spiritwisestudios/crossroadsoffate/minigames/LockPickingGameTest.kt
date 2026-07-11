@@ -117,4 +117,58 @@ class LockPickingGameTest {
         assertEquals(2, LockPickingGame(lockCount = 1).difficulty)
         assertEquals(4, LockPickingGame(lockCount = 3).difficulty)
     }
+
+    // --- Extracted UI-facing rules ---
+
+    @Test
+    fun isAngleInSweetSpot_matchesWithinHalfSize() {
+        assertTrue(LockPickingGame.isAngleInSweetSpot(0.5f, 0.5f, 0.2f))
+        assertTrue(LockPickingGame.isAngleInSweetSpot(0.59f, 0.5f, 0.2f)) // just inside the edge
+        assertFalse(LockPickingGame.isAngleInSweetSpot(0.65f, 0.5f, 0.2f))
+    }
+
+    @Test
+    fun strainBreakThreshold_scalesWithDurability() {
+        assertEquals(1.0f, LockPickingGame.strainBreakThreshold(3), 0.001f)
+        assertEquals(2f / 3f, LockPickingGame.strainBreakThreshold(2), 0.001f)
+        assertEquals(1f / 3f, LockPickingGame.strainBreakThreshold(1), 0.001f)
+    }
+
+    @Test
+    fun nextWrenchStrain_accumulatesWhenBendingPastCheckpoint() {
+        val strained = LockPickingGame.nextWrenchStrain(
+            current = 0f, tensionFingerRaw = 0.5f, tensionProgress = 0.2f, isTensionTouching = true
+        )
+        assertTrue(strained > 0f)
+
+        // Feedback: existing strain accelerates further accumulation
+        val accelerated = LockPickingGame.nextWrenchStrain(
+            current = 0.5f, tensionFingerRaw = 0.5f, tensionProgress = 0.2f, isTensionTouching = true
+        )
+        assertTrue(accelerated - 0.5f > strained)
+    }
+
+    @Test
+    fun nextWrenchStrain_recoversWhenNotBending() {
+        val recovered = LockPickingGame.nextWrenchStrain(
+            current = 0.5f, tensionFingerRaw = 0f, tensionProgress = 0f, isTensionTouching = false
+        )
+        assertTrue(recovered < 0.5f)
+
+        // Never drops below zero
+        assertEquals(0f, LockPickingGame.nextWrenchStrain(
+            current = 0f, tensionFingerRaw = 0f, tensionProgress = 0f, isTensionTouching = false
+        ), 0.001f)
+    }
+
+    @Test
+    fun nextWrenchStrain_withinToleranceDoesNotAccumulate() {
+        val result = LockPickingGame.nextWrenchStrain(
+            current = 0.2f,
+            tensionFingerRaw = 0.24f, // within CHECKPOINT_TOLERANCE of progress
+            tensionProgress = 0.2f,
+            isTensionTouching = true
+        )
+        assertTrue(result < 0.2f) // recovers instead of accumulating
+    }
 }

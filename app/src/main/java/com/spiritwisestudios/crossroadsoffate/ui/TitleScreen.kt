@@ -23,13 +23,11 @@ import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
  *
  * @param onNewGame Callback triggered when the New Game button is pressed
  * @param onLoadGame Callback triggered when the Load Game button is pressed
- * @param onShowErrorLogger Callback triggered when the Error Logger button is pressed
  */
 @Composable
 fun TitleScreen(
     onNewGame: () -> Unit,
     onLoadGame: () -> Unit,
-    onShowErrorLogger: () -> Unit,
     onShowDebugMenu: () -> Unit = {}
 ) {
     // Root container filling the entire screen
@@ -89,15 +87,6 @@ fun TitleScreen(
                 modifier = Modifier.padding(vertical = 8.dp)
             ) { onLoadGame() }
             
-            // Spacing between buttons
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Error Logger button
-            DecisionButton(
-                text = "Error Logger",
-                modifier = Modifier.padding(vertical = 8.dp)
-            ) { onShowErrorLogger() }
-
             Spacer(modifier = Modifier.height(32.dp))
             Text(
                 text = "Debug Menu",

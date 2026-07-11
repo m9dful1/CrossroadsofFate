@@ -79,6 +79,48 @@ class LockPickingGame(
         private const val SWEET_SPOT_BASE_SIZE = 0.18f
         private const val SWEET_SPOT_SHRINK_PER_LOCK = 0.03f
         private const val SWEET_SPOT_MIN_SIZE = 0.08f
+
+        /** How close the tension must be to the checkpoint to count as "reached". */
+        const val CHECKPOINT_TOLERANCE = 0.05f
+
+        // Wrench strain: bending past a checkpoint accumulates strain → eventually breaks
+        private const val WRENCH_STRAIN_RATE = 0.3f      // base strain per tick (scaled by bendAmount²)
+        private const val WRENCH_STRAIN_FEEDBACK = 3f     // existing strain accelerates new strain
+        private const val WRENCH_STRAIN_RECOVERY = 0.01f  // strain recovery per tick when not bending
+
+        /** True when the pick angle sits inside a sweet spot of the given center/size. */
+        fun isAngleInSweetSpot(angle: Float, center: Float, size: Float): Boolean {
+            return kotlin.math.abs(angle - center) <= size / 2
+        }
+
+        /**
+         * Strain level at which the pick snaps. Scales with remaining durability:
+         * 3/3 → 1.0, 2/3 → 0.67, 1/3 → 0.33.
+         */
+        fun strainBreakThreshold(pickDurability: Int): Float {
+            return pickDurability.toFloat() / MAX_PICK_USES
+        }
+
+        /**
+         * Advances wrench strain by one tick. Bending past the checkpoint accumulates
+         * quadratically (existing strain accelerates further damage); otherwise strain
+         * slowly recovers. Result is clamped to [0, 1].
+         */
+        fun nextWrenchStrain(
+            current: Float,
+            tensionFingerRaw: Float,
+            tensionProgress: Float,
+            isTensionTouching: Boolean
+        ): Float {
+            return if (isTensionTouching && tensionFingerRaw > tensionProgress + CHECKPOINT_TOLERANCE) {
+                val bendAmount = tensionFingerRaw - tensionProgress
+                val rate = bendAmount * bendAmount *
+                    WRENCH_STRAIN_RATE * (1f + current * WRENCH_STRAIN_FEEDBACK)
+                (current + rate).coerceAtMost(1f)
+            } else {
+                (current - WRENCH_STRAIN_RECOVERY).coerceAtLeast(0f)
+            }
+        }
     }
 
     private fun MiniGameState.lockData(): LockPickingData? = data as? LockPickingData

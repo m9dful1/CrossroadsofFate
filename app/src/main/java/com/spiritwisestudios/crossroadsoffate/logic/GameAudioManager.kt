@@ -11,7 +11,7 @@ import timber.log.Timber
 
 /**
  * Manages background music and sound effects for the game.
- * Uses MediaPlayer for looping background music with crossfade on track changes,
+ * Uses MediaPlayer for looping background music (tracks switch with a hard cut)
  * and SoundPool for short sound effects.
  * Volume and mute settings persist via SharedPreferences.
  */

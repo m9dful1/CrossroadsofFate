@@ -42,14 +42,6 @@ private const val ARC_THICKNESS_DP = 40f
 private const val TOUCH_BAND_MULTIPLIER = 2.5f
 private const val ANGLE_TOLERANCE = 15f
 
-// How close the tension must be to the checkpoint to count as "reached"
-private const val CHECKPOINT_TOLERANCE = 0.05f
-
-// Wrench strain: bending past a checkpoint accumulates strain → eventually breaks
-private const val WRENCH_STRAIN_RATE = 0.3f      // base strain per tick (scaled by bendAmount²)
-private const val WRENCH_STRAIN_FEEDBACK = 3f     // existing strain accelerates new strain
-private const val WRENCH_STRAIN_RECOVERY = 0.01f  // strain recovery per tick when not bending
-
 private object LockPickingColors {
     val ScreenBackground = Color(0xFF1A1A2E)
     val TimerBarBackground = Color(0xFF333333)
@@ -139,7 +131,7 @@ fun LockPickingScreen(
     val currentCheckpoint = checkpoints.getOrElse(localPhase) { 1f }
 
     val isInSweetSpot = isPickTouching &&
-        isAngleInSweetSpot(pickAngle, currentSweetSpot, sweetSpotSize)
+        LockPickingGame.isAngleInSweetSpot(pickAngle, currentSweetSpot, sweetSpotSize)
 
     // Reset all local state when game state changes (new attempt after slip, or game restart)
     LaunchedEffect(sweetSpots, pickDurability) {
@@ -176,8 +168,7 @@ fun LockPickingScreen(
         }
     }
 
-    // Break threshold scales with remaining durability: 3/3 → 1.0, 2/3 → 0.67, 1/3 → 0.33
-    val breakThreshold = pickDurability.toFloat() / LockPickingGame.MAX_PICK_USES
+    val breakThreshold = LockPickingGame.strainBreakThreshold(pickDurability)
 
     // Wrench strain: bending past checkpoint accumulates damage, eventually breaks.
     // This LaunchedEffect(Unit) reads mutable state vars (isTensionTouching, tensionFingerRaw, etc.)
@@ -186,21 +177,15 @@ fun LockPickingScreen(
     LaunchedEffect(Unit) {
         while (true) {
             delay(50)
-            if (isTensionTouching && tensionFingerRaw > tensionProgress + CHECKPOINT_TOLERANCE) {
-                val bendAmount = tensionFingerRaw - tensionProgress
-                // Quadratic scaling: small bends are tolerable, large bends damage fast
-                // Feedback loop: existing strain makes new strain accumulate faster
-                val rate = bendAmount * bendAmount *
-                    WRENCH_STRAIN_RATE * (1f + wrenchStrain * WRENCH_STRAIN_FEEDBACK)
-                wrenchStrain = (wrenchStrain + rate).coerceAtMost(1f)
-
-                if (wrenchStrain >= breakThreshold) {
-                    wrenchStrain = 0f
-                    onPickSlipped()
-                }
-            } else if (wrenchStrain > 0f) {
-                // Slowly recover strain when finger is not past checkpoint
-                wrenchStrain = (wrenchStrain - WRENCH_STRAIN_RECOVERY).coerceAtLeast(0f)
+            wrenchStrain = LockPickingGame.nextWrenchStrain(
+                current = wrenchStrain,
+                tensionFingerRaw = tensionFingerRaw,
+                tensionProgress = tensionProgress,
+                isTensionTouching = isTensionTouching
+            )
+            if (wrenchStrain >= breakThreshold) {
+                wrenchStrain = 0f
+                onPickSlipped()
             }
         }
     }
@@ -244,7 +229,7 @@ fun LockPickingScreen(
         localPhase == 0 && !isPickTouching -> "Find the first position on the top arch"
         !isInSweetSpot && isPickTouching -> "Keep searching... don't lift your finger!"
         isInSweetSpot && !isTensionTouching -> "Found it! Swipe bottom arch to checkpoint"
-        isInSweetSpot && isTensionTouching && tensionProgress < currentCheckpoint - CHECKPOINT_TOLERANCE ->
+        isInSweetSpot && isTensionTouching && tensionProgress < currentCheckpoint - LockPickingGame.CHECKPOINT_TOLERANCE ->
             "Keep swiping to the checkpoint..."
         isInSweetSpot && localPhase < totalPhases - 1 ->
             "Hold bottom! Slide top to next position"
@@ -410,7 +395,7 @@ fun LockPickingScreen(
                                 // Only allow tension when pick is in sweet spot
                                 val spotCenter = sweetSpots.getOrElse(localPhase) { 0.5f }
                                 val pickInSpot = isPickTouching &&
-                                    isAngleInSweetSpot(pickAngle, spotCenter, sweetSpotSize)
+                                    LockPickingGame.isAngleInSweetSpot(pickAngle, spotCenter, sweetSpotSize)
                                 if (pickInSpot) {
                                     localTensionId = change.id.value
                                     val norm = normalizeAngleInArc(
@@ -428,12 +413,12 @@ fun LockPickingScreen(
                             ).coerceIn(0f, 1f)
 
                             val spotCenter = sweetSpots.getOrElse(localPhase) { 0.5f }
-                            val wasIn = isAngleInSweetSpot(pickAngle, spotCenter, sweetSpotSize)
-                            val nowIn = isAngleInSweetSpot(norm, spotCenter, sweetSpotSize)
+                            val wasIn = LockPickingGame.isAngleInSweetSpot(pickAngle, spotCenter, sweetSpotSize)
+                            val nowIn = LockPickingGame.isAngleInSweetSpot(norm, spotCenter, sweetSpotSize)
 
                             // Pick left sweet spot while tension was being applied
                             if (wasIn && !nowIn && isTensionTouching &&
-                                tensionProgress > tensionFloor + CHECKPOINT_TOLERANCE
+                                tensionProgress > tensionFloor + LockPickingGame.CHECKPOINT_TOLERANCE
                             ) {
                                 resetPhaseOnSlip()
                                 resetTensionTracking()
@@ -445,7 +430,7 @@ fun LockPickingScreen(
                         fun handleTensionTracking(cAngle: Float) {
                             val spotCenter = sweetSpots.getOrElse(localPhase) { 0.5f }
                             val inSpot = isPickTouching &&
-                                isAngleInSweetSpot(pickAngle, spotCenter, sweetSpotSize)
+                                LockPickingGame.isAngleInSweetSpot(pickAngle, spotCenter, sweetSpotSize)
 
                             if (inSpot && !phaseSpotFound) {
                                 phaseSpotFound = true
@@ -462,7 +447,7 @@ fun LockPickingScreen(
                             val prog = rawProg.coerceAtMost(upperBound)
                             tensionProgress = prog
 
-                            if (inSpot && prog >= cp - CHECKPOINT_TOLERANCE) {
+                            if (inSpot && prog >= cp - LockPickingGame.CHECKPOINT_TOLERANCE) {
                                 if (localPhase >= totalPhases - 1) {
                                     // Final phase complete — lock opened
                                     onLockPicked()
@@ -690,7 +675,7 @@ private fun DrawScope.drawBottomArch(
     if (tension.tensionProgress > 0.01f) {
         val fillSweep = BOTTOM_ARC_SWEEP * tension.tensionProgress
         val atCheckpoint = phase.totalPhases > 1 && phase.checkpoints.any { cp ->
-            cp < 1f && abs(tension.tensionProgress - cp) < CHECKPOINT_TOLERANCE
+            cp < 1f && abs(tension.tensionProgress - cp) < LockPickingGame.CHECKPOINT_TOLERANCE
         }
         if (atCheckpoint) {
             // Rounded cap at the start, flat cap at the checkpoint for a clean stop
@@ -825,7 +810,7 @@ private fun DrawScope.drawTensionWrench(
     val fingerAngle = BOTTOM_ARC_START + tension.tensionFingerRaw * BOTTOM_ARC_SWEEP
     val fingerRad = Math.toRadians(fingerAngle.toDouble())
 
-    val fingerPastCheckpoint = tension.tensionFingerRaw > tension.tensionProgress + CHECKPOINT_TOLERANCE
+    val fingerPastCheckpoint = tension.tensionFingerRaw > tension.tensionProgress + LockPickingGame.CHECKPOINT_TOLERANCE
 
     val wrenchStart = Offset(
         cx + wrStartR * cos(clampedRad).toFloat(),
@@ -894,10 +879,6 @@ private fun DrawScope.drawWrenchHandle(tip: Offset, angleRad: Double, color: Col
 }
 
 /** Checks if a normalized angle (0-1) falls within the sweet spot centered at [center] with the given [size]. */
-private fun isAngleInSweetSpot(angle: Float, center: Float, size: Float): Boolean {
-    return abs(angle - center) <= size / 2
-}
-
 /** Checks if a canvas angle falls within an arc defined by start angle + sweep. */
 private fun isAngleInArc(angle: Float, arcStart: Float, arcSweep: Float): Boolean {
     val arcEnd = arcStart + arcSweep
