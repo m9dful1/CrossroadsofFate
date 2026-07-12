@@ -118,7 +118,29 @@ class ExplorationMapCatalogTest {
             map.entities.forEach { entity ->
                 val path = grid.findPath(map.spawn, MapPoint(entity.x, entity.y))
                 assertTrue("${map.id}/${entity.id} is unreachable from spawn", path.isNotEmpty())
+
+                // A path is not enough: the walk endpoint must land inside the
+                // runtime interaction trigger, or the avatar arrives but the
+                // entity never fires (a soft-lock when it's the story marker)
+                val endpoint = grid.nearestWalkable(MapPoint(entity.x, entity.y))
+                val dx = endpoint.x - entity.x
+                val dy = endpoint.y - entity.y
+                val range = ExplorationManager.INTERACT_RANGE
+                assertTrue(
+                    "${map.id}/${entity.id}: walk endpoint is outside INTERACT_RANGE",
+                    dx * dx + dy * dy <= range * range
+                )
             }
+        }
+    }
+
+    @Test
+    fun entityIds_areUniqueWithinEachMap() {
+        // Pending-target and dialog lookups resolve entities by id within the
+        // current map; a duplicate would make taps hit the wrong entity
+        catalog.maps.forEach { map ->
+            assertEquals("${map.id}: duplicate entity ids",
+                map.entities.size, map.entities.map { it.id }.toSet().size)
         }
     }
 

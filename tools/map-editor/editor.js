@@ -602,7 +602,10 @@ function validate() {
       claimed.set(loc.toLowerCase(), m.id);
     });
 
+    const entityIds = new Set();
     (m.entities || []).forEach((e) => {
+      if (entityIds.has(e.id)) problems.push({ err: true, msg: `${m.id}/${e.id}: duplicate entity id` });
+      entityIds.add(e.id);
       if (e.type === "EXIT") {
         if (!e.targetMapId || !ids.has(e.targetMapId)) {
           problems.push({ err: true, msg: `${m.id}/${e.id}: exit target '${e.targetMapId || "—"}' missing` });

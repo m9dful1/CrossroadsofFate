@@ -1559,3 +1559,13 @@ The wisdom≥3 gate (scenario42 → celestial ending) was silently missable: onl
 `ScenarioEntity.isEnding` marks final scenarios (scenario40/45/46, previously infinite self-loops). Reaching one skips exploration and MainActivity routes to the new `EndingScreen`: resolved closing text over the scenario background, a stat summary, completed-quest count, and Return to Title. Kept intentionally light ahead of the planned scenario rewrite. Database version 11 → 12 (new columns on PlayerProgress, ScenarioEntity, InteractiveMapLocation).
 ### 39.5 Tests and Docs
 New `ScenarioContentIntegrityTest`: every scenario reachable from the start or map travel (fails on future orphans), every stat gate earnable from shipped content, self-loop scenarios exactly match `isEnding` flags, and revisit ids resolve. `GameViewModelTest` adds grant-once, revisit routing, and ending-skips-exploration coverage. `docs/scenario-authoring-guide.md` documents `isEnding`, grant-once semantics, and revisit variants.
+
+## 40. Exploration System Audit Fixes
+[Date of modification: 2026-07-11]
+Sixth feature audit (exploration: A* pathfinding, tap-to-move, entity interactions, map catalog). The movement/pathfinding core audited clean — frame-clamped time-based movement, octile-heuristic A* with no diagonal corner cutting, line-of-sight smoothing, and safe fallbacks throughout. Three gaps found and fixed.
+### 40.1 Interactability Test Gap
+`ExplorationMapCatalogTest`'s reachability check proved a path exists to each entity but not that the walk endpoint lands within `INTERACT_RANGE` (42 units) — the actual runtime trigger. An entity surrounded by inflated-obstacle nav cells would pass CI yet never fire in game (a soft-lock when it's the story marker). The test now also asserts `nearestWalkable(entity) ≤ INTERACT_RANGE`, mirroring runtime behavior; shipped maps verified clean. A per-map entity-id uniqueness test was added (ids repeat across maps by convention, e.g. "story" ×15, but a duplicate within one map would make tap-target and dialog lookups hit the wrong entity), with the same rule added to the map editor's live validation.
+### 40.2 Debug Map Jumps Stranded the Story
+`debugEnterMap` cleared the pending story beat's map id, so a debug detour permanently removed the story marker from every map — the beat could only continue via Skip. The pending beat is now preserved: jumping back to the story's map restores its marker (new regression test).
+### 40.3 NPC Dialog State Keyed Per Map
+NPC dialog-cycling indices were keyed by bare entity id, which is only unique within a map — two same-id NPCs on different maps would share cycling state. Indices are now keyed by map id + entity id.

@@ -165,10 +165,13 @@ class ExplorationManager {
         npcLineIndices.clear()
     }
 
-    /** Loads a map by id directly (debug tooling). */
+    /**
+     * Loads a map by id directly (debug tooling). Any pending story beat is
+     * preserved: jumping back to the story's map shows its marker again, so a
+     * debug detour can never strand the narrative.
+     */
     fun debugEnterMap(mapId: String): Boolean {
         val map = catalog.findMapById(mapId) ?: return false
-        storyMapId = null
         enterMap(map, map.spawn)
         return true
     }
@@ -303,7 +306,9 @@ class ExplorationManager {
 
     private fun showNpcLine(entity: MapEntity) {
         val lines = entity.dialog?.takeIf { it.isNotEmpty() } ?: listOf("...")
-        val index = npcLineIndices.getOrDefault(entity.id, 0) % lines.size
+        // Keyed per map: entity ids are only unique within one map
+        val key = "${_currentMap.value?.id}:${entity.id}"
+        val index = npcLineIndices.getOrDefault(key, 0) % lines.size
         _activeDialog.value = ExplorationDialog(
             entityId = entity.id,
             icon = entity.icon,
@@ -312,7 +317,7 @@ class ExplorationManager {
             lineNumber = index + 1,
             totalLines = lines.size
         )
-        npcLineIndices[entity.id] = index + 1
+        npcLineIndices[key] = index + 1
     }
 
     private fun followExit(entity: MapEntity) {

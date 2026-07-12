@@ -283,6 +283,21 @@ class ExplorationManagerTest {
     }
 
     @Test
+    fun debugMapJump_preservesPendingStoryMarker() {
+        manager.enterMapForLocation("Alpha Town")
+        assertTrue(manager.storyMarkerVisible.value)
+
+        // A debug detour to another map hides the marker there...
+        manager.debugEnterMap("beta")
+        assertFalse(manager.storyMarkerVisible.value)
+
+        // ...but jumping back to the story's map must restore it, or the
+        // narrative is stranded with no marker anywhere
+        manager.debugEnterMap("alpha")
+        assertTrue("Story marker lost after a debug map jump", manager.storyMarkerVisible.value)
+    }
+
+    @Test
     fun getAllMapIds_listsCatalog() {
         assertEquals(listOf("alpha", "beta"), manager.getAllMapIds())
     }
