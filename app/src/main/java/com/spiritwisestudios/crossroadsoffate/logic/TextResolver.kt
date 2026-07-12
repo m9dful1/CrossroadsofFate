@@ -1,5 +1,7 @@
 package com.spiritwisestudios.crossroadsoffate.logic
 
+import timber.log.Timber
+
 /**
  * Stateless utility that resolves dynamic placeholder tokens in scenario text
  * based on player inventory, stats, and reputation.
@@ -24,24 +26,34 @@ object TextResolver {
         return result
     }
 
+    // Content may not contain another opening {if: tag, so this only matches
+    // INNERMOST blocks; resolveConditionalBlocks loops until none remain,
+    // which pairs nested blocks with their own {/if} instead of the first one
     private val conditionalBlockRegex =
-        Regex("""\{if:(!?)has:([^}]+)\}(.*?)\{/if\}""", RegexOption.DOT_MATCHES_ALL)
+        Regex("""\{if:(!?)has:([^}]+)\}((?:(?!\{if:).)*?)\{/if\}""", RegexOption.DOT_MATCHES_ALL)
 
     private fun resolveConditionalBlocks(text: String, inventory: Set<String>): String {
-        return conditionalBlockRegex.replace(text) { match ->
-            val negated = match.groupValues[1] == "!"
-            val itemName = match.groupValues[2]
-            val blockContent = match.groupValues[3]
-            val hasItem = itemName in inventory
-            val show = if (negated) !hasItem else hasItem
-            if (show) blockContent else ""
+        var result = text
+        while (true) {
+            val replaced = conditionalBlockRegex.replace(result) { match ->
+                val negated = match.groupValues[1] == "!"
+                val itemName = match.groupValues[2]
+                val blockContent = match.groupValues[3]
+                val hasItem = itemName in inventory
+                val show = if (negated) !hasItem else hasItem
+                if (show) blockContent else ""
+            }
+            if (replaced == result) return replaced
+            result = replaced
         }
     }
 
+    // Threshold may be negative (reputation goes below zero); either branch
+    // text may be empty ("say nothing below the threshold" is valid authoring)
     private val conditionalStatRegex =
-        Regex("""\{stat:([^:]+):(\d+):([^|]+)\|([^}]+)\}""")
+        Regex("""\{stat:([^:}|]+):(-?\d+):([^|}]*)\|([^}]*)\}""")
     private val conditionalRepRegex =
-        Regex("""\{rep:([^:]+):(\d+):([^|]+)\|([^}]+)\}""")
+        Regex("""\{rep:([^:}|]+):(-?\d+):([^|}]*)\|([^}]*)\}""")
 
     private fun resolveConditionalInlineTokens(
         text: String,
@@ -63,8 +75,11 @@ object TextResolver {
         }
 
     private val itemTokenRegex = Regex("""\{item:([^}]+)\}""")
-    private val simpleStatRegex = Regex("""\{stat:([^}]+)\}""")
-    private val simpleRepRegex = Regex("""\{rep:([^}]+)\}""")
+
+    // Bare names only (no ':' or '|'): a malformed conditional token must fall
+    // through to the strip stage, not read as a value token and render "0"
+    private val simpleStatRegex = Regex("""\{stat:([^:}|]+)\}""")
+    private val simpleRepRegex = Regex("""\{rep:([^:}|]+)\}""")
 
     private fun resolveValueTokens(
         text: String,
@@ -87,7 +102,10 @@ object TextResolver {
     private val unrecognizedTokenRegex = Regex("""\{[^}]*\}""")
 
     private fun stripUnrecognizedTokens(text: String): String {
-        return unrecognizedTokenRegex.replace(text, "")
+        return unrecognizedTokenRegex.replace(text) { match ->
+            Timber.w("Stripping unrecognized text token: %s", match.value)
+            ""
+        }
     }
 
     internal fun formatItemName(name: String): String {

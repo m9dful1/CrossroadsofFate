@@ -1569,3 +1569,15 @@ Sixth feature audit (exploration: A* pathfinding, tap-to-move, entity interactio
 `debugEnterMap` cleared the pending story beat's map id, so a debug detour permanently removed the story marker from every map — the beat could only continue via Skip. The pending beat is now preserved: jumping back to the story's map restores its marker (new regression test).
 ### 40.3 NPC Dialog State Keyed Per Map
 NPC dialog-cycling indices were keyed by bare entity id, which is only unique within a map — two same-id NPCs on different maps would share cycling state. Indices are now keyed by map id + entity id.
+
+## 41. Dynamic Text Engine Audit Fixes
+[Date of modification: 2026-07-11]
+Seventh feature audit (TextResolver token engine + InventoryManager). InventoryManager audited clean (set-based, idempotent grants, blank-item guard). TextResolver's grammar had four robustness gaps — none triggered by shipped content, all now fixed and fenced by a new content test.
+### 41.1 Malformed Tokens No Longer Render "0"
+The bare value-token regexes (`{stat:NAME}`, `{rep:NAME}`) accepted any text including colons and pipes, so a malformed threshold token fell through to them, looked up the whole garbage string as a stat name, and printed a literal `0` mid-sentence. Value tokens now accept bare names only; anything malformed is stripped by the final cleanup stage (which now logs a Timber warning naming the stripped token).
+### 41.2 Nested Conditional Blocks Pair Correctly
+The `{if:has:x}...{/if}` regex lazily paired an outer opening tag with the first (inner) closing tag, so nesting leaked hidden text and dropped gated text. Blocks are now resolved innermost-first in a loop, pairing every block with its own `{/if}`; nesting is supported and documented.
+### 41.3 Negative Thresholds and Empty Branches
+Threshold tokens now accept negative thresholds (`{rep:guard:-1:hostile|neutral}` — reputation can legitimately go below zero) and empty below/above branch text (`{stat:wisdom:3:|The runes make sense.}` — "say nothing on that side" is valid authoring). Previously both silently stripped the whole token.
+### 41.4 Token Content Test
+New `ScenarioTokenIntegrityTest` closes the "silently stripped" failure mode for shipped content: every `{...}` token in scenarios.json (scenario text, decision text, fallbackText) must match the documented grammar with a known stat/faction name or an obtainable item; `{if:}`/`{/if}` must balance per text (an unclosed block leaks gated content to everyone); every text must resolve brace-free under representative player states; and every decision `requiredItem` gate must have a live item source (itemGiven, activity reward, quest reward, or engine grant). `docs/scenario-authoring-guide.md` updated with the new grammar capabilities and the CI net.

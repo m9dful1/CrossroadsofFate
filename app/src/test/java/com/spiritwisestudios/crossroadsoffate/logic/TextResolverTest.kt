@@ -169,6 +169,70 @@ class TextResolverTest {
         assertEquals("Your Key glows.", result)
     }
 
+    // --- Nested conditional blocks ---
+
+    private val nested = "{if:has:map}You unfold the map.{if:has:compass} The compass agrees.{/if} Onward.{/if}"
+
+    @Test
+    fun `nested block shows inner content only when both items held`() {
+        val result = TextResolver.resolve(nested, setOf("map", "compass"), emptyStats, emptyRep)
+        assertEquals("You unfold the map. The compass agrees. Onward.", result)
+    }
+
+    @Test
+    fun `nested block hides inner content when only outer item held`() {
+        val result = TextResolver.resolve(nested, setOf("map"), emptyStats, emptyRep)
+        assertEquals("You unfold the map. Onward.", result)
+    }
+
+    @Test
+    fun `nested block hides everything when outer item missing`() {
+        // Includes text after the inner {/if}: with naive pairing the outer
+        // open tag pairs with the inner close and " Onward." leaks through
+        val result = TextResolver.resolve(nested, setOf("compass"), emptyStats, emptyRep)
+        assertEquals("", result)
+    }
+
+    // --- Threshold token edge cases ---
+
+    @Test
+    fun `negative rep threshold selects branches correctly`() {
+        val token = "{rep:guard:-1:They draw weapons.|They let you pass.}"
+        assertEquals("They draw weapons.",
+            TextResolver.resolve(token, emptyInventory, emptyStats, mapOf("guard" to -2)))
+        assertEquals("They let you pass.",
+            TextResolver.resolve(token, emptyInventory, emptyStats, mapOf("guard" to -1)))
+    }
+
+    @Test
+    fun `empty below branch renders nothing under threshold`() {
+        val token = "{stat:wisdom:3:|The runes make sense to you.}"
+        assertEquals("",
+            TextResolver.resolve(token, emptyInventory, mapOf("wisdom" to 1), emptyRep))
+        assertEquals("The runes make sense to you.",
+            TextResolver.resolve(token, emptyInventory, mapOf("wisdom" to 3), emptyRep))
+    }
+
+    @Test
+    fun `empty above branch renders nothing at threshold`() {
+        val token = "{stat:wisdom:3:You have much to learn.|}"
+        assertEquals("You have much to learn.",
+            TextResolver.resolve(token, emptyInventory, mapOf("wisdom" to 1), emptyRep))
+        assertEquals("",
+            TextResolver.resolve(token, emptyInventory, mapOf("wisdom" to 5), emptyRep))
+    }
+
+    @Test
+    fun `malformed threshold token is stripped instead of rendering zero`() {
+        // Missing the below|above separator: not a valid conditional, and it
+        // must not be misread as a value token that prints "0" mid-sentence
+        val result = TextResolver.resolve(
+            "The elder speaks.{stat:wisdom:3 nonsense} Farewell.",
+            emptyInventory, mapOf("wisdom" to 5), emptyRep
+        )
+        assertEquals("The elder speaks. Farewell.", result)
+    }
+
     // --- Multiple tokens ---
 
     @Test

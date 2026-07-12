@@ -219,6 +219,10 @@ Show one of two text fragments based on whether a stat or reputation meets a thr
 | `{stat:NAME:N:below\|above}` | stat < N → below, stat >= N → above | `{stat:wisdom:3:much to learn\|wise}` |
 | `{rep:NAME:N:below\|above}` | rep < N → below, rep >= N → above | `{rep:guard:2:ignore you\|salute}` |
 
+- The threshold may be **negative** — useful for reputation, which can drop below zero: `{rep:guard:-1:They draw weapons.|They let you pass.}`
+- Either branch may be **empty** to say nothing on that side: `{stat:wisdom:3:|The runes make sense to you.}`
+- Branch text may not contain `|` (below branch) or `}` (either branch).
+
 **Examples:**
 ```
 "text": "The mentor {stat:wisdom:3:senses you still have much to learn|nods, recognizing your wisdom}."
@@ -253,9 +257,14 @@ Show or hide entire sections of text based on whether the player has an item.
 ```
 → `"Your Torch lights the way."` (only if player has torch)
 
+Blocks may also nest inside each other; each inner block pairs with its own `{/if}`:
+```
+"text": "{if:has:map}You unfold the map.{if:has:compass} The compass agrees.{/if} Onward.{/if}"
+```
+
 ### Unrecognized tokens
 
-Any `{...}` token that doesn't match a known pattern is silently stripped. This prevents raw tokens from ever appearing to the player, but also means typos in token names produce empty text rather than errors.
+Any `{...}` token that doesn't match a known pattern is silently stripped (with a Timber warning). This prevents raw tokens from ever appearing to the player, but also means typos in token names produce empty text rather than errors. `ScenarioTokenIntegrityTest` guards against this in CI: every token in scenarios.json must match the grammar above, use a known stat/faction name or an obtainable item, and every `{if:...}` must have its `{/if}`.
 
 ---
 
