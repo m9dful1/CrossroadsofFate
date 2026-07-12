@@ -386,6 +386,9 @@ class GameViewModel(
     // UI visibility control functions
     fun showMap() {
         _isMapVisible.value = true
+        // Recompute discoveries on open so the list is fresh even if a future
+        // mutation path forgets its own refresh
+        viewModelScope.launch { updateInteractiveMapLocations() }
     }
 
     fun hideMap() {
@@ -533,6 +536,8 @@ class GameViewModel(
         _questRewardNotification.value = event
         audioManager.playSfx("quest_completed")
         saveProgress()
+        // Reward items and unlocked locations both feed map discovery
+        viewModelScope.launch { updateInteractiveMapLocations() }
     }
 
     fun onChoiceSelected(position: String) {
@@ -630,6 +635,9 @@ class GameViewModel(
                 audioManager.playMusicForLocation(nextScenario.location)
                 enterExplorationFor(nextScenario)
                 saveProgress()
+                // Choices grow visitedLocations and can grant items — both are
+                // discovery inputs, so the map list must be recomputed here
+                updateInteractiveMapLocations()
             } catch (e: Exception) {
                 Timber.e(e, "Error in choice selection")
             }

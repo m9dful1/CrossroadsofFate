@@ -349,6 +349,52 @@ class GameViewModelTest {
     }
 
     @Test
+    fun choiceSelection_refreshesTheInteractiveMap() = runTest {
+        // A choice can visit a new location or grant an item — both are
+        // discovery inputs, so the map list must be recomputed afterwards
+        val next = createTestScenario(id = "scenario2", location = "Town Hall")
+        val start = createTestScenario(
+            id = "scenario1",
+            decisions = mapOf("topLeft" to createTestDecision(targetScenarioId = "scenario2"))
+        )
+        whenever(repository.getScenarioById("scenario1")).thenReturn(start)
+        whenever(repository.getScenarioById("scenario2")).thenReturn(next)
+        gameViewModel.loadGame()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val councilChamber = InteractiveMapLocation(
+            id = "council_chamber", name = "Council Chamber", description = "The chamber",
+            scenarioId = "scenario35", discoveryConditions = listOf("Town Hall")
+        )
+        whenever(repository.getDiscoveredLocations(
+            any(), argThat { contains("Town Hall") }, any()
+        )).thenReturn(listOf(councilChamber))
+
+        gameViewModel.onChoiceSelected("topLeft")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals("Map must show locations discovered by the choice just made",
+            listOf(councilChamber), gameViewModel.interactiveMapLocations.value)
+    }
+
+    @Test
+    fun showMap_recomputesDiscoveredLocations() = runTest {
+        val marker = InteractiveMapLocation(
+            id = "town_square", name = "Town Square", description = "The square",
+            scenarioId = "scenario6"
+        )
+        whenever(repository.getDiscoveredLocations(any(), any(), any()))
+            .thenReturn(listOf(marker))
+
+        gameViewModel.showMap()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(gameViewModel.isMapVisible.value)
+        assertEquals("Opening the map must refresh the discovery list",
+            listOf(marker), gameViewModel.interactiveMapLocations.value)
+    }
+
+    @Test
     fun travelToLocation_onRevisit_showsRevisitVariant() = runTest {
         val original = createTestScenario(id = "scenario6", location = "Town Square")
         val variant = createTestScenario(id = "town_square_revisit", location = "Town Square")
