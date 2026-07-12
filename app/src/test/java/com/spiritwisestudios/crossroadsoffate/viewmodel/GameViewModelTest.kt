@@ -66,6 +66,7 @@ class GameViewModelTest {
             whenever(repository.savePlayerProgress(any())).thenReturn(Unit)
             whenever(repository.getScenarioById("scenario1")).thenReturn(defaultScenario)
             whenever(repository.getDiscoveredLocations(any(), any(), any())).thenReturn(emptyList())
+            whenever(repository.getAllInteractiveMapLocations()).thenReturn(emptyList())
         }
 
         // Create viewModel with application context and mock repository,
@@ -256,15 +257,15 @@ class GameViewModelTest {
 
     private fun stubLocation(vararg activities: LocationActivity) {
         kotlinx.coroutines.runBlocking {
-            whenever(repository.getInteractiveMapLocationById("test_town")).thenReturn(
-                InteractiveMapLocation(
-                    id = "test_town",
-                    name = "Test Town",
-                    description = "A town for tests",
-                    scenarioId = "scenario2",
-                    availableActivities = activities.toList()
-                )
+            val location = InteractiveMapLocation(
+                id = "test_town",
+                name = "Test Town",
+                description = "A town for tests",
+                scenarioId = "scenario2",
+                availableActivities = activities.toList()
             )
+            whenever(repository.getInteractiveMapLocationById("test_town")).thenReturn(location)
+            whenever(repository.getAllInteractiveMapLocations()).thenReturn(listOf(location))
         }
     }
 
@@ -396,5 +397,26 @@ class GameViewModelTest {
 
         assertEquals("Nothing more to do here.", viewModel.explorationDialog.value?.line)
         assertFalse(viewModel.isMiniGameActive.value)
+    }
+
+    @Test
+    fun explorationActivity_grantsDeclaredRewards_onSuccess() {
+        stubLocation(
+            LocationActivity(
+                id = "badge_ceremony", type = ActivityType.NPC_INTERACTION,
+                name = "Badge Ceremony", description = "Earn your badge",
+                rewards = listOf("guard_badge")
+            )
+        )
+        val viewModel = viewModelWithExploration(activityId = "badge_ceremony")
+        viewModel.startExploring()
+
+        viewModel.onExplorationTap(200f, 160f)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue("Declared activity rewards must land in inventory",
+            viewModel.playerInventory.value.contains("guard_badge"))
+        assertTrue("Completion bubble should list the declared reward",
+            viewModel.explorationDialog.value?.line.orEmpty().contains("guard_badge"))
     }
 }

@@ -50,7 +50,7 @@ class MiniGameManagerTest {
     }
 
     @Test
-    fun processInput_confirm_completesLockPickingAndNotifiesListener() {
+    fun processInput_confirm_completesLockPicking_withoutActivityCompletionWhenLaunchedBare() {
         var notified: Pair<String, MiniGameResult>? = null
         manager.setActivityListener { gameId, result -> notified = gameId to result }
         manager.startMiniGame("lockpicking_1_locks")
@@ -62,8 +62,9 @@ class MiniGameManagerTest {
         assertTrue(result!!.success)
         assertFalse(manager.isGameActive.value)
         assertNull(manager.currentMiniGame.value)
-        assertEquals("lockpicking_1_locks", notified?.first)
-        assertTrue(notified!!.second.success)
+        // Launched without an activity: no activity completion must be reported,
+        // so free play never pollutes completedActivities with game ids
+        assertNull(notified)
     }
 
     @Test
@@ -88,7 +89,8 @@ class MiniGameManagerTest {
         manager.startMiniGame("lockpicking_1_locks")
         assertTrue(manager.processInput(MiniGameInput.Confirm))
 
-        assertEquals("lockpicking_1_locks", notified?.first)
+        // The bare session must not re-report the first session's activity id
+        assertEquals("hideout_lockpicking", notified?.first)
     }
 
     @Test

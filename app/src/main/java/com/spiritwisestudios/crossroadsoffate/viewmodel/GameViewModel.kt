@@ -501,7 +501,12 @@ class GameViewModel(
     }
 
     private fun handleQuestCompletion(event: QuestCompletionEvent) {
-        event.rewardItems.forEach { inventoryManager.addItem(it) }
+        event.rewardItems.forEach { item ->
+            inventoryManager.addItem(item)
+            // A quest reward can itself satisfy another quest's item objective
+            // (e.g. the merchant seal from Merchant's Favor feeds Fortune Seeker)
+            questManager.checkItemObjectives(item)
+        }
         event.locationsUnlocked.forEach { activityManager.unlockLocation(it) }
         _questRewardNotification.value = event
         audioManager.playSfx("quest_completed")
@@ -750,15 +755,14 @@ class GameViewModel(
     }
 
     /**
-     * Looks up the ActivityType name for a given activity ID from loaded locations.
+     * Finds the activity definition behind [activityId] across all locations —
+     * not just discovered ones, since exploration can reach any map.
      */
-    private fun findActivityType(activityId: String): String? {
-        for (location in _interactiveMapLocations.value) {
-            val activity = location.availableActivities.find { it.id == activityId }
-            if (activity != null) return activity.type.name
-        }
-        return null
-    }
+    private suspend fun findLocationActivity(activityId: String): LocationActivity? =
+        repository.getAllInteractiveMapLocations()
+            .firstNotNullOfOrNull { location ->
+                location.availableActivities.find { it.id == activityId }
+            }
 
     // --- Mini-Game Management Methods ---
 
@@ -787,7 +791,17 @@ class GameViewModel(
      * Returns the processed result so callers can show reward feedback.
      */
     private suspend fun applyActivityResult(activityId: String, result: MiniGameResult): ActivityResult {
-        val activityResult = activityManager.processMiniGameResult(activityId, result)
+        val activity = findLocationActivity(activityId)
+
+        // Success grants the activity's declared rewards (guard_badge, ancient_map...)
+        // on top of any mini-game loot; failure grants nothing extra.
+        val enrichedResult = if (result.success && activity != null) {
+            result.copy(rewards = (result.rewards + activity.rewards).distinct())
+        } else {
+            result
+        }
+
+        val activityResult = activityManager.processMiniGameResult(activityId, enrichedResult)
 
         activityResult.itemsGained.forEach { item ->
             inventoryManager.addItem(item)
@@ -797,9 +811,11 @@ class GameViewModel(
             inventoryManager.removeItem(item)
         }
 
-        // Determine activity type from the location data
-        val activityType = findActivityType(activityId)
-        questManager.checkActivityObjectives(activityId, activityType)
+        // Quest credit only for genuine successes — a failed mini-game must not
+        // tick objectives or advance count-based quests
+        if (result.success) {
+            questManager.checkActivityObjectives(activityId, activity?.type?.name)
+        }
 
         withContext(Dispatchers.Main) {
             saveProgress()

@@ -38,8 +38,9 @@ class MiniGameManager {
     private var gameStartTime: Long = 0L
 
     // The location activity this game session was launched for, if any.
-    // Completion events report this id (falling back to the game id) so the
-    // activity system marks the right activity complete.
+    // Completion events report this id; sessions launched without one (debug,
+    // free play) end without an activity completion so they never pollute
+    // the save's completedActivities with game ids.
     private var pendingActivityId: String? = null
 
     // External listener for activity completion events
@@ -87,7 +88,7 @@ class MiniGameManager {
      *
      * @param activityId The location activity this game fulfills; completion is
      * reported under this id so [ActivityManager] tracks the correct activity.
-     * When null (e.g. debug launches), completion reports the game id itself.
+     * When null (e.g. debug launches), no activity completion is reported.
      */
     fun startMiniGame(gameId: String, activityId: String? = null): Boolean {
         val miniGame = miniGameRegistry[gameId] ?: return false
@@ -170,7 +171,7 @@ class MiniGameManager {
 
         Timber.d("Mini-game completed: %s, Success: %s, Score: %d",
             currentGame.id, finalResult.success, finalResult.score)
-        activityListener?.invoke(pendingActivityId ?: currentGame.id, finalResult)
+        pendingActivityId?.let { activityListener?.invoke(it, finalResult) }
         endCurrentGame()
     }
 

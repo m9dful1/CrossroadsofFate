@@ -39,6 +39,18 @@ class TradingGame(
         NPCPersonality.FRIENDLY -> 2
         NPCPersonality.BALANCED -> 3
     }
+
+    /**
+     * Savings (as a fraction of the opening price) needed for a successful deal.
+     * Tuned per personality so every merchant is beatable with optimal play —
+     * TradingGameTest brute-forces all strategies to keep these honest.
+     */
+    private val requiredSavingsFraction: Float = when (npcPersonality) {
+        NPCPersonality.FRIENDLY -> 0.30f
+        NPCPersonality.BALANCED -> 0.25f
+        NPCPersonality.GREEDY -> 0.25f
+        NPCPersonality.STUBBORN -> 0.10f
+    }
     override val description: String = "Negotiate with a ${npcPersonality.name.lowercase()} merchant to get the best deal"
     override val instructions: String = """
         Negotiate wisely to get the best price!
@@ -91,7 +103,7 @@ class TradingGame(
 
     override fun initialize(): MiniGameState {
         val startingPrice = (itemValue * STARTING_PRICE_MULTIPLIER).toInt()
-        val targetPrice = (itemValue * 0.8f).toInt() // Player target for good deal
+        val targetPrice = (startingPrice * (1f - requiredSavingsFraction)).toInt()
 
         return MiniGameState(
             isActive = true,
@@ -115,9 +127,8 @@ class TradingGame(
     
     private fun processNegotiation(state: MiniGameState, choice: String): MiniGameState {
         val tradingData = state.tradingData() ?: return state
-        if (tradingData.round > MAX_ROUNDS) {
-            return state.copy(isCompleted = true)
-        }
+        // Negotiation is over; checkCompletion closes the deal at the current price
+        if (tradingData.round > MAX_ROUNDS) return state
 
         val approach = when (choice) {
             "polite" -> NegotiationApproach.POLITE_REQUEST
@@ -175,30 +186,6 @@ class TradingGame(
     override fun checkCompletion(state: MiniGameState): MiniGameResult? {
         val tradingData = state.tradingData() ?: return null
 
-        // Deal completed successfully
-        if (tradingData.dealClosed && !tradingData.walkAway) {
-            val finalPrice = tradingData.finalPrice ?: return null
-            val savings = tradingData.originalPrice - finalPrice
-            val savingsPercent = (savings.toFloat() / tradingData.originalPrice) * 100
-
-            val success = finalPrice <= tradingData.targetPrice
-            val score = calculateFinalScore(savings, tradingData.originalPrice, state.attempts)
-
-            return MiniGameResult(
-                isCompleted = true,
-                success = success,
-                score = score,
-                finalProgress = 1.0f,
-                rewards = getRewards(success, savingsPercent),
-                message = when {
-                    savingsPercent >= 40 -> "Excellent negotiation! You got an amazing deal!"
-                    savingsPercent >= 25 -> "Good work! You saved quite a bit."
-                    savingsPercent >= 10 -> "Not bad. You managed to save some coins."
-                    else -> "You paid close to full price, but the deal is done."
-                }
-            )
-        }
-
         // NPC walked away
         if (tradingData.walkAway) {
             return MiniGameResult(
@@ -211,18 +198,47 @@ class TradingGame(
             )
         }
 
-        // Reached maximum rounds without closing
+        // Player accepted the deal
+        if (tradingData.dealClosed) {
+            val finalPrice = tradingData.finalPrice ?: return null
+            return closedDealResult(tradingData, finalPrice, state.attempts, messagePrefix = null)
+        }
+
+        // Merchant's patience ran out — the deal closes at the price on the table,
+        // rather than punishing the player for using every round
         if (tradingData.round > MAX_ROUNDS) {
-            return MiniGameResult(
-                isCompleted = true,
-                success = false,
-                score = 0,
-                finalProgress = 0.5f,
-                message = "The merchant grows impatient and ends the negotiation."
+            return closedDealResult(
+                tradingData, tradingData.currentPrice, state.attempts,
+                messagePrefix = "The merchant grows impatient and ends the haggling. "
             )
         }
 
         return null
+    }
+
+    private fun closedDealResult(
+        tradingData: TradingData,
+        finalPrice: Int,
+        attempts: Int,
+        messagePrefix: String?
+    ): MiniGameResult {
+        val savings = tradingData.originalPrice - finalPrice
+        val savingsPercent = (savings.toFloat() / tradingData.originalPrice) * 100
+        val success = finalPrice <= tradingData.targetPrice
+
+        return MiniGameResult(
+            isCompleted = true,
+            success = success,
+            score = calculateFinalScore(savings, tradingData.originalPrice, attempts),
+            finalProgress = 1.0f,
+            rewards = getRewards(success, savingsPercent),
+            message = messagePrefix.orEmpty() + when {
+                savingsPercent >= 40 -> "Excellent negotiation! You got an amazing deal!"
+                savingsPercent >= 25 -> "Good work! You saved quite a bit."
+                savingsPercent >= 10 -> "Not bad. You managed to save some coins."
+                else -> "You paid close to full price, but the deal is done."
+            }
+        )
     }
 
     override fun getProgress(state: MiniGameState): Float {

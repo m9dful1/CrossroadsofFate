@@ -19,7 +19,8 @@ class TradingGameTest {
         val data = state.data as TradingData
         assertEquals(150, data.currentPrice)
         assertEquals(150, data.originalPrice)
-        assertEquals(80, data.targetPrice)
+        // BALANCED requires 25% savings off the opening price: 150 * 0.75 = 112
+        assertEquals(112, data.targetPrice)
         assertEquals(1, data.round)
         assertFalse(data.dealClosed)
     }
@@ -90,21 +91,59 @@ class TradingGameTest {
         state = game.processInput(state, MiniGameInput.Confirm)
         val result = game.checkCompletion(state)
         assertNotNull(result)
-        assertTrue(result!!.success) // 76 <= target of 80
+        assertTrue(result!!.success) // 76 <= target of 105 (30% off 150)
         assertTrue(result.rewards.contains("reputation")) // saved ~49%
     }
 
     @Test
-    fun exceedingMaxRounds_endsNegotiationAsFailure() {
+    fun exhaustingRounds_closesDealAtCurrentPrice_insteadOfFailing() {
         val game = TradingGame(itemValue = 100, npcPersonality = TradingGame.NPCPersonality.STUBBORN)
         var state = game.initialize()
-        // Stubborn merchant tolerates polite requests (0 mood change until round > 4)
+        // Six polite rounds barely move a stubborn merchant: 150 -> 136
         repeat(6) { state = game.processInput(state, MiniGameInput.Choice("polite")) }
 
         val result = game.checkCompletion(state)
         assertNotNull(result)
-        assertFalse(result!!.success)
-        assertTrue(result.message.contains("impatient"))
+        // The merchant ends the haggling but the purchase still happens at the
+        // price on the table — using every round is not an automatic loss
+        assertTrue(result!!.message.contains("impatient"))
+        assertEquals(1.0f, result.finalProgress, 0.001f)
+        // 136 misses the stubborn target of 135 by a coin, so not a *successful* deal
+        assertFalse(result.success)
+    }
+
+    @Test
+    fun everyPersonality_hasAWinningStrategy() {
+        // Registry pairings from MiniGameManager: personality to item value
+        val registry = mapOf(
+            TradingGame.NPCPersonality.FRIENDLY to 50,
+            TradingGame.NPCPersonality.BALANCED to 100,
+            TradingGame.NPCPersonality.GREEDY to 150,
+            TradingGame.NPCPersonality.STUBBORN to 200
+        )
+        val choices = TradingGame.AVAILABLE_CHOICES.map { it.first }
+
+        for ((personality, itemValue) in registry) {
+            val game = TradingGame(itemValue = itemValue, npcPersonality = personality)
+
+            fun winnable(state: com.spiritwisestudios.crossroadsoffate.minigames.MiniGameState): Boolean {
+                // Try accepting right now
+                val accepted = game.processInput(state, MiniGameInput.Confirm)
+                if (game.checkCompletion(accepted)?.success == true) return true
+                // Session over (walk-away or out of rounds) without a win
+                if (game.checkCompletion(state) != null) return false
+                // Otherwise negotiate on with every possible approach
+                return choices.any { choice ->
+                    val next = game.processInput(state, MiniGameInput.Choice(choice))
+                    if (next === state) false else winnable(next)
+                }
+            }
+
+            assertTrue(
+                "Trading vs $personality (value $itemValue) must be winnable by some strategy",
+                winnable(game.initialize())
+            )
+        }
     }
 
     @Test
