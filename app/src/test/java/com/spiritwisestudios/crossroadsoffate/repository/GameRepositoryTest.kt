@@ -7,8 +7,10 @@ import org.robolectric.RobolectricTestRunner
 import com.spiritwisestudios.crossroadsoffate.data.GameDatabase
 import com.spiritwisestudios.crossroadsoffate.data.models.*
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertNull
+import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -174,10 +176,45 @@ class GameRepositoryTest {
     }
 
     @Test
-    fun initializeInteractiveMapLocations_isIdempotent() = runBlocking {
+    fun initializeInteractiveMapLocations_reseedsWithoutDuplicating() = runBlocking {
         repository.initializeInteractiveMapLocations()
         repository.initializeInteractiveMapLocations()
 
         assertEquals(12, repository.getAllInteractiveMapLocations().size)
+    }
+
+    @Test
+    fun initializeInteractiveMapLocations_refreshesStaleRows_onAppUpdate() = runBlocking {
+        repository.initializeInteractiveMapLocations()
+        // Simulate a row left behind by an older app version / previous playthrough
+        val stale = repository.getInteractiveMapLocationById("town_square")!!
+            .copy(description = "outdated description", isVisited = true)
+        database.interactiveMapLocationDao().insertLocations(listOf(stale))
+
+        repository.initializeInteractiveMapLocations()
+
+        val refreshed = repository.getInteractiveMapLocationById("town_square")!!
+        assertFalse("Re-seed must restore asset content", refreshed.description == "outdated description")
+        assertFalse("Re-seed must clear stored visit flags", refreshed.isVisited)
+    }
+
+    @Test
+    fun getDiscoveredLocations_derivesVisitedFromTheSave_notTheSharedTable() = runBlocking {
+        repository.initializeInteractiveMapLocations()
+        // A previous save marked the item-gated ruins visited in the shared table
+        val leaked = repository.getInteractiveMapLocationById("ancient_ruins")!!
+            .copy(isVisited = true)
+        database.interactiveMapLocationDao().insertLocations(listOf(leaked))
+
+        // A brand-new game (no items, nothing visited or unlocked) must not see it
+        val freshGame = repository.getDiscoveredLocations(emptySet(), emptySet(), emptySet())
+        assertFalse(
+            "Fresh save must not inherit another save's discoveries",
+            freshGame.any { it.id == "ancient_ruins" }
+        )
+
+        // The save that actually visited it (tracked by name in PlayerProgress) sees it
+        val returningGame = repository.getDiscoveredLocations(emptySet(), setOf("Ancient Ruins"), emptySet())
+        assertTrue(returningGame.first { it.id == "ancient_ruins" }.isVisited)
     }
 }

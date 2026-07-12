@@ -20,6 +20,7 @@ import com.spiritwisestudios.crossroadsoffate.minigames.MiniGameInput
 import com.spiritwisestudios.crossroadsoffate.minigames.MiniGameResult
 import com.spiritwisestudios.crossroadsoffate.repository.GameRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -133,6 +134,10 @@ class GameViewModel(
     private val _isOnTitleScreen = MutableStateFlow(true)
     val isOnTitleScreen: StateFlow<Boolean> = _isOnTitleScreen
 
+    // True when a saved game exists on disk; gates the title screen's Load button
+    private val _hasSaveGame = MutableStateFlow(false)
+    val hasSaveGame: StateFlow<Boolean> = _hasSaveGame.asStateFlow()
+
     // Exploration state flows: after each story beat the player roams the location's
     // map and walks to the story marker to continue.
     private val _isExploring = MutableStateFlow(false)
@@ -243,6 +248,7 @@ class GameViewModel(
 
                 val freshProgress = createFreshProgress(DEFAULT_PLAYER_ID)
                 repository.savePlayerProgress(freshProgress)
+                _hasSaveGame.value = true
 
                 // Load the initial scenario after saving progress
                 val initialScenario = repository.getScenarioById(freshProgress.currentScenarioId)
@@ -267,6 +273,12 @@ class GameViewModel(
     fun loadGame() {
         viewModelScope.launch {
             try {
+                if (repository.getPlayerProgress(DEFAULT_PLAYER_ID) == null) {
+                    // Never silently start a fresh game from the Load button
+                    Timber.w("Load Game requested with no existing save; staying on title screen")
+                    _hasSaveGame.value = false
+                    return@launch
+                }
                 loadPlayerProgress(DEFAULT_PLAYER_ID)
                 // State updates happen within loadPlayerProgress's withContext(Main)
                 // We just need to ensure the title screen flag is set correctly after loading
@@ -299,27 +311,32 @@ class GameViewModel(
      */
     private fun saveProgress() {
         val currentProgress = _playerProgress.value
-        if (currentProgress != null) {
-            viewModelScope.launch(Dispatchers.IO) {
-                try {
-                    // Make sure to save the latest state including inventory
-                    val (activeQ, completedQ) = questManager.getQuestState()
-                    val progressToSave = currentProgress.copy(
-                        playerInventory = inventoryManager.getInventoryList(),
-                        activeQuests = activeQ,
-                        completedQuests = completedQ,
-                        completedActivities = activityManager.getCompletedActivitiesList(),
-                        discoveredLocations = activityManager.getUnlockedLocationsList(),
-                        playerStats = statsManager.getStatsMap(),
-                        playerReputation = reputationManager.getReputationMap()
-                    )
+        if (currentProgress == null) {
+            Timber.w("Attempted to save null player progress")
+            return
+        }
+        // Snapshot the full state at call time, including inventory
+        val (activeQ, completedQ) = questManager.getQuestState()
+        val progressToSave = currentProgress.copy(
+            playerInventory = inventoryManager.getInventoryList(),
+            activeQuests = activeQ,
+            completedQuests = completedQ,
+            completedActivities = activityManager.getCompletedActivitiesList(),
+            discoveredLocations = activityManager.getUnlockedLocationsList(),
+            playerStats = statsManager.getStatsMap(),
+            playerReputation = reputationManager.getReputationMap()
+        )
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // NonCancellable: a save racing ViewModel teardown must still land,
+                // or backgrounding the app right after a choice loses that progress
+                withContext(NonCancellable) {
                     repository.savePlayerProgress(progressToSave)
-                } catch (e: Exception) {
-                    Timber.e(e, "Failed to save progress")
                 }
+                _hasSaveGame.value = true
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to save progress")
             }
-        } else {
-             Timber.w("Attempted to save null player progress")
         }
     }
 
@@ -328,7 +345,9 @@ class GameViewModel(
      */
     private suspend fun loadPlayerProgress(playerId: String) {
         try {
-            val progress = repository.getPlayerProgress(playerId) ?: createFreshProgress(playerId)
+            val savedProgress = repository.getPlayerProgress(playerId)
+            _hasSaveGame.value = savedProgress != null
+            val progress = savedProgress ?: createFreshProgress(playerId)
 
             // Load the corresponding scenario
             val scenario = repository.getScenarioById(progress.currentScenarioId)
@@ -348,6 +367,7 @@ class GameViewModel(
                  _currentScenario.value = null
                  inventoryManager.initialize(emptyList())
                  questManager.initialize(emptyList(), emptyList())
+                 activityManager.initialize(emptySet(), emptySet())
                  statsManager.initialize(emptyMap())
                  reputationManager.initialize(emptyMap())
              }
@@ -632,9 +652,8 @@ class GameViewModel(
     fun travelToInteractiveLocation(location: InteractiveMapLocation) {
         viewModelScope.launch {
             try {
-                // Mark location as visited
-                repository.updateLocationVisitStatus(location.id, true)
-                
+                // Visited state is per-save: recorded below in visitedLocations,
+                // never written to the shared locations table
                 // Travel to the associated scenario
                 val scenario = repository.getScenarioById(location.scenarioId)
                 if (scenario != null) {

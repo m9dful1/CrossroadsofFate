@@ -26,20 +26,10 @@ interface InteractiveMapLocationDao {
     suspend fun getLocationById(locationId: String): InteractiveMapLocation?
 
     /**
-     * Insert multiple interactive map locations
+     * Insert multiple interactive map locations.
+     * REPLACE lets the app re-seed the table from assets on every launch;
+     * per-save state (visited locations) lives in PlayerProgress, never here.
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLocations(locations: List<InteractiveMapLocation>)
-
-    /**
-     * Update location visit status
-     */
-    @Query("UPDATE interactive_map_locations SET isVisited = :isVisited WHERE id = :locationId")
-    suspend fun updateVisitStatus(locationId: String, isVisited: Boolean)
-
-    /**
-     * Update location activities (when activities are completed or changed)
-     */
-    @Query("UPDATE interactive_map_locations SET availableActivities = :activities WHERE id = :locationId")
-    suspend fun updateLocationActivities(locationId: String, activities: String)
 }

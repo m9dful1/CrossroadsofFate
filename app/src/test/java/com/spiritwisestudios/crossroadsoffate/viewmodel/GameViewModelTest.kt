@@ -132,6 +132,44 @@ class GameViewModelTest {
     }
 
     @Test
+    fun hasSaveGame_isTrue_whenASaveExistsAtStartup() {
+        // setup stubs getPlayerProgress with an existing save
+        assertTrue(gameViewModel.hasSaveGame.value)
+    }
+
+    @Test
+    fun loadGame_withNoSave_staysOnTitleScreen() = runTest {
+        whenever(repository.getPlayerProgress(any())).thenReturn(null)
+
+        gameViewModel.loadGame()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue("Load with no save must not start a game", gameViewModel.isOnTitleScreen.value)
+        assertFalse(gameViewModel.hasSaveGame.value)
+    }
+
+    @Test
+    fun loadFailure_alsoResetsActivityState() = runTest {
+        // Seed completion state through the normal load path
+        val progressed = createTestPlayerProgress().copy(completedActivities = setOf("town_square_trading"))
+        whenever(repository.getPlayerProgress(any())).thenReturn(progressed)
+        gameViewModel.loadGame()
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(setOf("town_square_trading"), gameViewModel.completedActivities.value)
+
+        // The scenario read blows up mid-load: the fallback must clear every
+        // manager, activity completions included
+        whenever(repository.getScenarioById(any())).thenThrow(RuntimeException("corrupt save"))
+        gameViewModel.loadGame()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(
+            "Fallback after a failed load must not keep stale activity completions",
+            gameViewModel.completedActivities.value.isEmpty()
+        )
+    }
+
+    @Test
     fun scenarioDisplay_usesFallbackText_whenConditionNotMet() = runTest {
         val gatedScenario = createTestScenario(
             id = "scenario2",

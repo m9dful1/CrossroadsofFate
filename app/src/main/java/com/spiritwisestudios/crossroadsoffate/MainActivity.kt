@@ -73,7 +73,9 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     isOnTitleScreen -> {
+                        val hasSaveGame by viewModel.hasSaveGame.collectAsState()
                         TitleScreen(
+                            hasSaveGame = hasSaveGame,
                             onNewGame = {
                                 lifecycleScope.launch {
                                     try {

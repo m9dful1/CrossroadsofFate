@@ -88,19 +88,18 @@ class GameRepository(private val database: GameDatabase, private val context: Co
     // --- Interactive Map Location Methods ---
 
     /**
-     * Seeds the interactive map from assets/locations.json on first run,
-     * mirroring how scenarios load from scenarios.json.
+     * Seeds the interactive map from assets/locations.json, mirroring how
+     * scenarios load from scenarios.json. Runs on every app start: the table
+     * holds static content only (visited state lives in PlayerProgress), so
+     * re-seeding keeps installed games in sync with content updates.
      */
     suspend fun initializeInteractiveMapLocations() {
         dbWrite("initializing interactive map locations") {
-            val existingLocations = database.interactiveMapLocationDao().getAllLocations()
-            if (existingLocations.isEmpty()) {
-                context.assets.open("locations.json").use { inputStream ->
-                    val reader = InputStreamReader(inputStream)
-                    val type = object : TypeToken<LocationsWrapper>() {}.type
-                    val wrapper = gson.fromJson<LocationsWrapper>(reader, type)
-                    database.interactiveMapLocationDao().insertLocations(wrapper.locations)
-                }
+            context.assets.open("locations.json").use { inputStream ->
+                val reader = InputStreamReader(inputStream)
+                val type = object : TypeToken<LocationsWrapper>() {}.type
+                val wrapper = gson.fromJson<LocationsWrapper>(reader, type)
+                database.interactiveMapLocationDao().insertLocations(wrapper.locations)
             }
         }
     }
@@ -132,29 +131,24 @@ class GameRepository(private val database: GameDatabase, private val context: Co
             database.interactiveMapLocationDao().getLocationById(locationId)
         }
 
-    suspend fun updateLocationVisitStatus(locationId: String, isVisited: Boolean) {
-        dbWrite("updating location visit status") {
-            database.interactiveMapLocationDao().updateVisitStatus(locationId, isVisited)
-        }
-    }
-
-    suspend fun updateLocationActivities(locationId: String, activities: List<LocationActivity>) {
-        dbWrite("updating location activities") {
-            val activitiesJson = gson.toJson(activities)
-            database.interactiveMapLocationDao().updateLocationActivities(locationId, activitiesJson)
-        }
-    }
-
+    /**
+     * Returns the locations visible on the interactive map for the current save.
+     * Visited state is derived from [visitedLocations] (per-save, keyed by
+     * location name) rather than the shared locations table, so one save's
+     * discoveries never leak into another.
+     */
     suspend fun getDiscoveredLocations(
         playerInventory: Set<String>,
         visitedLocations: Set<String>,
         unlockedLocations: Set<String>
     ): List<InteractiveMapLocation> =
         dbRead("getting discovered locations", emptyList()) {
-            database.interactiveMapLocationDao().getAllLocations().filter { location ->
-                location.canBeDiscovered(playerInventory, visitedLocations) ||
-                unlockedLocations.contains(location.id) ||
-                location.isVisited
-            }
+            database.interactiveMapLocationDao().getAllLocations()
+                .map { it.copy(isVisited = visitedLocations.contains(it.name)) }
+                .filter { location ->
+                    location.isVisited ||
+                    location.canBeDiscovered(playerInventory, visitedLocations) ||
+                    unlockedLocations.contains(location.id)
+                }
         }
 }

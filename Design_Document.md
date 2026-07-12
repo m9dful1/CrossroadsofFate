@@ -1515,3 +1515,19 @@ Fixes from the feature-audit loop making all nine quests completable: activity d
 The 2026-07-11 mini-game audit brute-forced all trading strategies and proved BALANCED, GREEDY, and STUBBORN merchants mathematically unwinnable against the old flat `0.8 × itemValue` target. `TradingGame` now derives `targetPrice` from a per-personality required-savings fraction (FRIENDLY 30%, BALANCED/GREEDY 25%, STUBBORN 10% off the opening price), keeping the single price-threshold rule while making optimal play succeed everywhere. Exhausting all six rounds now closes the deal at the current price (success judged by the same threshold) instead of an automatic loss that made the sixth round a trap.
 ### 36.5 Tests
 `QuestContentReachabilityTest` (new content net) proves every quest completable against the shipped scenarios.json/locations.json via a fixpoint over obtainable items — it fails if reward plumbing or content regresses. `TradingGameTest.everyPersonality_hasAWinningStrategy` brute-forces the strategy tree per personality so the balance constants stay honest; the round-exhaustion test asserts deal-closure semantics. `GameViewModelTest` covers declared-reward granting end-to-end; `MiniGameManagerTest` covers bare-launch behavior.
+
+## 37. Save/Load Integrity Fixes
+[Date of modification: 2026-07-11]
+Fixes from the feature-audit loop hardening the save/load pipeline: per-save location discovery, crash-proof saves, complete load-failure fallback, content re-seeding on app updates, and an honest Load Game button.
+### 37.1 Per-Save Location Discovery
+`interactive_map_locations.isVisited` was a global flag written by `travelToInteractiveLocation` and read by map discovery, so a new game inherited every location the previous playthrough had visited. The shared table is now pure static content: visited state lives only in `PlayerProgress.visitedLocations` (keyed by location name), and `GameRepository.getDiscoveredLocations` derives each location's `isVisited` from the caller's save before filtering. The `updateVisitStatus`/`updateLocationActivities` DAO mutations and their repository wrappers were removed (the latter had no callers).
+### 37.2 Content Re-Seeding on App Updates
+`initializeInteractiveMapLocations()` previously seeded locations.json only into an empty table, so installed games never received location/activity content updates. With the table now holding static content only, it re-seeds (REPLACE) on every app start, which also scrubs any stale visit flags left by older versions.
+### 37.3 Non-Cancellable Saves
+`saveProgress()` snapshots the full progress at call time and performs the database write inside `withContext(NonCancellable)`, so a save racing ViewModel teardown (backgrounding or killing the app right after a choice) still lands instead of being cancelled mid-write.
+### 37.4 Complete Load-Failure Fallback
+The `loadPlayerProgress` error fallback re-initialized every logic manager except `ActivityManager`, leaving stale activity completions and unlocked locations after a failed load. The fallback now resets it alongside the others.
+### 37.5 Load Game Gating
+`GameViewModel` exposes `hasSaveGame: StateFlow<Boolean>` (set wherever a save is read or written); the title screen disables the Load Game button with a "No saved game found" hint when no save exists, and `loadGame()` guards against silently starting a fresh game (`DecisionButton` gained an `enabled` parameter for this).
+### 37.6 Tests
+`GameRepositoryTest` covers the re-seed semantics (no duplication, stale-row refresh on update) and proves discovery isolation: a table row marked visited by another save is invisible to a fresh save, while the save that actually visited it (by name) sees it as visited. `GameViewModelTest` covers Load-with-no-save staying on the title screen, `hasSaveGame` reflecting an existing save, and the load-failure fallback clearing activity state.

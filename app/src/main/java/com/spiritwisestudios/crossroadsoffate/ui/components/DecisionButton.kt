@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -20,13 +21,21 @@ import androidx.compose.ui.unit.sp
  *
  * @param text The text to display on the button
  * @param modifier Optional modifier for customizing the button's layout
+ * @param enabled When false the button is dimmed and ignores clicks
  * @param onClick Callback function triggered when button is clicked
  */
 @Composable
-fun DecisionButton(text: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun DecisionButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
     Box(
         // Apply layout modifiers in specific order for proper layering
         modifier = modifier
+            // Dim the whole button when disabled
+            .alpha(if (enabled) 1f else 0.4f)
             // Add white border with transparency
             .border(
                 width = 1.dp,
@@ -39,7 +48,7 @@ fun DecisionButton(text: String, modifier: Modifier = Modifier, onClick: () -> U
                 shape = MaterialTheme.shapes.medium
             )
             // Make the box clickable
-            .clickable { onClick() }
+            .clickable(enabled = enabled) { onClick() }
             // Add padding inside the button
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {

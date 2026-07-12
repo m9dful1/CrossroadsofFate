@@ -23,12 +23,14 @@ import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
  *
  * @param onNewGame Callback triggered when the New Game button is pressed
  * @param onLoadGame Callback triggered when the Load Game button is pressed
+ * @param hasSaveGame When false the Load Game button is disabled with a hint
  */
 @Composable
 fun TitleScreen(
     onNewGame: () -> Unit,
     onLoadGame: () -> Unit,
-    onShowDebugMenu: () -> Unit = {}
+    onShowDebugMenu: () -> Unit = {},
+    hasSaveGame: Boolean = true
 ) {
     // Root container filling the entire screen
     Box(modifier = Modifier.fillMaxSize()) {
@@ -81,11 +83,19 @@ fun TitleScreen(
             // Spacing between buttons
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Load Game button
+            // Load Game button; disabled until a save exists
             DecisionButton(
                 text = "Load Game",
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 8.dp),
+                enabled = hasSaveGame
             ) { onLoadGame() }
+            if (!hasSaveGame) {
+                Text(
+                    text = "No saved game found",
+                    fontSize = 12.sp,
+                    color = Color.White.copy(alpha = 0.5f)
+                )
+            }
             
             Spacer(modifier = Modifier.height(32.dp))
             Text(
