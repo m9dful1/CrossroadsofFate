@@ -349,6 +349,47 @@ class GameViewModelTest {
     }
 
     @Test
+    fun debugResetProgress_neverTouchesTheDatabase() = runTest {
+        // The debug reset must restart the debug session in place;
+        // resetPlayerProgress() clears the whole table, real save included
+        gameViewModel.debugStartSession()
+        testDispatcher.scheduler.advanceUntilIdle()
+        gameViewModel.debugAddItem("golden_idol")
+
+        gameViewModel.debugResetProgress()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        verify(repository, never()).resetPlayerProgress()
+        assertEquals("Reset must restore the fresh debug loadout",
+            setOf("torch"), gameViewModel.playerInventory.value)
+    }
+
+    @Test
+    fun debugSessionSaves_doNotEnableLoadGame() = runTest {
+        val viewModel = runBlockingStubs {
+            whenever(repository.getPlayerProgress(any())).thenReturn(null) // no real save
+            val start = createTestScenario(
+                id = "scenario1",
+                decisions = mapOf("topLeft" to createTestDecision(targetScenarioId = "scenario2"))
+            )
+            whenever(repository.getScenarioById("scenario1")).thenReturn(start)
+            whenever(repository.getScenarioById("scenario2")).thenReturn(createTestScenario(id = "scenario2"))
+        }
+        assertFalse(viewModel.hasSaveGame.value)
+
+        viewModel.debugStartSession()
+        testDispatcher.scheduler.advanceUntilIdle()
+        viewModel.onChoiceSelected("topLeft") // triggers a save of the debug row
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        verify(repository, timeout(5000)).savePlayerProgress(argThat { playerId == "debug_player" })
+        Thread.sleep(100) // the flag write follows the save inside the same coroutine
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertFalse("A debug-session save must not enable Load Game on the title screen",
+            viewModel.hasSaveGame.value)
+    }
+
+    @Test
     fun choiceSelection_refreshesTheInteractiveMap() = runTest {
         // A choice can visit a new location or grant an item — both are
         // discovery inputs, so the map list must be recomputed afterwards

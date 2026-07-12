@@ -1591,3 +1591,17 @@ Eighth feature audit (interactive map: location discovery, unlocks, travel, acti
 New `LocationContentIntegrityTest` covers the failure modes a locations.json edit can introduce silently: every discovery condition must be satisfiable (an obtainable item — itemGiven, activity reward, quest reward, engine grant — or a real scenario location string, since `canBeDiscovered` matches against both); every `scenarioId`/`revisitScenarioId` must exist (the reachability BFS filters dangling entry points, so this was previously uncaught); `connections` must reference real locations reciprocally; and activity ids must be globally unique (completion state is keyed by activity id alone, so a duplicate would leak completion across locations).
 ### 42.3 Tests
 `GameViewModelTest` adds: a choice that visits a discovery-condition location refreshes the interactive map list, and `showMap()` recomputes discoveries on open.
+
+## 43. Developer Tooling Audit Fixes: Debug Menu and Error Logging
+[Date of modification: 2026-07-12]
+Ninth feature audit (debug menu + ErrorLogger). The debug session isolation model (separate debug_player save row, ensureDebugSession guards, state restore on exit) audited sound, but its reset path was destructive, and the error-log subsystem was a demo shell that never captured real failures.
+### 43.1 Debug Reset No Longer Destroys the Real Save
+`debugResetProgress()` called `repository.resetPlayerProgress()`, which clears the entire player_progress table — the player's actual save included — and then invoked `debugStartSession()`, a no-op mid-session, so the debug state was not even reset. It now force-restarts the debug session in place (fresh loadout, starting scenario) and never touches the database.
+### 43.2 Debug Saves No Longer Enable Load Game
+`saveProgress()` set `hasSaveGame = true` after every successful write, including debug-session writes to the debug_player row. After a debug detour on a fresh install, the title screen offered a Load Game that did not exist. The flag now only flips for default-player saves.
+### 43.3 Real Errors Reach the In-App Error Log
+The error-log file shown by ErrorLoggerScreen was only ever written by that screen's own demo buttons; every real failure went to Timber and stopped at logcat in both build variants. A new `FileLoggingTree` (planted in `CrossroadsApplication` alongside the variant-specific trees, on an application-scoped SupervisorJob) persists every ERROR-priority Timber log through `ErrorLogger.saveErrorToFile`. To keep a failing log file from recursing through the tree, `saveErrorToFile` reports its own failures at WARN.
+### 43.4 ErrorLogger Hardening
+File access is serialized with a Mutex (concurrent writers previously interleaved partial entries); size-cap truncation now cuts on an entry boundary instead of mid-record; `clearErrorLog` checks the delete result.
+### 43.5 Tests
+New `ErrorLoggerTest`: entry format, clear, boundary-aware truncation, 16 concurrent writers landing intact, FileLoggingTree persisting Timber.e and ignoring lower priorities. `GameViewModelTest` adds: debug reset never touches the database and restores the fresh debug loadout; a debug-session save does not enable Load Game.

@@ -333,7 +333,11 @@ class GameViewModel(
                 withContext(NonCancellable) {
                     repository.savePlayerProgress(progressToSave)
                 }
-                _hasSaveGame.value = true
+                // Debug-session saves land in their own row and must not make
+                // the title screen offer a Load Game that isn't there
+                if (progressToSave.playerId == DEFAULT_PLAYER_ID) {
+                    _hasSaveGame.value = true
+                }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to save progress")
             }
@@ -1071,10 +1075,10 @@ class GameViewModel(
     }
 
     fun debugResetProgress() {
-        viewModelScope.launch {
-            repository.resetPlayerProgress()
-            debugStartSession()
-        }
+        // Restart the debug session in place; the database is left untouched —
+        // resetPlayerProgress() clears the whole table, real save included
+        _isDebugSession = false
+        debugStartSession()
     }
 
     fun debugPlayMusic(track: String) { audioManager.playMusic(track) }

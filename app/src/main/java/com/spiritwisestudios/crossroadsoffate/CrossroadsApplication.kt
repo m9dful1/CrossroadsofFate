@@ -2,6 +2,10 @@ package com.spiritwisestudios.crossroadsoffate
 
 import android.app.Application
 import android.content.pm.ApplicationInfo
+import com.spiritwisestudios.crossroadsoffate.util.FileLoggingTree
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import timber.log.Timber
 
 /**
@@ -9,10 +13,14 @@ import timber.log.Timber
  * Handles global initialization of components including Timber for logging.
  */
 class CrossroadsApplication : Application() {
-    
+
+    // Outlives any screen; SupervisorJob so one failed log write
+    // doesn't cancel the rest
+    private val loggingScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     override fun onCreate() {
         super.onCreate()
-        
+
         // Initialize Timber logging
         val isDebuggable = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
         if (isDebuggable) {
@@ -22,6 +30,9 @@ class CrossroadsApplication : Application() {
             // Plant crash reporting tree in release builds
             Timber.plant(CrashReportingTree())
         }
+        // Both variants: persist ERROR logs so the in-app error log
+        // (ErrorLoggerScreen) shows real failures
+        Timber.plant(FileLoggingTree(this, loggingScope))
     }
     
     /**

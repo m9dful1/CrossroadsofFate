@@ -2,6 +2,8 @@ package com.spiritwisestudios.crossroadsoffate.util
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
@@ -15,9 +17,14 @@ import java.util.Locale
  * Provides methods to log different types of errors and save them to local storage.
  */
 object ErrorLogger {
-    
+
     private const val LOG_FILE_NAME = "error_log.txt"
     private const val MAX_LOG_SIZE = 1024 * 1024 // 1MB
+    private const val ENTRY_SEPARATOR = "\n-------------------------------------------------\n"
+
+    // Serializes file access: concurrent writers (e.g. two failing coroutines
+    // logging at once) must not interleave partial entries
+    private val fileMutex = Mutex()
     
     /**
      * Log an exception with a custom message
@@ -77,27 +84,32 @@ object ErrorLogger {
                         }
                     }
                 }
-                .append("\n-------------------------------------------------\n")
+                .append(ENTRY_SEPARATOR)
                 .toString()
-            
-            val logFile = File(context.filesDir, LOG_FILE_NAME)
-            
-            // Check if file exists and its size
-            if (logFile.exists() && logFile.length() > MAX_LOG_SIZE) {
-                // If file is too large, truncate it by removing the oldest entries
-                val content = logFile.readText()
-                val truncatedContent = content.substring(content.length / 2)
-                logFile.writeText(truncatedContent)
+
+            fileMutex.withLock {
+                val logFile = File(context.filesDir, LOG_FILE_NAME)
+
+                if (logFile.exists() && logFile.length() > MAX_LOG_SIZE) {
+                    // Drop the oldest half, but cut on an entry boundary so the
+                    // surviving log doesn't start with a corrupt half-record
+                    val content = logFile.readText()
+                    val midpoint = content.length / 2
+                    val boundary = content.indexOf(ENTRY_SEPARATOR, midpoint)
+                    val cutAt = if (boundary >= 0) boundary + ENTRY_SEPARATOR.length else midpoint
+                    logFile.writeText(content.substring(cutAt))
+                }
+
+                FileWriter(logFile, true).use { writer ->
+                    writer.append(errorMessage)
+                }
             }
-            
-            // Append the error to the log file
-            FileWriter(logFile, true).use { writer ->
-                writer.append(errorMessage)
-            }
-            
+
             Timber.d("Error saved to file: $LOG_FILE_NAME")
         } catch (e: Exception) {
-            Timber.e(e, "Failed to save error to file")
+            // WARN, not ERROR: FileLoggingTree persists ERROR logs through this
+            // method, so failing at ERROR level here would recurse forever
+            Timber.w(e, "Failed to save error to file")
         }
     }
     
@@ -107,11 +119,13 @@ object ErrorLogger {
      * @return The content of the error log or null if not found
      */
     suspend fun getErrorLog(context: Context): String? = withContext(Dispatchers.IO) {
-        val logFile = File(context.filesDir, LOG_FILE_NAME)
-        if (logFile.exists()) {
-            logFile.readText()
-        } else {
-            null
+        fileMutex.withLock {
+            val logFile = File(context.filesDir, LOG_FILE_NAME)
+            if (logFile.exists()) {
+                logFile.readText()
+            } else {
+                null
+            }
         }
     }
 
@@ -120,10 +134,15 @@ object ErrorLogger {
      * @param context Application context
      */
     suspend fun clearErrorLog(context: Context): Unit = withContext(Dispatchers.IO) {
-        val logFile = File(context.filesDir, LOG_FILE_NAME)
-        if (logFile.exists()) {
-            logFile.delete()
-            Timber.i("Error log file cleared")
+        fileMutex.withLock {
+            val logFile = File(context.filesDir, LOG_FILE_NAME)
+            if (logFile.exists()) {
+                if (logFile.delete()) {
+                    Timber.i("Error log file cleared")
+                } else {
+                    Timber.w("Failed to delete error log file")
+                }
+            }
         }
     }
 } 
