@@ -1,5 +1,6 @@
 package com.spiritwisestudios.crossroadsoffate.ui.components
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.spiritwisestudios.crossroadsoffate.logic.TextResolver
 import com.spiritwisestudios.crossroadsoffate.ui.theme.GameColors
 
 /**
@@ -37,6 +39,8 @@ fun ResultDialog(
     onDismiss: () -> Unit,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    // System back dismisses the dialog instead of exiting the app
+    BackHandler { onDismiss() }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -86,7 +90,9 @@ fun RewardList(label: String, labelColor: Color, items: List<String>, prefix: St
     )
     items.forEach { item ->
         Text(
-            text = "$prefix $item",
+            // Rewards and unlocks arrive as snake_case ids; show them the way
+            // scenario text does ("holy_key" -> "Holy Key")
+            text = "$prefix ${TextResolver.formatItemName(item)}",
             fontSize = 14.sp,
             color = Color.White,
             modifier = Modifier.padding(start = 16.dp, top = 4.dp)

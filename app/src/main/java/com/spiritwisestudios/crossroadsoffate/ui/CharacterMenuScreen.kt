@@ -1,5 +1,6 @@
 package com.spiritwisestudios.crossroadsoffate.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.spiritwisestudios.crossroadsoffate.data.models.QuestType
+import com.spiritwisestudios.crossroadsoffate.logic.TextResolver
 import com.spiritwisestudios.crossroadsoffate.ui.components.DecisionButton
 import com.spiritwisestudios.crossroadsoffate.ui.components.GameCard
 import com.spiritwisestudios.crossroadsoffate.ui.components.GameTopBar
@@ -41,6 +43,9 @@ fun CharacterMenuScreen(
     val sfxVolume by gameViewModel.sfxVolume.collectAsState()
     val isMuted by gameViewModel.isMuted.collectAsState()
     val currentScenario by gameViewModel.currentScenario.collectAsState()
+
+    // System back closes the overlay instead of exiting the app
+    BackHandler { onBack() }
 
     // Main container with semi-transparent black background
     Box(
@@ -81,8 +86,9 @@ fun CharacterMenuScreen(
                     "Reputation" to playerReputation.entries.sortedBy { it.key }.map { (faction, value) ->
                         "${faction.replaceFirstChar { it.uppercase() }}: $value"
                     },
-                    // Inventory section showing all items
-                    "Inventory" to playerInventory.toList(),
+                    // Inventory section: ids display the way scenario text
+                    // renders them ("holy_key" -> "Holy Key")
+                    "Inventory" to playerInventory.map { TextResolver.formatItemName(it) },
                     // Active quests section with objectives and completion status
                     "Active Quests" to if (activeQuests.isEmpty()) {
                         listOf("No active quests")

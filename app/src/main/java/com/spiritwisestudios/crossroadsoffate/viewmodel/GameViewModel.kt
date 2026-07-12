@@ -301,6 +301,8 @@ class GameViewModel(
     fun returnToTitle() {
         _isOnTitleScreen.value = true
         hideCharacterMenu()
+        hideMap()
+        cancelCurrentMiniGame()
         _isExploring.value = false
         explorationManager.reset()
         audioManager.playMusic("menu")

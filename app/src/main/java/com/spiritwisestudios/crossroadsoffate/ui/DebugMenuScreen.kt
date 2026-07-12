@@ -1,6 +1,7 @@
 package com.spiritwisestudios.crossroadsoffate.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -29,6 +30,9 @@ fun DebugMenuScreen(
     onShowErrorLogger: () -> Unit,
     onPlay: () -> Unit = {}
 ) {
+    // System back leaves the debug menu (ending the session) instead of
+    // exiting the app
+    BackHandler { onBack() }
     val playerInventory by gameViewModel.playerInventory.collectAsState()
     val playerStats by gameViewModel.playerStats.collectAsState()
     val playerReputation by gameViewModel.playerReputation.collectAsState()

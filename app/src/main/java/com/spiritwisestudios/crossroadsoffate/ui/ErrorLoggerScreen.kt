@@ -1,6 +1,7 @@
 package com.spiritwisestudios.crossroadsoffate.ui
 
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,6 +47,9 @@ fun ErrorLoggerScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+
+    // System back behaves like the on-screen back button
+    BackHandler { onBackClick() }
     var logContent by remember { mutableStateOf<String?>(null) }
 
     // Saves an entry and refreshes the on-screen log (ErrorLogger owns its IO dispatching)

@@ -349,6 +349,23 @@ class GameViewModelTest {
     }
 
     @Test
+    fun returnToTitle_closesAllOverlays() = runTest {
+        gameViewModel.showMap()
+        gameViewModel.showCharacterMenu()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        gameViewModel.returnToTitle()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(gameViewModel.isOnTitleScreen.value)
+        assertFalse("Map overlay must not survive into the title screen",
+            gameViewModel.isMapVisible.value)
+        assertFalse("Character menu must not survive into the title screen",
+            gameViewModel.isCharacterMenuVisible.value)
+        assertFalse(gameViewModel.isExploring.value)
+    }
+
+    @Test
     fun debugResetProgress_neverTouchesTheDatabase() = runTest {
         // The debug reset must restart the debug session in place;
         // resetPlayerProgress() clears the whole table, real save included

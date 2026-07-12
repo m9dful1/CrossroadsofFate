@@ -1,5 +1,6 @@
 package com.spiritwisestudios.crossroadsoffate.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,6 +42,11 @@ fun InteractiveMapScreen(
     
     // State for showing location details
     var selectedLocation by remember { mutableStateOf<InteractiveMapLocation?>(null) }
+
+    // System back steps out of the detail view first, then closes the map
+    BackHandler {
+        if (selectedLocation != null) selectedLocation = null else onBack()
+    }
 
     // Main container with semi-transparent black background
     Box(

@@ -1,5 +1,6 @@
 package com.spiritwisestudios.crossroadsoffate.ui.minigames
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
@@ -58,6 +59,8 @@ fun MiniGameOverlay(gameViewModel: GameViewModel) {
     }
     // Priority 2: Show active game screen
     else if (isMiniGameActive && currentGameState != null) {
+        // System back cancels the game like the on-screen cancel button
+        BackHandler { gameViewModel.cancelCurrentMiniGame() }
         when (currentMiniGame) {
             is LockPickingGame -> LockPickingScreen(
                 gameState = currentGameState!!,

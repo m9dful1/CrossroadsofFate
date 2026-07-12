@@ -1,5 +1,6 @@
 package com.spiritwisestudios.crossroadsoffate.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +35,9 @@ fun EndingScreen(gameViewModel: GameViewModel) {
     val stats by gameViewModel.playerStats.collectAsState()
     val completedQuests by gameViewModel.completedQuests.collectAsState()
     val ending = display ?: return
+
+    // System back returns to the title like the on-screen button
+    BackHandler { gameViewModel.returnToTitle() }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(

@@ -1605,3 +1605,13 @@ The error-log file shown by ErrorLoggerScreen was only ever written by that scre
 File access is serialized with a Mutex (concurrent writers previously interleaved partial entries); size-cap truncation now cuts on an entry boundary instead of mid-record; `clearErrorLog` checks the delete result.
 ### 43.5 Tests
 New `ErrorLoggerTest`: entry format, clear, boundary-aware truncation, 16 concurrent writers landing intact, FileLoggingTree persisting Timber.e and ignoring lower priorities. `GameViewModelTest` adds: debug reset never touches the database and restores the fresh debug loadout; a debug-session save does not enable Load Game.
+
+## 44. UI Layer Audit Fixes: Back Navigation and Item Display
+[Date of modification: 2026-07-12]
+Tenth feature audit (MainActivity routing + Compose screens). The screen architecture audited clean — pure rendering off ViewModel StateFlows, no business logic in composables, dynamic backgrounds via painterForName, reactive recomposition keyed correctly. Two gaps fixed.
+### 44.1 System Back Navigation
+No screen handled the system back button, so back exited the app from everywhere — including overlays with their own on-screen close buttons. Scoped BackHandlers added, each mirroring its screen's existing close affordance: interactive map (detail view steps back to the list, then closes), character menu, active mini-games (cancel), result dialogs (mini-game results and quest reward popups, via the shared ResultDialog), debug menu (ends the session), error logger, and the ending screen (returns to title). Compose registers the innermost handler last, so the deepest visible layer wins naturally. Title screen and the main scenario/exploration views intentionally keep default behavior — back at the top level exits the app, with per-choice saves making that safe.
+### 44.2 Item Ids Rendered Like Scenario Text
+The character menu inventory and the reward lists (quest popups, mini-game results, location unlocks) displayed raw snake_case ids ("holy_key", "council_chamber"). They now render through TextResolver.formatItemName ("Holy Key", "Council Chamber"), matching how {item:} tokens have always displayed in narrative text.
+### 44.3 returnToTitle Hardening
+returnToTitle() hid the character menu but not the map overlay and did not cancel an active mini-game. It now closes every overlay (map, character menu, mini-game) symmetrically with debugEndSession, with a regression test.
