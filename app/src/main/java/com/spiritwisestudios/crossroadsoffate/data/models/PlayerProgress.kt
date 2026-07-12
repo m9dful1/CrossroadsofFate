@@ -16,6 +16,8 @@ import androidx.room.PrimaryKey
  * @property visitedLocations Set of locations the player has visited
  * @property completedActivities Set of activity IDs that have been completed
  * @property discoveredLocations Set of location IDs that have been discovered/unlocked
+ * @property grantedDecisions "scenarioId:position" keys whose stat/reputation grants
+ *           have already been applied — revisiting a decision never re-grants
  */
 @Entity(tableName = "player_progress")
 data class PlayerProgress(
@@ -28,5 +30,6 @@ data class PlayerProgress(
     @ColumnInfo(name = "completedActivities") val completedActivities: Set<String> = emptySet(),
     @ColumnInfo(name = "discoveredLocations") val discoveredLocations: Set<String> = emptySet(),
     @ColumnInfo(name = "playerStats") val playerStats: Map<String, Int> = emptyMap(),
-    @ColumnInfo(name = "playerReputation") val playerReputation: Map<String, Int> = emptyMap()
+    @ColumnInfo(name = "playerReputation") val playerReputation: Map<String, Int> = emptyMap(),
+    @ColumnInfo(name = "grantedDecisions") val grantedDecisions: Set<String> = emptySet()
 )

@@ -31,6 +31,7 @@ Each scenario is a JSON object in the `"scenarios"` array:
 | `decisions` | Yes | Up to 4 choices (see Decisions below). |
 | `statsGranted` | No | Stats granted per decision position (see Stats below). |
 | `reputationChanges` | No | Reputation changes per decision position (see Reputation below). |
+| `isEnding` | No | Marks a final scenario: the game shows the ending screen (summary + Return to Title) instead of decisions/exploration. Every scenario whose decisions all lead back to itself must set this (enforced by `ScenarioContentIntegrityTest`). Default `false`. |
 
 ---
 
@@ -151,6 +152,11 @@ Award stats when the player picks a choice. Keyed by decision position:
 
 You can grant multiple stats per choice: `{ "strength": 1, "wisdom": 1 }`.
 
+Stat and reputation grants are **one-time per (scenario, position)**: the engine records
+granted decisions in the save (`PlayerProgress.grantedDecisions`), so revisiting a scenario
+via map travel or a loop never re-awards them. `ScenarioContentIntegrityTest` also verifies
+that every stat-gated decision has enough earnable points in the content to ever pass.
+
 ---
 
 ## Reputation Changes
@@ -166,6 +172,17 @@ Adjust faction reputation when the player picks a choice:
 ```
 
 Negative values decrease reputation. Omit positions that have no reputation effect.
+Like stats, reputation changes apply only the first time a decision is taken.
+
+---
+
+## Revisit Variants (locations.json)
+
+An interactive map location may declare `"revisitScenarioId"` next to its `"scenarioId"`.
+The first travel to the location plays `scenarioId`; any later travel in the same save plays
+the revisit variant instead of re-running the original story beat (e.g. `town_square` →
+`town_square_revisit`, `scholars_retreat` → `scenario39`). Revisit scenarios must exist in
+scenarios.json (enforced by `ScenarioContentIntegrityTest`).
 
 ---
 

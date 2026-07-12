@@ -411,6 +411,8 @@ class GameViewModel(
      * No-op (scenario shows directly) when exploration is disabled or no map exists.
      */
     private fun enterExplorationFor(scenario: ScenarioEntity) {
+        // Endings show the ending screen; there is no story marker to walk to
+        if (scenario.isEnding) return
         if (!_explorationEnabled.value) return
         if (explorationManager.enterMapForLocation(scenario.location)) {
             _isExploring.value = true
@@ -562,6 +564,14 @@ class GameViewModel(
                     return@launch
                 }
 
+               // Stats/reputation are granted once per (scenario, choice):
+               // revisiting a decision via map travel must not farm the grants
+               val grantKey = "${currentScenario.id}:$position"
+               val hasGrants = currentScenario.statsGranted?.get(position) != null ||
+                   currentScenario.reputationChanges?.get(position) != null
+               val grantsApply = conditionMet && hasGrants &&
+                   !currentProgress.grantedDecisions.contains(grantKey)
+
                if (conditionMet) {
                    currentScenario.itemGiven?.get(position)?.let { item ->
                        inventoryManager.addItem(item)
@@ -569,14 +579,13 @@ class GameViewModel(
                        audioManager.playSfx("item_acquired")
                    }
 
-                   // Grant stats for the chosen position
-                   currentScenario.statsGranted?.get(position)?.forEach { (stat, amount) ->
-                       statsManager.addStat(stat, amount)
-                   }
-
-                   // Apply reputation changes for the chosen position
-                   currentScenario.reputationChanges?.get(position)?.forEach { (faction, amount) ->
-                       reputationManager.adjustReputation(faction, amount)
+                   if (grantsApply) {
+                       currentScenario.statsGranted?.get(position)?.forEach { (stat, amount) ->
+                           statsManager.addStat(stat, amount)
+                       }
+                       currentScenario.reputationChanges?.get(position)?.forEach { (faction, amount) ->
+                           reputationManager.adjustReputation(faction, amount)
+                       }
                    }
 
                    // Remove item if the item should be removed on use
@@ -609,7 +618,12 @@ class GameViewModel(
                     completedQuests = completedQ,
                     visitedLocations = visitedLocations,
                     playerStats = statsManager.getStatsMap(),
-                    playerReputation = reputationManager.getReputationMap()
+                    playerReputation = reputationManager.getReputationMap(),
+                    grantedDecisions = if (grantsApply) {
+                        currentProgress.grantedDecisions + grantKey
+                    } else {
+                        currentProgress.grantedDecisions
+                    }
                 )
 
                 _currentScenario.value = nextScenario
@@ -653,9 +667,17 @@ class GameViewModel(
         viewModelScope.launch {
             try {
                 // Visited state is per-save: recorded below in visitedLocations,
-                // never written to the shared locations table
-                // Travel to the associated scenario
-                val scenario = repository.getScenarioById(location.scenarioId)
+                // never written to the shared locations table.
+                // A location already visited in this save shows its revisit
+                // variant (when it has one) instead of re-running the story beat.
+                val alreadyVisited =
+                    _playerProgress.value?.visitedLocations?.contains(location.name) == true
+                val targetScenarioId = if (alreadyVisited && location.revisitScenarioId != null) {
+                    location.revisitScenarioId
+                } else {
+                    location.scenarioId
+                }
+                val scenario = repository.getScenarioById(targetScenarioId)
                 if (scenario != null) {
                     questManager.checkAndCompleteObjectives(scenario.id)
                     val (updatedActive, updatedCompleted) = questManager.getQuestState()
@@ -664,7 +686,7 @@ class GameViewModel(
                     withContext(Dispatchers.Main) {
                         _currentScenario.value = scenario
                         _playerProgress.value = currentProgress?.copy(
-                            currentScenarioId = location.scenarioId,
+                            currentScenarioId = targetScenarioId,
                             activeQuests = updatedActive,
                             completedQuests = updatedCompleted,
                             visitedLocations = currentProgress.visitedLocations + location.name
@@ -675,7 +697,7 @@ class GameViewModel(
                         updateInteractiveMapLocations() // Refresh map state
                     }
                 } else {
-                    Timber.e("Scenario %s not found for interactive travel", location.scenarioId)
+                    Timber.e("Scenario %s not found for interactive travel", targetScenarioId)
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error traveling to interactive location %s", location.name)

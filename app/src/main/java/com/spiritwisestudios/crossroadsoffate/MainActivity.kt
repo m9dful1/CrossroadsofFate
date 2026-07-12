@@ -14,6 +14,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.spiritwisestudios.crossroadsoffate.data.GameDatabase
 import com.spiritwisestudios.crossroadsoffate.repository.GameRepository
 import com.spiritwisestudios.crossroadsoffate.ui.DebugMenuScreen
+import com.spiritwisestudios.crossroadsoffate.ui.EndingScreen
 import com.spiritwisestudios.crossroadsoffate.ui.ErrorLoggerScreen
 import com.spiritwisestudios.crossroadsoffate.ui.MainGameScreen
 import com.spiritwisestudios.crossroadsoffate.ui.TitleScreen
@@ -41,6 +42,7 @@ class MainActivity : ComponentActivity() {
                 val viewModel: GameViewModel = viewModel(factory = viewModelFactory)
                 SideEffect { gameViewModel = viewModel }
                 val isOnTitleScreen by viewModel.isOnTitleScreen.collectAsState()
+                val currentScenario by viewModel.currentScenario.collectAsState()
 
                 var showErrorLogger by remember { mutableStateOf(false) }
                 var showDebugMenu by remember { mutableStateOf(false) }
@@ -96,6 +98,9 @@ class MainActivity : ComponentActivity() {
                                 showDebugMenu = true
                             }
                         )
+                    }
+                    currentScenario?.isEnding == true -> {
+                        EndingScreen(gameViewModel = viewModel)
                     }
                     else -> {
                         MainGameScreen(gameViewModel = viewModel)

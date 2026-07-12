@@ -18,5 +18,7 @@ data class ScenarioEntity(
     @ColumnInfo(name = "decisions") val decisions: Map<String, Decision>,
     @ColumnInfo(name = "itemGiven") val itemGiven: Map<String, String>? = null,
     @ColumnInfo(name = "statsGranted") val statsGranted: Map<String, Map<String, Int>>? = null,
-    @ColumnInfo(name = "reputationChanges") val reputationChanges: Map<String, Map<String, Int>>? = null
+    @ColumnInfo(name = "reputationChanges") val reputationChanges: Map<String, Map<String, Int>>? = null,
+    // Endings show the ending screen instead of exploration/decision flow
+    @ColumnInfo(name = "isEnding") val isEnding: Boolean = false
 )

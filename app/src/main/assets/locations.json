@@ -5,6 +5,7 @@
       "name": "Town Square",
       "description": "A bustling marketplace full of traders and goods.",
       "scenarioId": "scenario6",
+      "revisitScenarioId": "town_square_revisit",
       "isVisited": false,
       "availableActivities": [
         {
@@ -86,7 +87,7 @@
     {
       "id": "council_chamber",
       "name": "Council Chamber",
-      "description": "The seat of political power where the town\u0027s future is decided.",
+      "description": "The seat of political power where the town's future is decided.",
       "scenarioId": "scenario35",
       "isVisited": false,
       "availableActivities": [
@@ -94,7 +95,7 @@
           "id": "council_discourse",
           "type": "NPC_INTERACTION",
           "name": "Political Discourse",
-          "description": "Engage with council members about the town\u0027s affairs.",
+          "description": "Engage with council members about the town's affairs.",
           "rewards": [
             "political_insight"
           ],
@@ -224,7 +225,7 @@
     },
     {
       "id": "mentor_cottage",
-      "name": "Mentor\u0027s Cottage",
+      "name": "Mentor's Cottage",
       "description": "A peaceful dwelling where a wise mentor offers guidance and knowledge.",
       "scenarioId": "scenario30",
       "isVisited": false,
@@ -232,7 +233,7 @@
         {
           "id": "mentor_wisdom",
           "type": "NPC_INTERACTION",
-          "name": "Mentor\u0027s Wisdom",
+          "name": "Mentor's Wisdom",
           "description": "Seek counsel from the wise mentor about your journey.",
           "rewards": [
             "mentor_advice",
@@ -246,8 +247,8 @@
         {
           "id": "mentor_crafting",
           "type": "CRAFTING",
-          "name": "Mentor\u0027s Workshop",
-          "description": "Learn to craft useful items under the mentor\u0027s guidance.",
+          "name": "Mentor's Workshop",
+          "description": "Learn to craft useful items under the mentor's guidance.",
           "rewards": [
             "crafted_charm"
           ],
@@ -415,9 +416,10 @@
     },
     {
       "id": "scholars_retreat",
-      "name": "Scholar\u0027s Retreat",
+      "name": "Scholar's Retreat",
       "description": "A secluded haven of knowledge where scholars study ancient mysteries.",
       "scenarioId": "scenario37",
+      "revisitScenarioId": "scenario39",
       "isVisited": false,
       "availableActivities": [
         {
@@ -438,7 +440,7 @@
           "id": "library_archives",
           "type": "EXPLORATION",
           "name": "Library Archives",
-          "description": "Explore the vast library\u0027s dusty shelves for hidden tomes.",
+          "description": "Explore the vast library's dusty shelves for hidden tomes.",
           "rewards": [
             "rare_book",
             "ancient_knowledge"
@@ -472,7 +474,7 @@
           "id": "temple_mysteries",
           "type": "PUZZLE",
           "name": "Temple Mysteries",
-          "description": "Solve the sacred puzzles guarding the temple\u0027s inner sanctum.",
+          "description": "Solve the sacred puzzles guarding the temple's inner sanctum.",
           "rewards": [
             "celestial_artifact",
             "divine_blessing"
@@ -486,7 +488,7 @@
           "id": "sacred_archives",
           "type": "EXPLORATION",
           "name": "Sacred Archives",
-          "description": "Explore the temple\u0027s sacred archives for divine knowledge.",
+          "description": "Explore the temple's sacred archives for divine knowledge.",
           "rewards": [
             "sacred_text"
           ],
@@ -518,7 +520,7 @@
           "id": "cursed_guardians",
           "type": "COMBAT",
           "name": "Cursed Guardians",
-          "description": "Battle the cursed beings that guard the ruins\u0027 dark secrets.",
+          "description": "Battle the cursed beings that guard the ruins' dark secrets.",
           "rewards": [
             "cursed_relic",
             "dark_essence"
@@ -532,7 +534,7 @@
           "id": "dark_secrets",
           "type": "INVESTIGATION",
           "name": "Dark Secrets",
-          "description": "Investigate the ruins\u0027 dark history and uncover forbidden knowledge.",
+          "description": "Investigate the ruins' dark history and uncover forbidden knowledge.",
           "rewards": [
             "forbidden_tome",
             "shadow_crystal"

@@ -11,7 +11,7 @@ import com.spiritwisestudios.crossroadsoffate.data.models.*
  */
 @Database(
     entities = [ScenarioEntity::class, PlayerProgress::class, InteractiveMapLocation::class], // Define database entities
-    version = 11,                                               // Database version for migrations
+    version = 12,                                               // Database version for migrations
     exportSchema = false                                       // Don't export database schema
 )
 @TypeConverters(Converters::class)

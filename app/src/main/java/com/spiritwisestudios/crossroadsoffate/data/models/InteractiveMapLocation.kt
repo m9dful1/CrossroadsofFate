@@ -13,6 +13,8 @@ data class InteractiveMapLocation(
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "description") val description: String,
     @ColumnInfo(name = "scenarioId") val scenarioId: String,
+    // Alternate scenario shown when this location is revisited in the same save
+    @ColumnInfo(name = "revisitScenarioId") val revisitScenarioId: String? = null,
     @ColumnInfo(name = "isVisited") val isVisited: Boolean = false,
     @ColumnInfo(name = "availableActivities") val availableActivities: List<LocationActivity> = emptyList(),
     @ColumnInfo(name = "requiredItems") val requiredItems: List<String> = emptyList(),

@@ -316,6 +316,80 @@ class GameViewModelTest {
     }
 
     @Test
+    fun statGrants_applyOnlyOnce_perDecision() = runTest {
+        // scenario1 grants +1 wisdom on topLeft; scenario2 loops back so the
+        // same decision can be taken again
+        val forward = createTestScenario(
+            id = "scenario1",
+            decisions = mapOf("topLeft" to createTestDecision(targetScenarioId = "scenario2"))
+        ).copy(statsGranted = mapOf("topLeft" to mapOf("wisdom" to 1)))
+        val back = createTestScenario(
+            id = "scenario2",
+            decisions = mapOf("topLeft" to createTestDecision(targetScenarioId = "scenario1"))
+        )
+        whenever(repository.getScenarioById("scenario1")).thenReturn(forward)
+        whenever(repository.getScenarioById("scenario2")).thenReturn(back)
+        gameViewModel.loadGame() // refresh currentScenario to the granting variant
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        gameViewModel.onChoiceSelected("topLeft") // first pick: grant applies
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(2, gameViewModel.playerStats.value["wisdom"])
+
+        gameViewModel.onChoiceSelected("topLeft") // loop back
+        testDispatcher.scheduler.advanceUntilIdle()
+        gameViewModel.onChoiceSelected("topLeft") // repeat pick: no farming
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals("Repeating a decision must not re-grant its stats",
+            2, gameViewModel.playerStats.value["wisdom"])
+        assertTrue(
+            gameViewModel.playerProgress.value?.grantedDecisions?.contains("scenario1:topLeft") == true
+        )
+    }
+
+    @Test
+    fun travelToLocation_onRevisit_showsRevisitVariant() = runTest {
+        val original = createTestScenario(id = "scenario6", location = "Town Square")
+        val variant = createTestScenario(id = "town_square_revisit", location = "Town Square")
+        whenever(repository.getScenarioById("scenario6")).thenReturn(original)
+        whenever(repository.getScenarioById("town_square_revisit")).thenReturn(variant)
+        val location = InteractiveMapLocation(
+            id = "town_square", name = "Town Square", description = "The square",
+            scenarioId = "scenario6", revisitScenarioId = "town_square_revisit"
+        )
+
+        gameViewModel.travelToInteractiveLocation(location)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals("scenario6", gameViewModel.currentScenario.value?.id)
+
+        gameViewModel.travelToInteractiveLocation(location)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals("Second visit must show the revisit variant",
+            "town_square_revisit", gameViewModel.currentScenario.value?.id)
+        assertEquals("town_square_revisit", gameViewModel.playerProgress.value?.currentScenarioId)
+    }
+
+    @Test
+    fun endingScenario_showsDirectly_withoutExploration() {
+        val viewModel = runBlockingStubs {
+            whenever(repository.loadExplorationMaps()).thenReturn(explorationCatalog())
+            val choice = createTestDecision(targetScenarioId = "scenario2")
+            val start = createTestScenario(id = "scenario1", decisions = mapOf("bottomLeft" to choice))
+            val ending = createTestScenario(id = "scenario2", location = "Town Square")
+                .copy(isEnding = true)
+            whenever(repository.getScenarioById("scenario1")).thenReturn(start)
+            whenever(repository.getScenarioById("scenario2")).thenReturn(ending)
+        }
+
+        viewModel.onChoiceSelected("bottomLeft")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse("Endings must not enter exploration", viewModel.isExploring.value)
+        assertTrue(viewModel.currentScenario.value?.isEnding == true)
+    }
+
+    @Test
     fun onChoiceSelected_entersExploration_whenMapCoversNextLocation() {
         val viewModel = viewModelWithExploration()
 

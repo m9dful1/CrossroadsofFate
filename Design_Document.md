@@ -1545,3 +1545,17 @@ Fixes from the feature-audit loop closing the audio findings: no more background
 Audio focus handling (pausing for calls/other apps' media) remains open: minSdk 24 requires a version-branched implementation (`AudioFocusRequest` on API 26+, the deprecated request below) and deserves on-device verification, so it is deferred rather than bundled into this change.
 ### 38.5 Tests
 `GameAudioManagerTest` adds: all seven endgame locations map to mystery; a backgrounded `playMusic` does not start playback and starts on resume; `stopMusic` while backgrounded drops the deferred track; `currentTrack` reflects start/stop in the foreground.
+
+## 39. Branching Graph Fixes: Grant-Once, Revisit Variants, Stat Gates, Endings
+[Date of modification: 2026-07-11]
+Implements the four design decisions from the branching audit (per Jeremy): revisit variants instead of re-running story beats, a signposted and earnable wisdom gate, orphaned scenarios wired in, and a real ending screen.
+### 39.1 Grant-Once Decisions
+Stat and reputation grants are now one-time per (scenario, decision position): `PlayerProgress.grantedDecisions` records `"scenarioId:position"` keys, and `onChoiceSelected` skips `statsGranted`/`reputationChanges` for recorded keys. This closes the unbounded farming loop where re-entering scenarios via map travel re-awarded the same grants indefinitely.
+### 39.2 Revisit Variants
+`InteractiveMapLocation.revisitScenarioId` (locations.json) names an alternate scenario shown when the location is traveled to again in the same save. Wired: `town_square` → `town_square_revisit` and `scholars_retreat` → `scenario39` — which also makes both previously-orphaned scenarios reachable. First visits still play `scenarioId`.
+### 39.3 Stat Gates: Earnable and Signposted
+The wisdom≥3 gate (scenario42 → celestial ending) was silently missable: only scenario8's topRight (+2 wisdom) could ever satisfy it. Added recovery sources — +1 wisdom at the mentor (scenario30 topLeft), the scholars' retreat (scenario39 topLeft), and the temple approach (scenario41 counsel + inscriptions, +1 each, sufficient on their own) — plus +1 cunning on the outlaw path (scenario12/16 topLeft) for the cunning gates. scenario41's text now carries a `{stat:wisdom:3:...}` hint pointing at the counsel/inscription recoveries, and the scenario42/43 fallback texts name the exact requirement and how to close the gap. Grant-once (39.1) keeps these unfarmable.
+### 39.4 Ending Screen
+`ScenarioEntity.isEnding` marks final scenarios (scenario40/45/46, previously infinite self-loops). Reaching one skips exploration and MainActivity routes to the new `EndingScreen`: resolved closing text over the scenario background, a stat summary, completed-quest count, and Return to Title. Kept intentionally light ahead of the planned scenario rewrite. Database version 11 → 12 (new columns on PlayerProgress, ScenarioEntity, InteractiveMapLocation).
+### 39.5 Tests and Docs
+New `ScenarioContentIntegrityTest`: every scenario reachable from the start or map travel (fails on future orphans), every stat gate earnable from shipped content, self-loop scenarios exactly match `isEnding` flags, and revisit ids resolve. `GameViewModelTest` adds grant-once, revisit routing, and ending-skips-exploration coverage. `docs/scenario-authoring-guide.md` documents `isEnding`, grant-once semantics, and revisit variants.

@@ -33,16 +33,32 @@
         }
       },
       "statsGranted": {
-        "topLeft": { "wisdom": 1 },
-        "topRight": { "charisma": 1 },
-        "bottomLeft": { "strength": 1 },
-        "bottomRight": { "cunning": 1 }
+        "topLeft": {
+          "wisdom": 1
+        },
+        "topRight": {
+          "charisma": 1
+        },
+        "bottomLeft": {
+          "strength": 1
+        },
+        "bottomRight": {
+          "cunning": 1
+        }
       },
       "reputationChanges": {
-        "topLeft": { "scholar": 1 },
-        "topRight": { "merchant": 1 },
-        "bottomLeft": { "guard": 1 },
-        "bottomRight": { "underworld": 1 }
+        "topLeft": {
+          "scholar": 1
+        },
+        "topRight": {
+          "merchant": 1
+        },
+        "bottomLeft": {
+          "guard": 1
+        },
+        "bottomRight": {
+          "underworld": 1
+        }
       }
     },
     {
@@ -210,13 +226,23 @@
         }
       },
       "statsGranted": {
-        "topLeft": { "charisma": 1 },
-        "bottomRight": { "cunning": 1 }
+        "topLeft": {
+          "charisma": 1
+        },
+        "bottomRight": {
+          "cunning": 1
+        }
       },
       "reputationChanges": {
-        "topLeft": { "guard": 1 },
-        "topRight": { "merchant": 1 },
-        "bottomRight": { "underworld": 1 }
+        "topLeft": {
+          "guard": 1
+        },
+        "topRight": {
+          "merchant": 1
+        },
+        "bottomRight": {
+          "underworld": 1
+        }
       }
     },
     {
@@ -256,13 +282,24 @@
         "bottomRight": "infernal_mark"
       },
       "statsGranted": {
-        "topLeft": { "strength": 1 },
-        "bottomRight": { "cunning": 1 }
+        "topLeft": {
+          "strength": 1
+        },
+        "bottomRight": {
+          "cunning": 1
+        }
       },
       "reputationChanges": {
-        "topLeft": { "merchant": 1 },
-        "bottomLeft": { "merchant": 1 },
-        "bottomRight": { "underworld": 1, "guard": -1 }
+        "topLeft": {
+          "merchant": 1
+        },
+        "bottomLeft": {
+          "merchant": 1
+        },
+        "bottomRight": {
+          "underworld": 1,
+          "guard": -1
+        }
       }
     },
     {
@@ -298,16 +335,32 @@
         }
       },
       "statsGranted": {
-        "topLeft": { "strength": 2 },
-        "topRight": { "wisdom": 2 },
-        "bottomLeft": { "charisma": 2 },
-        "bottomRight": { "cunning": 2 }
+        "topLeft": {
+          "strength": 2
+        },
+        "topRight": {
+          "wisdom": 2
+        },
+        "bottomLeft": {
+          "charisma": 2
+        },
+        "bottomRight": {
+          "cunning": 2
+        }
       },
       "reputationChanges": {
-        "topLeft": { "guard": 3 },
-        "topRight": { "scholar": 3 },
-        "bottomLeft": { "merchant": 3 },
-        "bottomRight": { "underworld": 3 }
+        "topLeft": {
+          "guard": 3
+        },
+        "topRight": {
+          "scholar": 3
+        },
+        "bottomLeft": {
+          "merchant": 3
+        },
+        "bottomRight": {
+          "underworld": 3
+        }
       }
     },
     {
@@ -437,15 +490,36 @@
         "bottomRight": {
           "text": "Embrace chaos and incite fear for personal gain",
           "fallbackText": "The underworld doesn't respect you enough to follow",
-          "condition": { "requiredReputation": "underworld", "minReputationValue": 2 },
-          "leadsTo": { "ifConditionMet": "scenario16", "ifConditionNotMet": "scenario12" }
+          "condition": {
+            "requiredReputation": "underworld",
+            "minReputationValue": 2
+          },
+          "leadsTo": {
+            "ifConditionMet": "scenario16",
+            "ifConditionNotMet": "scenario12"
+          }
         }
       },
       "reputationChanges": {
-        "topLeft": { "underworld": 1 },
-        "topRight": { "underworld": 1 },
-        "bottomLeft": { "underworld": 1, "guard": -1 },
-        "bottomRight": { "underworld": 2, "guard": -2 }
+        "topLeft": {
+          "underworld": 1
+        },
+        "topRight": {
+          "underworld": 1
+        },
+        "bottomLeft": {
+          "underworld": 1,
+          "guard": -1
+        },
+        "bottomRight": {
+          "underworld": 2,
+          "guard": -2
+        }
+      },
+      "statsGranted": {
+        "topLeft": {
+          "cunning": 1
+        }
       }
     },
     {
@@ -458,8 +532,14 @@
         "topLeft": {
           "text": "Intervene gently to help an innocent",
           "fallbackText": "The guards don't trust you enough to intervene",
-          "condition": { "requiredReputation": "guard", "minReputationValue": 2 },
-          "leadsTo": { "ifConditionMet": "scenario29", "ifConditionNotMet": "scenario13" }
+          "condition": {
+            "requiredReputation": "guard",
+            "minReputationValue": 2
+          },
+          "leadsTo": {
+            "ifConditionMet": "scenario29",
+            "ifConditionNotMet": "scenario13"
+          }
         },
         "topRight": {
           "text": "Use creative tactics to defuse the threat",
@@ -481,10 +561,19 @@
         }
       },
       "reputationChanges": {
-        "topLeft": { "guard": 1 },
-        "topRight": { "scholar": 1 },
-        "bottomLeft": { "guard": 1 },
-        "bottomRight": { "guard": 1, "underworld": -1 }
+        "topLeft": {
+          "guard": 1
+        },
+        "topRight": {
+          "scholar": 1
+        },
+        "bottomLeft": {
+          "guard": 1
+        },
+        "bottomRight": {
+          "guard": 1,
+          "underworld": -1
+        }
       }
     },
     {
@@ -584,6 +673,11 @@
           "condition": null,
           "leadsTo": "scenario29"
         }
+      },
+      "statsGranted": {
+        "topLeft": {
+          "cunning": 1
+        }
       }
     },
     {
@@ -655,6 +749,11 @@
             "ifConditionMet": "scenario34",
             "ifConditionNotMet": "scenario30"
           }
+        }
+      },
+      "statsGranted": {
+        "topLeft": {
+          "wisdom": 1
         }
       }
     },
@@ -800,8 +899,14 @@
         "topLeft": {
           "text": "Implement reforms to uplift the town",
           "fallbackText": "You lack the scholarly insight to propose reforms",
-          "condition": { "requiredReputation": "scholar", "minReputationValue": 2 },
-          "leadsTo": { "ifConditionMet": "scenario40", "ifConditionNotMet": "scenario35" }
+          "condition": {
+            "requiredReputation": "scholar",
+            "minReputationValue": 2
+          },
+          "leadsTo": {
+            "ifConditionMet": "scenario40",
+            "ifConditionNotMet": "scenario35"
+          }
         },
         "topRight": {
           "text": "Inspire others with acts of genuine heroism",
@@ -823,10 +928,18 @@
         }
       },
       "reputationChanges": {
-        "topLeft": { "scholar": 1 },
-        "topRight": { "guard": 1 },
-        "bottomLeft": { "guard": 1 },
-        "bottomRight": { "merchant": 1 }
+        "topLeft": {
+          "scholar": 1
+        },
+        "topRight": {
+          "guard": 1
+        },
+        "bottomLeft": {
+          "guard": 1
+        },
+        "bottomRight": {
+          "merchant": 1
+        }
       }
     },
     {
@@ -959,6 +1072,11 @@
           "condition": null,
           "leadsTo": "scenario40"
         }
+      },
+      "statsGranted": {
+        "topLeft": {
+          "wisdom": 1
+        }
       }
     },
     {
@@ -992,7 +1110,8 @@
           "condition": null,
           "leadsTo": "scenario40"
         }
-      }
+      },
+      "isEnding": true
     },
     {
       "id": "town_square_revisit",
@@ -1030,7 +1149,7 @@
     {
       "id": "scenario41",
       "location": "Sacred Temple Approach",
-      "text": "Your unwavering commitment to honor has led you to the outskirts of a remote hill. Here, an ancient temple stands bathed in divine light. Rumors whisper that only the righteous may unlock the Celestial Door.",
+      "text": "Your unwavering commitment to honor has led you to the outskirts of a remote hill. Here, an ancient temple stands bathed in divine light. Rumors whisper that only the righteous may unlock the Celestial Door. {stat:wisdom:3:The elder’s counsel and the weathered inscriptions promise a deeper understanding, if you take the time.|Your mind feels clear and ready for whatever lies beyond.}",
       "backgroundImage": "sacred_temple_approach",
       "isFixedBackground": false,
       "decisions": {
@@ -1058,6 +1177,14 @@
           "condition": null,
           "leadsTo": "scenario42"
         }
+      },
+      "statsGranted": {
+        "topRight": {
+          "wisdom": 1
+        },
+        "bottomLeft": {
+          "wisdom": 1
+        }
       }
     },
     {
@@ -1069,7 +1196,7 @@
       "decisions": {
         "topLeft": {
           "text": "Enter the realm of eternal light",
-          "fallbackText": "You lack the holy_key or wisdom to enter.",
+          "fallbackText": "The radiant door does not yield. Only a bearer of the Holy Key whose wisdom has fully ripened (3) may pass; an elder’s counsel and ancient inscriptions can deepen the mind.",
           "condition": {
             "requiredItem": "holy_key",
             "removeOnUse": false,
@@ -1116,7 +1243,7 @@
       "decisions": {
         "topLeft": {
           "text": "Venture deeper into the ruin",
-          "fallbackText": "You lack the infernal mark or cunning to proceed.",
+          "fallbackText": "The way is sealed. Only the Infernal Mark and razor-sharp cunning (3) open this path; risky schemes hone that edge.",
           "condition": {
             "requiredItem": "infernal_mark",
             "removeOnUse": false,
@@ -1230,7 +1357,8 @@
           "condition": null,
           "leadsTo": "scenario45"
         }
-      }
+      },
+      "isEnding": true
     },
     {
       "id": "scenario46",
@@ -1263,7 +1391,8 @@
           "condition": null,
           "leadsTo": "scenario46"
         }
-      }
+      },
+      "isEnding": true
     }
   ]
 }
