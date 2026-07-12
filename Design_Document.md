@@ -1531,3 +1531,17 @@ The `loadPlayerProgress` error fallback re-initialized every logic manager excep
 `GameViewModel` exposes `hasSaveGame: StateFlow<Boolean>` (set wherever a save is read or written); the title screen disables the Load Game button with a "No saved game found" hint when no save exists, and `loadGame()` guards against silently starting a fresh game (`DecisionButton` gained an `enabled` parameter for this).
 ### 37.6 Tests
 `GameRepositoryTest` covers the re-seed semantics (no duplication, stale-row refresh on update) and proves discovery isolation: a table row marked visited by another save is invisible to a fresh save, while the save that actually visited it (by name) sees it as visited. `GameViewModelTest` covers Load-with-no-save staying on the title screen, `hasSaveGame` reflecting an existing save, and the load-failure fallback clearing activity state.
+
+## 38. Audio Lifecycle and Track Mapping Fixes
+[Date of modification: 2026-07-11]
+Fixes from the feature-audit loop closing the audio findings: no more background playback, endgame locations get fitting music, and MediaPlayer state queries are crash-safe.
+### 38.1 Background Playback Deferral
+`GameAudioManager` now tracks foreground state: `onPause()` marks the app backgrounded, and any `playMusic()` request arriving while backgrounded (typically a save/load or exploration coroutine finishing after the user switched apps) is deferred rather than started — previously it created and started a new MediaPlayer that kept playing behind the lock screen. `onResume()` starts the deferred track (or resumes the paused player when the request matches the current track), and `stopMusic()` drops any pending request so a stopped track can't resurrect on resume.
+### 38.2 Endgame Track Mapping
+`getMusicTrackForLocation` now maps Underground, Abyssal, Infernal, Celestial, and Threshold locations to the mystery track. The seven endgame scenario locations (Underground Hideout/Syndicate, Abyssal Throne, Infernal Portal, Celestial Door, Eternal Celestial Court, Future's Threshold) previously fell through to town music.
+### 38.3 Crash-Safe Player State
+`MediaPlayer.isPlaying` throws `IllegalStateException` on a released or errored player; all call sites now go through a guarded `isPlayingSafely()`. `stopMusic()` releases the player even when `stop()` throws, preventing a native player leak, and a new `currentTrack: StateFlow<String?>` exposes the actively playing track (also making the lifecycle behavior unit-testable).
+### 38.4 Deferred: Audio Focus
+Audio focus handling (pausing for calls/other apps' media) remains open: minSdk 24 requires a version-branched implementation (`AudioFocusRequest` on API 26+, the deprecated request below) and deserves on-device verification, so it is deferred rather than bundled into this change.
+### 38.5 Tests
+`GameAudioManagerTest` adds: all seven endgame locations map to mystery; a backgrounded `playMusic` does not start playback and starts on resume; `stopMusic` while backgrounded drops the deferred track; `currentTrack` reflects start/stop in the foreground.

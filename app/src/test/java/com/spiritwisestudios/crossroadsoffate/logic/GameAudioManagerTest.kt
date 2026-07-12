@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -55,6 +56,51 @@ class GameAudioManagerTest {
     fun getMusicTrackForLocation_unknownLocation_defaultsToTown() {
         assertEquals("town", GameAudioManager.getMusicTrackForLocation("Unknown Place"))
         assertEquals("town", GameAudioManager.getMusicTrackForLocation(""))
+    }
+
+    @Test
+    fun getMusicTrackForLocation_endgameLocations_returnMystery() {
+        // Every endgame plane in scenarios.json must map away from town music
+        assertEquals("mystery", GameAudioManager.getMusicTrackForLocation("Underground Hideout"))
+        assertEquals("mystery", GameAudioManager.getMusicTrackForLocation("Underground Syndicate"))
+        assertEquals("mystery", GameAudioManager.getMusicTrackForLocation("Abyssal Throne"))
+        assertEquals("mystery", GameAudioManager.getMusicTrackForLocation("Infernal Portal"))
+        assertEquals("mystery", GameAudioManager.getMusicTrackForLocation("Celestial Door"))
+        assertEquals("mystery", GameAudioManager.getMusicTrackForLocation("Eternal Celestial Court"))
+        assertEquals("mystery", GameAudioManager.getMusicTrackForLocation("Future's Threshold"))
+    }
+
+    // --- Lifecycle / background playback tests ---
+
+    @Test
+    fun playMusic_whileBackgrounded_isDeferredUntilResume() {
+        audioManager.onPause()
+
+        // A coroutine finishing after the user switched apps must not start music
+        audioManager.playMusic("town")
+        assertNull(audioManager.currentTrack.value)
+
+        audioManager.onResume()
+        assertEquals("town", audioManager.currentTrack.value)
+    }
+
+    @Test
+    fun stopMusic_whileBackgrounded_dropsTheDeferredTrack() {
+        audioManager.onPause()
+        audioManager.playMusic("town")
+        audioManager.stopMusic()
+
+        audioManager.onResume()
+        assertNull("A stopped track must not restart on resume", audioManager.currentTrack.value)
+    }
+
+    @Test
+    fun playMusic_inForeground_tracksCurrentTrack() {
+        audioManager.playMusic("wilderness")
+        assertEquals("wilderness", audioManager.currentTrack.value)
+
+        audioManager.stopMusic()
+        assertNull(audioManager.currentTrack.value)
     }
 
     // --- Volume and mute state tests ---

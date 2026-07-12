@@ -32,8 +32,16 @@ class GameAudioManager(private val context: Context) {
     private val _isMuted = MutableStateFlow(prefs.getBoolean(KEY_IS_MUTED, false))
     val isMuted: StateFlow<Boolean> = _isMuted.asStateFlow()
 
-    private var currentTrackName: String? = null
+    private val _currentTrack = MutableStateFlow<String?>(null)
+    /** Track whose playback last started, or null when stopped. */
+    val currentTrack: StateFlow<String?> = _currentTrack.asStateFlow()
+
     private var isPaused = false
+
+    // While the activity is paused, play requests are deferred here instead of
+    // starting playback behind the lock screen; onResume() starts the track.
+    private var isInForeground = true
+    private var pendingTrackName: String? = null
 
     companion object {
         private const val PREFS_NAME = "audio_settings"
@@ -52,6 +60,14 @@ class GameAudioManager(private val context: Context) {
                 location.contains("Sacred", ignoreCase = true) ||
                 location.contains("Cursed", ignoreCase = true) ||
                 location.contains("Ruin", ignoreCase = true) -> "mystery"
+
+                // Endgame planes share the mystery track — town music would
+                // break the tone of the Abyssal/Celestial/Infernal finale
+                location.contains("Underground", ignoreCase = true) ||
+                location.contains("Abyssal", ignoreCase = true) ||
+                location.contains("Infernal", ignoreCase = true) ||
+                location.contains("Celestial", ignoreCase = true) ||
+                location.contains("Threshold", ignoreCase = true) -> "mystery"
 
                 location.contains("Wilderness", ignoreCase = true) ||
                 location.contains("Trail", ignoreCase = true) ||
@@ -102,7 +118,13 @@ class GameAudioManager(private val context: Context) {
      * Stops and releases any currently playing track before starting the new one.
      */
     fun playMusic(trackName: String) {
-        if (trackName == currentTrackName && mediaPlayer?.isPlaying == true) return
+        if (!isInForeground) {
+            // Never start playback while backgrounded (e.g. a save/load
+            // coroutine finishing after the user switched apps)
+            pendingTrackName = trackName
+            return
+        }
+        if (trackName == _currentTrack.value && isPlayingSafely()) return
 
         val resId = context.resources.getIdentifier("music_$trackName", "raw", context.packageName)
         if (resId == 0) {
@@ -120,11 +142,19 @@ class GameAudioManager(private val context: Context) {
                 setVolume(vol, vol)
                 start()
             }
-            currentTrackName = trackName
+            _currentTrack.value = trackName
             isPaused = false
         } catch (e: Exception) {
             Timber.e(e, "Failed to play music: %s", trackName)
         }
+    }
+
+    /** isPlaying throws IllegalStateException on a released or errored player. */
+    private fun isPlayingSafely(): Boolean = try {
+        mediaPlayer?.isPlaying == true
+    } catch (e: Exception) {
+        Timber.w(e, "MediaPlayer in unusable state")
+        false
     }
 
     /**
@@ -138,16 +168,21 @@ class GameAudioManager(private val context: Context) {
      * Stops and releases the current background music.
      */
     fun stopMusic() {
-        try {
-            mediaPlayer?.let {
-                if (it.isPlaying) it.stop()
-                it.release()
+        mediaPlayer?.let { player ->
+            try {
+                if (isPlayingSafely()) player.stop()
+            } catch (e: Exception) {
+                Timber.w(e, "Error stopping music")
             }
-        } catch (e: Exception) {
-            Timber.w(e, "Error stopping music")
+            try {
+                player.release()
+            } catch (e: Exception) {
+                Timber.w(e, "Error releasing music player")
+            }
         }
         mediaPlayer = null
-        currentTrackName = null
+        _currentTrack.value = null
+        pendingTrackName = null
         isPaused = false
     }
 
@@ -188,11 +223,13 @@ class GameAudioManager(private val context: Context) {
     }
 
     /**
-     * Pauses music playback. Call from Activity.onPause().
+     * Pauses music playback and defers any further play requests.
+     * Call from Activity.onPause().
      */
     fun onPause() {
+        isInForeground = false
         try {
-            if (mediaPlayer?.isPlaying == true) {
+            if (isPlayingSafely()) {
                 mediaPlayer?.pause()
                 isPaused = true
             }
@@ -202,9 +239,17 @@ class GameAudioManager(private val context: Context) {
     }
 
     /**
-     * Resumes music playback if it was paused. Call from Activity.onResume().
+     * Resumes paused playback, or starts the track requested while the app
+     * was backgrounded. Call from Activity.onResume().
      */
     fun onResume() {
+        isInForeground = true
+        val pending = pendingTrackName
+        pendingTrackName = null
+        if (pending != null && pending != _currentTrack.value) {
+            playMusic(pending)
+            return
+        }
         try {
             if (isPaused) {
                 mediaPlayer?.start()
